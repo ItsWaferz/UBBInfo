@@ -157,50 +157,52 @@ export default function Orar() {
           </div>
 
           <div className="orar-week-nav">
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => setWeekIdx((i) => Math.max(0, i - 1))}
-              disabled={weekIdx <= 0}
-              aria-label="Săptămâna anterioară"
-            >
-              <Icon name="chevron_left" />
-            </button>
+            <div className="orar-week-nav-arrows">
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setWeekIdx((i) => Math.max(0, i - 1))}
+                disabled={weekIdx <= 0}
+                aria-label="Săptămâna anterioară"
+              >
+                <Icon name="chevron_left" />
+              </button>
 
-            <div className="orar-week-label">
-              {week ? (
-                week.counted ? (
-                  <>
-                    <span className="orar-week-title">
-                      Săptămâna {week.number}
-                      <span className={`week-parity-badge ${parity}`}>
-                        {parity === 'par' ? 'pară' : 'impară'}
+              <div className="orar-week-label">
+                {week ? (
+                  week.counted ? (
+                    <>
+                      <span className="orar-week-title">
+                        Săptămâna {week.number}
+                        <span className={`week-parity-badge ${parity}`}>
+                          {parity === 'par' ? 'pară' : 'impară'}
+                        </span>
                       </span>
-                    </span>
-                    <span className="orar-week-range">{formatWeekRange(week)}</span>
-                  </>
+                      <span className="orar-week-range">{formatWeekRange(week)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="orar-week-title">
+                        {week.vacationName || 'Vacanță'}
+                      </span>
+                      <span className="orar-week-range">{formatWeekRange(week)}</span>
+                    </>
+                  )
                 ) : (
-                  <>
-                    <span className="orar-week-title">
-                      {week.vacationName || 'Vacanță'}
-                    </span>
-                    <span className="orar-week-range">{formatWeekRange(week)}</span>
-                  </>
-                )
-              ) : (
-                '—'
-              )}
-            </div>
+                  '—'
+                )}
+              </div>
 
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => setWeekIdx((i) => Math.min(weeks.length - 1, i + 1))}
-              disabled={weekIdx >= weeks.length - 1}
-              aria-label="Săptămâna următoare"
-            >
-              <Icon name="chevron_right" />
-            </button>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setWeekIdx((i) => Math.min(weeks.length - 1, i + 1))}
+                disabled={weekIdx >= weeks.length - 1}
+                aria-label="Săptămâna următoare"
+              >
+                <Icon name="chevron_right" />
+              </button>
+            </div>
 
             <button
               type="button"

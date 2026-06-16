@@ -172,7 +172,7 @@ export default function Grades() {
                     <th>{t('table.discipline')}</th>
                     <th>{t('table.credits')}</th>
                     <th>{t('table.grade')}</th>
-                    <th>{t('table.status')}</th>
+                    <th className="hide-mobile">{t('table.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -188,7 +188,7 @@ export default function Grades() {
                       <td>
                         <GradeBadge grade={e.grade} />
                       </td>
-                      <td>
+                      <td className="hide-mobile">
                         <StatusCell grade={e.grade} t={t} />
                       </td>
                     </tr>
@@ -206,7 +206,7 @@ export default function Grades() {
                       </td>
                       <td>{e.courses?.credits}</td>
                       <td className="muted">—</td>
-                      <td>
+                      <td className="hide-mobile">
                         <span className="status-inprogress">{t('status.inProgress')}</span>
                       </td>
                     </tr>

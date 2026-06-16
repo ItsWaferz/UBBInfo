@@ -217,7 +217,7 @@ export default function StudentDashboard() {
                 <th>{t('table.discipline')}</th>
                 <th>{t('table.credits')}</th>
                 <th>{t('table.grade')}</th>
-                <th>{t('table.status')}</th>
+                <th className="hide-mobile">{t('table.status')}</th>
                 <th>{t('table.profile')}</th>
                 <th>{t('table.group')}</th>
               </tr>
@@ -228,7 +228,7 @@ export default function StudentDashboard() {
                   <td>{e.courses?.name}</td>
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
-                  <td>
+                  <td className="hide-mobile">
                     <span className="status-inprogress">{t('status.inProgress')}</span>
                   </td>
                   <td>{e.courses?.profile || '—'}</td>
@@ -243,7 +243,7 @@ export default function StudentDashboard() {
                   </td>
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
-                  <td>
+                  <td className="hide-mobile">
                     <span className="status-inprogress">{t('status.inProgress')}</span>
                   </td>
                   <td>{e.courses?.profile || '—'}</td>
