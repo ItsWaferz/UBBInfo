@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import Icon from './Icon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function PasswordModal({ open, onClose, onSuccess }) {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [error, setError] = useState('');
@@ -28,11 +31,11 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
     setError('');
 
     if (newPw.length < 6) {
-      setError('Parola trebuie să aibă cel puțin 6 caractere.');
+      setError(t('password.tooShort'));
       return;
     }
     if (newPw !== confirmPw) {
-      setError('Parolele nu coincid.');
+      setError(t('password.mismatch'));
       return;
     }
 
@@ -62,7 +65,7 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
       onSuccess?.();
     } catch (err) {
       console.error('Password change failed:', err);
-      setError('Nu am putut schimba parola. Încearcă din nou.');
+      setError(t('password.error') || 'Nu am putut schimba parola. Încearcă din nou.');
       setSubmitting(false);
     }
   };
@@ -71,9 +74,9 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={close}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Schimbă parola</h3>
-          <button type="button" className="modal-close" onClick={close} aria-label="Închide">
-            <span className="material-symbols-outlined">close</span>
+          <h3>{t('password.title')}</h3>
+          <button type="button" className="modal-close" onClick={close} aria-label={t('common.close')}>
+            <Icon name="close" />
           </button>
         </div>
 
@@ -88,32 +91,32 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
           />
 
           <label className="field">
-            <span className="field-label">Parolă nouă</span>
+            <span className="field-label">{t('password.new')}</span>
             <div className="input-wrap">
-              <span className="material-symbols-outlined input-icon">lock</span>
+              <Icon name="lock" className="input-icon" />
               <input
                 type="password"
                 autoComplete="new-password"
                 minLength={6}
                 value={newPw}
                 onChange={(e) => setNewPw(e.target.value)}
-                placeholder="Minim 6 caractere"
+                placeholder={t('password.minChars')}
                 required
               />
             </div>
           </label>
 
           <label className="field">
-            <span className="field-label">Confirmă parola</span>
+            <span className="field-label">{t('password.confirm')}</span>
             <div className="input-wrap">
-              <span className="material-symbols-outlined input-icon">lock</span>
+              <Icon name="lock" className="input-icon" />
               <input
                 type="password"
                 autoComplete="new-password"
                 minLength={6}
                 value={confirmPw}
                 onChange={(e) => setConfirmPw(e.target.value)}
-                placeholder="Repetă parola"
+                placeholder={t('password.repeatPlaceholder')}
                 required
               />
             </div>
@@ -123,10 +126,10 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={close}>
-              Anulează
+              {t('common.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? <span className="spinner" /> : 'Salvează'}
+              {submitting ? <span className="spinner" /> : t('password.save')}
             </button>
           </div>
         </form>

@@ -9,6 +9,7 @@ import {
   formatWeekRange,
   pickActiveSemester,
 } from '../../utils/calendar';
+import Icon from '../../components/Icon';
 
 const DAYS = [
   { n: 1, label: 'Luni' },
@@ -139,7 +140,7 @@ export default function Orar() {
           <div className="field orar-control">
             <span className="field-label">Semigrupa</span>
             <div className="input-wrap">
-              <span className="material-symbols-outlined input-icon">groups</span>
+              <Icon name="groups" className="input-icon" />
               <select
                 className="select-bare"
                 value={selectedGroup}
@@ -163,7 +164,7 @@ export default function Orar() {
               disabled={weekIdx <= 0}
               aria-label="Săptămâna anterioară"
             >
-              <span className="material-symbols-outlined">chevron_left</span>
+              <Icon name="chevron_left" />
             </button>
 
             <div className="orar-week-label">
@@ -198,7 +199,7 @@ export default function Orar() {
               disabled={weekIdx >= weeks.length - 1}
               aria-label="Săptămâna următoare"
             >
-              <span className="material-symbols-outlined">chevron_right</span>
+              <Icon name="chevron_right" />
             </button>
 
             <button
@@ -236,7 +237,7 @@ export default function Orar() {
                     slots.map((e) => (
                       <div className={`orar-slot type-${e.type}`} key={e.id}>
                         <div className="orar-slot-time">
-                          <span className="material-symbols-outlined">schedule</span>
+                          <Icon name="schedule" />
                           {hhmm(e.start_time)}–{hhmm(e.end_time)}
                         </div>
                         <div className="orar-slot-course">{e.course_name}</div>
@@ -250,12 +251,12 @@ export default function Orar() {
                         </div>
                         <div className="orar-slot-details">
                           <span>
-                            <span className="material-symbols-outlined">meeting_room</span>
+                            <Icon name="meeting_room" />
                             {formatRoom(e.rooms, e.room)}
                           </span>
                           {e.professor && (
                             <span>
-                              <span className="material-symbols-outlined">person</span>
+                              <Icon name="person" />
                               {e.professor}
                             </span>
                           )}

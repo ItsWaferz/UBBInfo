@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import Icon from '../../components/Icon';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const FIELDS = ['phone', 'personal_email', 'iban', 'cnp', 'id_series', 'address'];
 
@@ -15,6 +17,7 @@ const EMPTY = {
 
 export default function Identity() {
   const { user, profile, setProfile } = useAuth();
+  const { t } = useLanguage();
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null); // { type: 'success'|'error', text }
@@ -66,22 +69,22 @@ export default function Identity() {
 
     if (error) {
       console.error('Save identity failed:', error);
-      setStatus({ type: 'error', text: 'A apărut o eroare. Încearcă din nou.' });
+      setStatus({ type: 'error', text: t('identity.error') });
       return;
     }
 
     // Keep global profile in sync
     setProfile((p) => (p ? { ...p, ...payload } : p));
-    setStatus({ type: 'success', text: '✓ Modificările au fost salvate cu succes' });
+    setStatus({ type: 'success', text: t('identity.success') });
     setTimeout(() => setStatus(null), 3000);
   };
 
   return (
     <div className="page">
       <section className="header-card">
-        <h1 className="page-title">Identitatea Ta</h1>
+        <h1 className="page-title">{t('identity.title')}</h1>
         <p className="page-subtitle">
-          Gestionează datele tale personale. Toate câmpurile sunt opționale.
+          {t('identity.subtitle')}
         </p>
       </section>
 
@@ -90,15 +93,15 @@ export default function Identity() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">contact_phone</span>
-              Informații de Contact
+              <Icon name="contact_phone" />
+              {t('identity.contact')}
             </h2>
           </div>
           <div className="card-body form-grid-2">
             <label className="field">
-              <span className="field-label">Telefon</span>
+              <span className="field-label">{t('identity.phone')}</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">phone</span>
+                <Icon name="phone" className="input-icon" />
                 <input
                   type="tel"
                   value={form.phone}
@@ -108,9 +111,9 @@ export default function Identity() {
               </div>
             </label>
             <label className="field">
-              <span className="field-label">Email personal</span>
+              <span className="field-label">{t('identity.personalEmail')}</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">mail</span>
+                <Icon name="mail" className="input-icon" />
                 <input
                   type="email"
                   value={form.personal_email}
@@ -126,15 +129,15 @@ export default function Identity() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">account_balance</span>
-              Informații Financiare
+              <Icon name="account_balance" />
+              {t('identity.financial')}
             </h2>
           </div>
           <div className="card-body">
             <label className="field">
-              <span className="field-label">IBAN</span>
+              <span className="field-label">{t('identity.iban')}</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">credit_card</span>
+                <Icon name="credit_card" className="input-icon" />
                 <input
                   type="text"
                   className="mono"
@@ -144,7 +147,7 @@ export default function Identity() {
                 />
               </div>
               <span className="field-hint">
-                Contul în care vei primi eventualele burse sau restituiri.
+                {t('identity.ibanHint')}
               </span>
             </label>
           </div>
@@ -154,15 +157,15 @@ export default function Identity() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">badge</span>
-              Documente de Identitate
+              <Icon name="badge" />
+              {t('identity.documents')}
             </h2>
           </div>
           <div className="card-body form-grid-2">
             <label className="field">
-              <span className="field-label">CNP</span>
+              <span className="field-label">{t('identity.cnp')}</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">fingerprint</span>
+                <Icon name="fingerprint" className="input-icon" />
                 <input
                   type="text"
                   className="mono"
@@ -174,9 +177,9 @@ export default function Identity() {
               </div>
             </label>
             <label className="field">
-              <span className="field-label">Serie CI</span>
+              <span className="field-label">{t('identity.series')}</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">badge</span>
+                <Icon name="badge" className="input-icon" />
                 <input
                   type="text"
                   value={form.id_series}
@@ -192,15 +195,15 @@ export default function Identity() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">home_pin</span>
-              Adresă de Domiciliu
+              <Icon name="home_pin" />
+              {t('identity.address')}
             </h2>
           </div>
           <div className="card-body">
             <label className="field">
-              <span className="field-label">Adresă completă</span>
+              <span className="field-label">{t('identity.fullAddress')}</span>
               <div className="input-wrap input-wrap-textarea">
-                <span className="material-symbols-outlined input-icon">location_on</span>
+                <Icon name="location_on" className="input-icon" />
                 <textarea
                   rows={3}
                   value={form.address}
@@ -221,8 +224,8 @@ export default function Identity() {
               <span className="spinner" />
             ) : (
               <>
-                <span className="material-symbols-outlined">save</span>
-                Salvează Modificările
+                <Icon name="save" />
+                {t('identity.save')}
               </>
             )}
           </button>

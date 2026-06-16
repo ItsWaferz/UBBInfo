@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import Toast from '../../components/Toast';
+import Icon from '../../components/Icon';
 import { EVAL_CRITERIA as CRITERIA } from '../../utils/evaluationCriteria';
 
 function professorTitle(p) {
@@ -21,7 +22,7 @@ function Stars({ value, onChange }) {
           onClick={() => onChange(n)}
           aria-label={`${n} din 5`}
         >
-          <span className="material-symbols-outlined">star</span>
+          <Icon name="star" />
         </button>
       ))}
     </div>
@@ -78,14 +79,12 @@ function EvaluationCard({ professor, courses, existingByCourse, onSaved }) {
     <section className="card">
       <div className="card-header">
         <h2 className="card-title">
-          <span className="material-symbols-outlined">person</span>
+          <Icon name="person" />
           {professorTitle(professor)}
         </h2>
         {existing && (
           <span className="badge status-pass">
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              check
-            </span>
+            <Icon name="check" size={14} />
             Evaluat
           </span>
         )}
@@ -95,7 +94,7 @@ function EvaluationCard({ professor, courses, existingByCourse, onSaved }) {
           <label className="field" style={{ maxWidth: 380 }}>
             <span className="field-label">Disciplina</span>
             <div className="input-wrap">
-              <span className="material-symbols-outlined input-icon">menu_book</span>
+              <Icon name="menu_book" className="input-icon" />
               <select
                 className="select-bare"
                 value={courseId}
@@ -128,7 +127,7 @@ function EvaluationCard({ professor, courses, existingByCourse, onSaved }) {
         <label className="field">
           <span className="field-label">Detalii / comentarii (opțional)</span>
           <div className="input-wrap input-wrap-textarea">
-            <span className="material-symbols-outlined input-icon">comment</span>
+            <Icon name="comment" className="input-icon" />
             <textarea
               rows={3}
               value={comment}

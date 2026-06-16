@@ -1,16 +1,19 @@
+import { useLanguage } from '../../i18n/LanguageContext';
 import MockupPage from '../../components/MockupPage';
 
 export default function PlataTaxe() {
+  const { t } = useLanguage();
+
   return (
     <MockupPage
       icon="payments"
-      title="Plata Taxe"
-      description="Gestionează taxele de școlarizare și restanțele, efectuează plăți online în siguranță și consultă istoricul tranzacțiilor."
+      title={t('mockup.taxe.title')}
+      description={t('mockup.taxe.desc')}
       features={[
-        { icon: 'school', label: 'Taxe școlarizare' },
-        { icon: 'event_busy', label: 'Restanțe' },
-        { icon: 'credit_card', label: 'Plată online' },
-        { icon: 'receipt_long', label: 'Istoric plăți' },
+        { icon: 'school', label: t('mockup.taxe.f1') },
+        { icon: 'event_busy', label: t('mockup.taxe.f2') },
+        { icon: 'credit_card', label: t('mockup.taxe.f3') },
+        { icon: 'receipt_long', label: t('mockup.taxe.f4') },
       ]}
     />
   );

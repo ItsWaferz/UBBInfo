@@ -4,12 +4,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatRomanianDate, firstNameOf } from '../../utils/format';
 import PasswordModal from '../../components/PasswordModal';
 import Toast from '../../components/Toast';
+import Icon from '../../components/Icon';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const ACADEMIC_YEAR = '2025-2026';
 const CURRENT_SEMESTER = 2;
 
 export default function StudentDashboard() {
   const { user, profile } = useAuth();
+  const { t, lang } = useLanguage();
   const [links, setLinks] = useState([]);
   const [currentCourses, setCurrentCourses] = useState([]);
   const [restante, setRestante] = useState([]);
@@ -79,12 +82,12 @@ export default function StudentDashboard() {
     <div className="page">
       {/* A. Welcome card */}
       <section className="welcome-card">
-        <span className="material-symbols-outlined welcome-bg-icon">school</span>
+        <Icon name="school" className="welcome-bg-icon" />
         <h1 className="welcome-title">
-          Bine ai venit, {firstNameOf(profile?.full_name)}!
+          {t('dashboard.welcome', { name: firstNameOf(profile?.full_name) })}
         </h1>
         <p className="welcome-subtitle">
-          Anul universitar 2025-2026, Semestrul 2 · {formatRomanianDate()}
+          {t('dashboard.yearSemester')} · {formatRomanianDate()}
         </p>
       </section>
 
@@ -94,25 +97,23 @@ export default function StudentDashboard() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">account_circle</span>
-              Cont Instituțional
+              <Icon name="account_circle" />
+              {t('dashboard.account')}
             </h2>
-            <span className="badge badge-student">Student</span>
+            <span className="badge badge-student">{t('role.student')}</span>
           </div>
           <div className="card-body">
             <div className="info-field">
-              <span className="info-label">Email instituțional</span>
+              <span className="info-label">{t('dashboard.email')}</span>
               <div className="copy-row">
                 <span className="info-value mono">{profile?.email}</span>
                 <button
                   type="button"
                   className="copy-btn"
                   onClick={handleCopyEmail}
-                  aria-label="Copiază email"
+                  aria-label={t('common.copyEmail')}
                 >
-                  <span className="material-symbols-outlined">
-                    {copied ? 'check' : 'content_copy'}
-                  </span>
+                  <Icon name={copied ? 'check' : 'content_copy'} />
                 </button>
               </div>
             </div>
@@ -121,8 +122,8 @@ export default function StudentDashboard() {
               className="btn btn-outline"
               onClick={() => setPwModalOpen(true)}
             >
-              <span className="material-symbols-outlined">key</span>
-              Schimbă parola
+              <Icon name="key" />
+              {t('dashboard.changePassword')}
             </button>
           </div>
         </section>
@@ -131,29 +132,33 @@ export default function StudentDashboard() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">link</span>
-              Linkuri Utile
+              <Icon name="link" />
+              {t('dashboard.usefulLinks')}
             </h2>
           </div>
           <div className="card-body">
             <ul className="links-list">
-              {links.map((l) => (
-                <li key={l.id}>
-                  <a
-                    href={l.url || '#'}
-                    className="link-item"
-                    target={l.url && l.url !== '#' ? '_blank' : undefined}
-                    rel="noreferrer"
-                  >
-                    <span className="material-symbols-outlined link-icon">{l.icon}</span>
-                    <span className="link-title">{l.title}</span>
-                    <span className="material-symbols-outlined link-arrow">
-                      arrow_forward
-                    </span>
-                  </a>
-                </li>
-              ))}
-              {links.length === 0 && <li className="muted">Niciun link disponibil.</li>}
+              {links.map((l) => {
+                const urlMap = { ro: l.url, en: l.url_en, hu: l.url_hu, de: l.url_de };
+                const linkUrl = (urlMap[lang] && urlMap[lang] !== '#') ? urlMap[lang] : l.url;
+                const titleMap = { ro: l.title, en: l.title_en, hu: l.title_hu, de: l.title_de };
+                const linkTitle = (titleMap[lang] && titleMap[lang].trim()) ? titleMap[lang] : l.title;
+                return (
+                  <li key={l.id}>
+                    <a
+                      href={linkUrl || '#'}
+                      className="link-item"
+                      target={linkUrl && linkUrl !== '#' ? '_blank' : undefined}
+                      rel="noreferrer"
+                    >
+                      <Icon name={l.icon} className="link-icon" />
+                      <span className="link-title">{linkTitle}</span>
+                      <Icon name="arrow_forward" className="link-arrow" />
+                    </a>
+                  </li>
+                );
+              })}
+              {links.length === 0 && <li className="muted">{t('dashboard.noLinks')}</li>}
             </ul>
           </div>
         </section>
@@ -162,33 +167,33 @@ export default function StudentDashboard() {
       {/* C. Student ID card */}
       <section className="id-card">
         <div className="id-card-left">
-          <h3 className="id-card-title">Legitimație Student</h3>
+          <h3 className="id-card-title">{t('dashboard.idCard')}</h3>
           <div className="id-gold-line" />
-          <div className="id-code-label">COD IDENTIFICARE</div>
+          <div className="id-code-label">{t('dashboard.idCode')}</div>
           <div className="id-code-value mono">{profile?.student_id || '—'}</div>
         </div>
         <div className="id-card-right">
           <div className="id-grid">
             <div className="id-detail">
-              <div className="id-detail-label">Facultatea</div>
+              <div className="id-detail-label">{t('dashboard.faculty')}</div>
               <div className="id-detail-value">{profile?.faculty || '—'}</div>
             </div>
             <div className="id-detail">
-              <div className="id-detail-label">An Studiu</div>
+              <div className="id-detail-label">{t('dashboard.studyYear')}</div>
               <div className="id-detail-value">{profile?.study_year || '—'}</div>
             </div>
             <div className="id-detail">
-              <div className="id-detail-label">Specializarea</div>
+              <div className="id-detail-label">{t('dashboard.specialization')}</div>
               <div className="id-detail-value">{profile?.specialization || '—'}</div>
             </div>
             <div className="id-detail">
-              <div className="id-detail-label">Nr. Legitimație Transport</div>
+              <div className="id-detail-label">{t('dashboard.transportId')}</div>
               <div className="id-detail-value">{profile?.transport_id || '—'}</div>
             </div>
           </div>
           <div className="id-qr">
-            <span className="material-symbols-outlined">qr_code_2</span>
-            <span className="id-qr-note">Legitimație validă pentru anul universitar curent</span>
+            <Icon name="qr_code_2" />
+            <span className="id-qr-note">{t('dashboard.idValid')}</span>
           </div>
         </div>
       </section>
@@ -197,24 +202,24 @@ export default function StudentDashboard() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">table_chart</span>
-            Situație Academică — Semestrul Curent
+            <Icon name="table_chart" />
+            {t('dashboard.academicTable')}
           </h2>
           <button type="button" className="btn btn-outline btn-sm">
-            <span className="material-symbols-outlined">download</span>
-            Descarcă Adeverință
+            <Icon name="download" />
+            {t('dashboard.downloadCert')}
           </button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Disciplina</th>
-                <th>Credite</th>
-                <th>Nota</th>
-                <th>Status</th>
-                <th>Profil</th>
-                <th>Grupa</th>
+                <th>{t('table.discipline')}</th>
+                <th>{t('table.credits')}</th>
+                <th>{t('table.grade')}</th>
+                <th>{t('table.status')}</th>
+                <th>{t('table.profile')}</th>
+                <th>{t('table.group')}</th>
               </tr>
             </thead>
             <tbody>
@@ -224,7 +229,7 @@ export default function StudentDashboard() {
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
                   <td>
-                    <span className="status-inprogress">ÎN CURS</span>
+                    <span className="status-inprogress">{t('status.inProgress')}</span>
                   </td>
                   <td>{e.courses?.profile || '—'}</td>
                   <td>{e.group_name || '—'}</td>
@@ -234,12 +239,12 @@ export default function StudentDashboard() {
               {restante.map((e) => (
                 <tr key={e.id}>
                   <td className="text-danger">
-                    {e.courses?.name} <span className="restanta-tag">(restanță)</span>
+                    {e.courses?.name} <span className="restanta-tag">{t('status.restanta')}</span>
                   </td>
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
                   <td>
-                    <span className="status-inprogress">ÎN CURS</span>
+                    <span className="status-inprogress">{t('status.inProgress')}</span>
                   </td>
                   <td>{e.courses?.profile || '—'}</td>
                   <td>{e.group_name || '—'}</td>
@@ -249,7 +254,7 @@ export default function StudentDashboard() {
               {currentCourses.length === 0 && restante.length === 0 && (
                 <tr>
                   <td colSpan={6} className="muted center">
-                    Nicio disciplină înscrisă.
+                    {t('dashboard.noEnrollments')}
                   </td>
                 </tr>
               )}
@@ -257,7 +262,7 @@ export default function StudentDashboard() {
           </table>
         </div>
         <div className="table-footer">
-          Total Credite Înscrise: <strong>{totalCredits}</strong>
+          {t('dashboard.totalCredits')}: <strong>{totalCredits}</strong>
         </div>
       </section>
 
@@ -272,7 +277,7 @@ export default function StudentDashboard() {
       <Toast
         visible={pwToast}
         variant="success"
-        message="Parola a fost schimbată cu succes!"
+        message={t('password.success')}
       />
     </div>
   );

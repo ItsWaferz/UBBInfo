@@ -4,6 +4,7 @@ import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatRoom } from '../../utils/rooms';
 import { parseDate } from '../../utils/calendar';
+import Icon from '../../components/Icon';
 import RoomPicker from '../../components/RoomPicker';
 import Toast from '../../components/Toast';
 
@@ -146,7 +147,7 @@ export default function Examene() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">{editId ? 'edit' : 'add_circle'}</span>
+              <Icon name={editId ? 'edit' : 'add_circle'} />
               {editId ? 'Editează examenul' : 'Adaugă examen'}
             </h2>
           </div>
@@ -154,7 +155,7 @@ export default function Examene() {
             <label className="field">
               <span className="field-label">Disciplina</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">menu_book</span>
+                <Icon name="menu_book" className="input-icon" />
                 <select
                   className="select-bare"
                   value={form.course_id}
@@ -232,7 +233,7 @@ export default function Examene() {
             <label className="field">
               <span className="field-label">Studenți înscriși (estimativ)</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">group</span>
+                <Icon name="group" className="input-icon" />
                 <input
                   type="number"
                   min="0"
@@ -267,7 +268,7 @@ export default function Examene() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">event_available</span>
+              <Icon name="event_available" />
               Examene programate ({exams.length})
             </h2>
           </div>
@@ -307,14 +308,14 @@ export default function Examene() {
                       <td>
                         <div className="row-actions">
                           <button type="button" className="icon-btn" onClick={() => startEdit(ex)}>
-                            <span className="material-symbols-outlined">edit</span>
+                            <Icon name="edit" />
                           </button>
                           <button
                             type="button"
                             className="icon-btn icon-btn-danger"
                             onClick={() => remove(ex)}
                           >
-                            <span className="material-symbols-outlined">delete</span>
+                            <Icon name="delete" />
                           </button>
                         </div>
                       </td>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import Icon from '../../components/Icon';
 
 export default function Overview() {
   const [stats, setStats] = useState(null);
@@ -82,7 +83,7 @@ export default function Overview() {
         {cards.map((c) => (
           <div className="stat-card stat-card-icon" key={c.label}>
             <div className={`stat-icon stat-icon-${c.tone}`}>
-              <span className="material-symbols-outlined">{c.icon}</span>
+              <Icon name={c.icon} />
             </div>
             <div>
               <div className="stat-value">{c.value}</div>
@@ -95,7 +96,7 @@ export default function Overview() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">insights</span>
+            <Icon name="insights" />
             Stadiu notare
           </h2>
         </div>

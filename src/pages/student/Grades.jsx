@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { weightedAverage, sumCredits } from '../../utils/format';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const CURRENT_YEAR = '2025-2026';
 const CURRENT_SEMESTER = 2;
@@ -17,15 +18,16 @@ function GradeBadge({ grade }) {
   return <span className={`grade-badge ${cls}`}>{grade}</span>;
 }
 
-function StatusCell({ grade }) {
+function StatusCell({ grade, t }) {
   if (grade === null || grade === undefined)
-    return <span className="status-inprogress">În curs</span>;
-  if (grade >= 5) return <span className="badge status-pass">PROMOVAT</span>;
-  return <span className="badge status-fail">RESTANȚĂ</span>;
+    return <span className="status-inprogress">{t('grades.inProgress')}</span>;
+  if (grade >= 5) return <span className="badge status-pass">{t('status.passed')}</span>;
+  return <span className="badge status-fail">{t('status.failed')}</span>;
 }
 
 export default function Grades() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [enrollments, setEnrollments] = useState([]);
   const [activeYear, setActiveYear] = useState(CURRENT_YEAR);
 
@@ -107,25 +109,24 @@ export default function Grades() {
   return (
     <div className="page">
       <section className="header-card">
-        <h1 className="page-title">Consultă Note</h1>
+        <h1 className="page-title">{t('grades.title')}</h1>
         <p className="page-subtitle">
-          Verifică notele finale pentru toate disciplinele. Mediile sunt ponderate în
-          funcție de credite.
+          {t('grades.subtitle')}
         </p>
       </section>
 
       {/* Stats row */}
       <div className="stats-row">
         <div className="stat-card">
-          <div className="stat-label">Media Semestru Curent</div>
+          <div className="stat-label">{t('grades.semesterAvg')}</div>
           <div className="stat-value">{fmtAvg(semesterAvg)}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Media An Curent</div>
+          <div className="stat-label">{t('grades.yearAvg')}</div>
           <div className="stat-value">{fmtAvg(yearAvg)}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Media Generală</div>
+          <div className="stat-label">{t('grades.generalAvg')}</div>
           <div className="stat-value">{fmtAvg(generalAvg)}</div>
         </div>
       </div>
@@ -154,13 +155,13 @@ export default function Grades() {
         return (
           <section className="card" key={semester}>
             <div className="card-header semester-header">
-              <h2 className="card-title">Semestrul {semester}</h2>
+              <h2 className="card-title">{t('grades.semester', { n: semester })}</h2>
               <div className="semester-meta">
                 <span>
-                  Media: <strong>{fmtAvg(avg)}</strong>
+                  {t('grades.average')}: <strong>{fmtAvg(avg)}</strong>
                 </span>
                 <span>
-                  Total credite: <strong>{credits}</strong>
+                  {t('grades.totalCredits')}: <strong>{credits}</strong>
                 </span>
               </div>
             </div>
@@ -168,10 +169,10 @@ export default function Grades() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Disciplina</th>
-                    <th>Credite</th>
-                    <th>Nota</th>
-                    <th>Status</th>
+                    <th>{t('table.discipline')}</th>
+                    <th>{t('table.credits')}</th>
+                    <th>{t('table.grade')}</th>
+                    <th>{t('table.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,7 +181,7 @@ export default function Grades() {
                       <td>
                         {e.courses?.name}
                         {e.is_restanta && (
-                          <span className="restanta-tag"> (restanță)</span>
+                          <span className="restanta-tag"> {t('status.restanta')}</span>
                         )}
                       </td>
                       <td>{e.courses?.credits}</td>
@@ -188,7 +189,7 @@ export default function Grades() {
                         <GradeBadge grade={e.grade} />
                       </td>
                       <td>
-                        <StatusCell grade={e.grade} />
+                        <StatusCell grade={e.grade} t={t} />
                       </td>
                     </tr>
                   ))}
@@ -200,13 +201,13 @@ export default function Grades() {
                         {e.courses?.name}
                         <span className="restanta-tag">
                           {' '}
-                          (restanță — {e.academic_year}, sem. {e.semester})
+                          {t('grades.restantaFrom', { year: e.academic_year, sem: e.semester })}
                         </span>
                       </td>
                       <td>{e.courses?.credits}</td>
                       <td className="muted">—</td>
                       <td>
-                        <span className="status-inprogress">ÎN CURS</span>
+                        <span className="status-inprogress">{t('status.inProgress')}</span>
                       </td>
                     </tr>
                   ))}
@@ -220,7 +221,7 @@ export default function Grades() {
       {semesters.length === 0 && (
         <section className="card">
           <div className="card-body muted center">
-            Nu există note înregistrate pentru anul selectat.
+            {t('grades.noGrades')}
           </div>
         </section>
       )}

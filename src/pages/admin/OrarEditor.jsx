@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { formatRoom } from '../../utils/rooms';
+import Icon from '../../components/Icon';
 import RoomPicker from '../../components/RoomPicker';
 import Toast from '../../components/Toast';
 
@@ -164,7 +165,7 @@ export default function OrarEditor() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">{editId ? 'edit' : 'add_circle'}</span>
+            <Icon name={editId ? 'edit' : 'add_circle'} />
             {editId ? 'Editează ora' : 'Adaugă oră'}
           </h2>
         </div>
@@ -173,7 +174,7 @@ export default function OrarEditor() {
             <label className="field">
               <span className="field-label">Semigrupa</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">groups</span>
+                <Icon name="groups" className="input-icon" />
                 <select
                   className="select-bare"
                   value={selected}
@@ -203,7 +204,7 @@ export default function OrarEditor() {
                   }}
                 />
                 <button type="button" className="icon-btn" onClick={addSemigroup} aria-label="Adaugă">
-                  <span className="material-symbols-outlined">add</span>
+                  <Icon name="add" />
                 </button>
               </div>
             </label>
@@ -306,7 +307,7 @@ export default function OrarEditor() {
           <label className="field">
             <span className="field-label">Profesor</span>
             <div className="input-wrap">
-              <span className="material-symbols-outlined input-icon">person</span>
+              <Icon name="person" className="input-icon" />
               <input
                 type="text"
                 value={form.professor}
@@ -333,7 +334,7 @@ export default function OrarEditor() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">calendar_view_week</span>
+            <Icon name="calendar_view_week" />
             Orar {selected} ({entries.length})
           </h2>
         </div>
@@ -383,14 +384,14 @@ export default function OrarEditor() {
                     <td>
                       <div className="row-actions">
                         <button type="button" className="icon-btn" onClick={() => edit(e)}>
-                          <span className="material-symbols-outlined">edit</span>
+                          <Icon name="edit" />
                         </button>
                         <button
                           type="button"
                           className="icon-btn icon-btn-danger"
                           onClick={() => remove(e)}
                         >
-                          <span className="material-symbols-outlined">delete</span>
+                          <Icon name="delete" />
                         </button>
                       </div>
                     </td>

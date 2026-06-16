@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 
 const BLANK = { name: '', credits: '', level: 'Licență', profile: 'Informatică' };
@@ -95,9 +96,7 @@ export default function Courses() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">
-              {editingId ? 'edit' : 'add_circle'}
-            </span>
+            <Icon name={editingId ? 'edit' : 'add_circle'} />
             {editingId ? 'Editează disciplina' : 'Adaugă disciplină'}
           </h2>
         </div>
@@ -163,7 +162,7 @@ export default function Courses() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">menu_book</span>
+            <Icon name="menu_book" />
             Discipline ({courses.length})
           </h2>
         </div>
@@ -200,7 +199,7 @@ export default function Courses() {
                           onClick={() => startEdit(c)}
                           aria-label="Editează"
                         >
-                          <span className="material-symbols-outlined">edit</span>
+                          <Icon name="edit" />
                         </button>
                         <button
                           type="button"
@@ -208,7 +207,7 @@ export default function Courses() {
                           onClick={() => handleDelete(c)}
                           aria-label="Șterge"
                         >
-                          <span className="material-symbols-outlined">delete</span>
+                          <Icon name="delete" />
                         </button>
                       </div>
                     </td>

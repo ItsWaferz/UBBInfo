@@ -2,10 +2,13 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { navItemsForRole } from '../nav';
 import RoleSwitcher from './RoleSwitcher';
+import Icon from './Icon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function Sidebar({ open, onClose }) {
   const { profile, currentRole, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const items = navItemsForRole(currentRole);
 
   const handleLogout = async () => {
@@ -21,10 +24,10 @@ export default function Sidebar({ open, onClose }) {
       />
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="sidebar-brand">
-          <span className="material-symbols-outlined sidebar-brand-icon">school</span>
+          <Icon name="school" className="sidebar-brand-icon" />
           <div>
             <div className="sidebar-brand-title">UBB Info</div>
-            <div className="sidebar-brand-subtitle">Portal Academic</div>
+            <div className="sidebar-brand-subtitle">{t('brand.portal')}</div>
           </div>
         </div>
 
@@ -39,8 +42,8 @@ export default function Sidebar({ open, onClose }) {
               }
               onClick={onClose}
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              <span>{item.label}</span>
+              <Icon name={item.icon} />
+              <span>{t(item.labelKey)}</span>
             </NavLink>
           ))}
         </nav>
@@ -59,8 +62,8 @@ export default function Sidebar({ open, onClose }) {
           <RoleSwitcher />
 
           <button type="button" className="sidebar-action">
-            <span className="material-symbols-outlined">settings</span>
-            <span>Setări Cont</span>
+            <Icon name="settings" />
+            <span>{t('nav.settings')}</span>
           </button>
 
           <button
@@ -68,8 +71,8 @@ export default function Sidebar({ open, onClose }) {
             className="sidebar-action sidebar-action-danger"
             onClick={handleLogout}
           >
-            <span className="material-symbols-outlined">logout</span>
-            <span>Deconectare</span>
+            <Icon name="logout" />
+            <span>{t('nav.logout')}</span>
           </button>
         </div>
       </aside>

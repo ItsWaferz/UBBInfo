@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatRoom } from '../../utils/rooms';
 import { parseDate } from '../../utils/calendar';
 import Toast from '../../components/Toast';
+import Icon from '../../components/Icon';
 
 const hhmm = (t) => (t ? t.slice(0, 5) : '');
 function fmtDate(d) {
@@ -25,9 +26,7 @@ function ExamSlot({ exam, selected, disabled, onSelect }) {
       disabled={disabled}
     >
       <span className="exam-slot-radio">
-        <span className="material-symbols-outlined">
-          {selected ? 'radio_button_checked' : 'radio_button_unchecked'}
-        </span>
+        <Icon name={selected ? 'radio_button_checked' : 'radio_button_unchecked'} />
       </span>
       <span className="exam-slot-body">
         <span className="exam-slot-date">{fmtDate(exam.exam_date)}</span>
@@ -174,7 +173,7 @@ export default function InscriereExamen() {
             <section className="card" key={c.course_id}>
               <div className="card-header">
                 <h2 className="card-title">
-                  <span className="material-symbols-outlined">event_available</span>
+                  <Icon name="event_available" />
                   {c.name}
                 </h2>
                 {selectedExamId ? (
@@ -212,7 +211,7 @@ export default function InscriereExamen() {
                       <div className="exam-option-label">Restanță / mărire</div>
                       <div className="exam-slot exam-slot-info">
                         <span className="exam-slot-radio">
-                          <span className="material-symbols-outlined">info</span>
+                          <Icon name="info" />
                         </span>
                         <span className="exam-slot-body">
                           <span className="exam-slot-date">{fmtDate(c.restanta.exam_date)}</span>
@@ -234,7 +233,7 @@ export default function InscriereExamen() {
                       onClick={() => cancel(c.course_id)}
                       disabled={isBusy}
                     >
-                      <span className="material-symbols-outlined">close</span>
+                      <Icon name="close" />
                       Anulează înscrierea
                     </button>
                   </div>

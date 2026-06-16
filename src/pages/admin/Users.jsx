@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 import CreateUserModal from '../../components/CreateUserModal';
 import EditUserModal from '../../components/EditUserModal';
@@ -141,18 +142,18 @@ export default function Users() {
     <section className="card">
       <div className="card-header">
         <h2 className="card-title">
-          <span className="material-symbols-outlined">manage_accounts</span>
+          <Icon name="manage_accounts" />
           Utilizatori ({filteredUsers.length}/{users.length})
         </h2>
         <button type="button" className="btn btn-primary btn-sm" onClick={() => setCreateOpen(true)}>
-          <span className="material-symbols-outlined">person_add</span>
+          <Icon name="person_add" />
           Adaugă utilizator
         </button>
       </div>
 
       <div className="filter-bar">
         <div className="input-wrap filter-search">
-          <span className="material-symbols-outlined input-icon">search</span>
+          <Icon name="search" className="input-icon" />
           <input
             type="text"
             placeholder="Caută nume, email, matricol…"
@@ -161,7 +162,7 @@ export default function Users() {
           />
         </div>
         <div className="input-wrap filter-select">
-          <span className="material-symbols-outlined input-icon">badge</span>
+          <Icon name="badge" className="input-icon" />
           <select className="select-bare" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">Toate rolurile</option>
             {roles.map((r) => (
@@ -172,7 +173,7 @@ export default function Users() {
           </select>
         </div>
         <div className="input-wrap filter-select">
-          <span className="material-symbols-outlined input-icon">school</span>
+          <Icon name="school" className="input-icon" />
           <select className="select-bare" value={specFilter} onChange={(e) => setSpecFilter(e.target.value)}>
             <option value="all">Toate specializările</option>
             {specializations.map((s) => (
@@ -217,9 +218,7 @@ export default function Users() {
                           title={isPrimary ? 'Rol principal' : ''}
                         >
                           {active && (
-                            <span className="material-symbols-outlined">
-                              {isPrimary ? 'star' : 'check'}
-                            </span>
+                            <Icon name={isPrimary ? 'star' : 'check'} />
                           )}
                           {role.label}
                         </button>
@@ -235,7 +234,7 @@ export default function Users() {
                       onClick={() => setEditUser(u)}
                       aria-label="Editează"
                     >
-                      <span className="material-symbols-outlined">edit</span>
+                      <Icon name="edit" />
                     </button>
                   </div>
                 </td>

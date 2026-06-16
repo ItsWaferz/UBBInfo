@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 
 export default function Catalog() {
@@ -172,7 +173,7 @@ export default function Catalog() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">school</span>
+            <Icon name="school" />
             Disciplina
           </h2>
           <button
@@ -185,7 +186,7 @@ export default function Catalog() {
               <span className="spinner" />
             ) : (
               <>
-                <span className="material-symbols-outlined">save</span>
+                <Icon name="save" />
                 Salvează notele
                 {dirtyRows.length > 0 ? ` (${dirtyRows.length})` : ''}
               </>
@@ -200,7 +201,7 @@ export default function Catalog() {
             <div className="field" style={{ maxWidth: 420 }}>
               <span className="field-label">Alege disciplina</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">menu_book</span>
+                <Icon name="menu_book" className="input-icon" />
                 <select
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}

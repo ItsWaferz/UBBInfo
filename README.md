@@ -7,7 +7,7 @@
 
 **🔗 Live demo:** https://itswaferz.github.io/UBBInfo/
 
-The interface is entirely in **Romanian**, the way the real UBB portals are.
+The interface is fully localized in **Romanian**, **English**, **Hungarian**, and **German** using a dynamic language switcher.
 
 ---
 

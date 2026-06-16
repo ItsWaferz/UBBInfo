@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Icon from './Icon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function RoleSwitcher() {
   const { roles, currentRole, activeRole, switchRole } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -35,11 +38,9 @@ export default function RoleSwitcher() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
-        <span className="material-symbols-outlined">{activeRole?.icon}</span>
-        <span className="role-switcher-label">{activeRole?.label}</span>
-        <span className="material-symbols-outlined role-switcher-chevron">
-          {open ? 'expand_more' : 'expand_less'}
-        </span>
+        <Icon name={activeRole?.icon} />
+        <span className="role-switcher-label">{t(`role.${currentRole}`)}</span>
+        <Icon name={open ? 'expand_more' : 'expand_less'} className="role-switcher-chevron" />
       </button>
 
       {open && (
@@ -53,10 +54,10 @@ export default function RoleSwitcher() {
                 }`}
                 onClick={() => handleSelect(r.name)}
               >
-                <span className="material-symbols-outlined">{r.icon}</span>
-                <span>{r.label}</span>
+                <Icon name={r.icon} />
+                <span>{t(`role.${r.name}`)}</span>
                 {r.name === currentRole && (
-                  <span className="material-symbols-outlined check">check</span>
+                  <Icon name="check" className="check" />
                 )}
               </button>
             </li>

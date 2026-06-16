@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 
 const BLANK_SEM = { academic_year: '', semester: '1', start_date: '', end_date: '' };
@@ -142,7 +143,7 @@ export default function Calendar() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">calendar_month</span>
+            <Icon name="calendar_month" />
             Ani universitari / Semestre
           </h2>
         </div>
@@ -234,14 +235,14 @@ export default function Calendar() {
                     <td>
                       <div className="row-actions">
                         <button type="button" className="icon-btn" onClick={() => editSem(s)}>
-                          <span className="material-symbols-outlined">edit</span>
+                          <Icon name="edit" />
                         </button>
                         <button
                           type="button"
                           className="icon-btn icon-btn-danger"
                           onClick={() => deleteSem(s)}
                         >
-                          <span className="material-symbols-outlined">delete</span>
+                          <Icon name="delete" />
                         </button>
                       </div>
                     </td>
@@ -257,7 +258,7 @@ export default function Calendar() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">beach_access</span>
+            <Icon name="beach_access" />
             Vacanțe
           </h2>
         </div>
@@ -332,14 +333,14 @@ export default function Calendar() {
                     <td>
                       <div className="row-actions">
                         <button type="button" className="icon-btn" onClick={() => editVac(v)}>
-                          <span className="material-symbols-outlined">edit</span>
+                          <Icon name="edit" />
                         </button>
                         <button
                           type="button"
                           className="icon-btn icon-btn-danger"
                           onClick={() => deleteVac(v)}
                         >
-                          <span className="material-symbols-outlined">delete</span>
+                          <Icon name="delete" />
                         </button>
                       </div>
                     </td>

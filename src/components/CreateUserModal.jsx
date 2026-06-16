@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import Icon from './Icon';
 
 const ACADEMIC_RANKS = [
   'Doctorand',
@@ -136,7 +137,7 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
         <div className="modal-header">
           <h3>Adaugă utilizator</h3>
           <button type="button" className="modal-close" onClick={close} aria-label="Închide">
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
 
@@ -145,14 +146,14 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
             <label className="field">
               <span className="field-label">Nume complet *</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">person</span>
+                <Icon name="person" className="input-icon" />
                 <input type="text" value={form.full_name} onChange={set('full_name')} placeholder="Nume Prenume" />
               </div>
             </label>
             <label className="field">
               <span className="field-label">Rol *</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">badge</span>
+                <Icon name="badge" className="input-icon" />
                 <select className="select-bare" value={form.role_name} onChange={set('role_name')}>
                   <option value="student">Student</option>
                   <option value="profesor">Profesor</option>
@@ -166,14 +167,14 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
             <label className="field">
               <span className="field-label">Email instituțional *</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">mail</span>
+                <Icon name="mail" className="input-icon" />
                 <input type="email" autoComplete="off" value={form.email} onChange={set('email')} placeholder="nume@ubbcluj.ro" />
               </div>
             </label>
             <label className="field">
               <span className="field-label">Parolă inițială *</span>
               <div className="input-wrap">
-                <span className="material-symbols-outlined input-icon">lock</span>
+                <Icon name="lock" className="input-icon" />
                 <input type="text" autoComplete="off" value={form.password} onChange={set('password')} placeholder="Minim 6 caractere" />
               </div>
             </label>
@@ -235,7 +236,7 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
                 <label className="field">
                   <span className="field-label">Grad didactic</span>
                   <div className="input-wrap">
-                    <span className="material-symbols-outlined input-icon">workspace_premium</span>
+                    <Icon name="workspace_premium" className="input-icon" />
                     <select className="select-bare" value={form.academic_rank} onChange={set('academic_rank')}>
                       {ACADEMIC_RANKS.map((r) => (
                         <option key={r} value={r}>
@@ -248,7 +249,7 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
                 <label className="field">
                   <span className="field-label">Titluri onorifice</span>
                   <div className="input-wrap">
-                    <span className="material-symbols-outlined input-icon">military_tech</span>
+                    <Icon name="military_tech" className="input-icon" />
                     <input
                       type="text"
                       value={form.honorifics}

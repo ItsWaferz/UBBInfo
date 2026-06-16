@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { EVAL_CRITERIA } from '../../utils/evaluationCriteria';
+import Icon from '../../components/Icon';
 
 function professorTitle(p) {
   if (!p) return 'Profesor necunoscut';
@@ -26,9 +27,7 @@ function StarRating({ value }) {
   return (
     <span className="stars-readonly" title={value.toFixed(2)}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={`material-symbols-outlined ${n <= rounded ? 'on' : ''}`}>
-          star
-        </span>
+        <Icon key={n} name="star" className={n <= rounded ? 'on' : ''} />
       ))}
     </span>
   );
@@ -154,9 +153,7 @@ export default function Evaluari() {
       <section className="card">
         <div className="card-body">
           <p className="muted">
-            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', fontSize: 18, marginRight: 6 }}>
-              visibility_off
-            </span>
+            <Icon name="visibility_off" style={{ verticalAlign: 'middle', marginRight: 6 }} size={18} />
             Evaluările sunt <strong>anonime</strong>. Identitatea studenților nu este
             stocată în acest raport.
           </p>
@@ -167,7 +164,7 @@ export default function Evaluari() {
         <section className="card" key={p.profId}>
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">person</span>
+              <Icon name="person" />
               {professorTitle(p.professor)}
             </h2>
             <div className="eval-overall">
@@ -200,7 +197,7 @@ export default function Evaluari() {
                 </div>
                 {p.comments.map((c, i) => (
                   <div className="eval-comment" key={i}>
-                    <span className="material-symbols-outlined">format_quote</span>
+                    <Icon name="format_quote" />
                     <div>
                       <p>{c.comment}</p>
                       <span className="eval-comment-meta">

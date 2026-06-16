@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { formatRomanianDate } from '../../utils/format';
+import Icon from '../../components/Icon';
 
 // Only links that actually go somewhere are listed.
 const QUICK_ACTIONS = [
@@ -18,6 +20,7 @@ function typeBadgeClass(type) {
 
 export default function ProfessorDashboard() {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const [courses, setCourses] = useState([]);
   const [exams, setExams] = useState([]);
 
@@ -48,8 +51,8 @@ export default function ProfessorDashboard() {
   return (
     <div className="page">
       <section className="welcome-card">
-        <span className="material-symbols-outlined welcome-bg-icon">person</span>
-        <h1 className="welcome-title">Bine ai venit, {profile?.full_name}!</h1>
+        <Icon name="person" className="welcome-bg-icon" />
+        <h1 className="welcome-title">{t('prof.welcome', { name: profile?.full_name })}</h1>
         <p className="welcome-subtitle">
           Anul universitar 2025-2026 · {formatRomanianDate()}
         </p>
@@ -60,8 +63,8 @@ export default function ProfessorDashboard() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">school</span>
-              Cursurile Mele
+              <Icon name="school" />
+              {t('prof.courses')}
             </h2>
           </div>
           <div className="card-body">
@@ -71,7 +74,7 @@ export default function ProfessorDashboard() {
                   <div className="course-item-main">
                     <span className="course-item-name">{c.courses?.name}</span>
                     <span className="course-item-meta">
-                      {c.study_year_label} · {c.student_count} studenți
+                      {c.study_year_label} · {c.student_count} {t('prof.students')}
                     </span>
                   </div>
                   <span className={`badge ${typeBadgeClass(c.type)}`}>{c.type}</span>
@@ -86,8 +89,8 @@ export default function ProfessorDashboard() {
         <section className="card">
           <div className="card-header">
             <h2 className="card-title">
-              <span className="material-symbols-outlined">bolt</span>
-              Acțiuni Rapide
+              <Icon name="bolt" />
+              {t('prof.quickActions')}
             </h2>
           </div>
           <div className="card-body">
@@ -95,11 +98,9 @@ export default function ProfessorDashboard() {
               {QUICK_ACTIONS.map((a) => (
                 <li key={a.label}>
                   <Link to={a.to} className="link-item">
-                    <span className="material-symbols-outlined link-icon">{a.icon}</span>
+                    <Icon name={a.icon} className="link-icon" />
                     <span className="link-title">{a.label}</span>
-                    <span className="material-symbols-outlined link-arrow">
-                      arrow_forward
-                    </span>
+                    <Icon name="arrow_forward" className="link-arrow" />
                   </Link>
                 </li>
               ))}
@@ -112,8 +113,8 @@ export default function ProfessorDashboard() {
       <section className="card">
         <div className="card-header">
           <h2 className="card-title">
-            <span className="material-symbols-outlined">event_available</span>
-            Examene Programate — Sesiune Vară
+            <Icon name="event_available" />
+            {t('prof.exams')} — Sesiune Vară
           </h2>
         </div>
         <div className="table-wrap">

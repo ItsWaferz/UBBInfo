@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import Icon from './Icon';
 
 // Editable profile fields (admin can change anything on the profile).
 const FIELDS = [
@@ -97,7 +98,7 @@ export default function EditUserModal({ open, user, onClose, onSaved }) {
         <div className="modal-header">
           <h3>Editează utilizator</h3>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Închide">
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
 

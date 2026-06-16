@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import Icon from './Icon';
 
 // Cascading building -> room selector.
 // value = room_id (uuid|null); onChange(room_id).
@@ -54,7 +55,7 @@ export default function RoomPicker({ value, onChange, required = false }) {
       <label className="field">
         <span className="field-label">Clădire</span>
         <div className="input-wrap">
-          <span className="material-symbols-outlined input-icon">apartment</span>
+          <Icon name="apartment" className="input-icon" />
           <select
             className="select-bare"
             value={buildingId}
@@ -76,7 +77,7 @@ export default function RoomPicker({ value, onChange, required = false }) {
       <label className="field">
         <span className="field-label">Sala</span>
         <div className="input-wrap">
-          <span className="material-symbols-outlined input-icon">meeting_room</span>
+          <Icon name="meeting_room" className="input-icon" />
           <select
             className="select-bare"
             value={value || ''}

@@ -1,15 +1,17 @@
 // Admin tab: automatic account generation for admitted candidates.
 // Feature is planned — shown as "În construcție".
+import Icon from '../../components/Icon';
+
 export default function ConturiAdmisi() {
   return (
     <section className="card">
       <div className="card-header">
         <h2 className="card-title">
-          <span className="material-symbols-outlined">group_add</span>
+          <Icon name="group_add" />
           Generare automată conturi admiși
         </h2>
         <span className="badge badge-wip">
-          <span className="material-symbols-outlined">construction</span>
+          <Icon name="construction" />
           În construcție
         </span>
       </div>
@@ -23,25 +25,25 @@ export default function ConturiAdmisi() {
 
         <div className="mockup-features" style={{ marginTop: 8 }}>
           <div className="mockup-feature">
-            <span className="material-symbols-outlined">upload_file</span>
+            <Icon name="upload_file" />
             <span>Import listă admiși (CSV/Excel)</span>
           </div>
           <div className="mockup-feature">
-            <span className="material-symbols-outlined">badge</span>
+            <Icon name="badge" />
             <span>Generare email + matricol</span>
           </div>
           <div className="mockup-feature">
-            <span className="material-symbols-outlined">manage_accounts</span>
+            <Icon name="manage_accounts" />
             <span>Atribuire rol & specializare</span>
           </div>
           <div className="mockup-feature">
-            <span className="material-symbols-outlined">forward_to_inbox</span>
+            <Icon name="forward_to_inbox" />
             <span>Trimitere credențiale</span>
           </div>
         </div>
 
         <div className="mockup-badge" style={{ marginTop: 16 }}>
-          <span className="material-symbols-outlined">construction</span>
+          <Icon name="construction" />
           Funcționalitate în curs de dezvoltare — disponibilă în curând
         </div>
       </div>
