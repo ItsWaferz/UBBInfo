@@ -2060,6 +2060,10 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
 }
+.exam-option {
+  display: flex;
+  flex-direction: column;
+}
 .exam-option-label {
   font-size: 12px;
   font-weight: 600;
@@ -2069,6 +2073,7 @@ a {
   margin-bottom: 6px;
 }
 .exam-slot {
+  flex: 1;
   width: 100%;
   display: flex;
   align-items: center;
