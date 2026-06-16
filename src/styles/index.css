@@ -2489,4 +2489,8 @@ a {
   select {
     font-size: 16px !important;
   }
+  
+  .topbar-user {
+    display: none;
+  }
 }

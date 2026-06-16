@@ -33,11 +33,7 @@ export default function Topbar({ onMenuClick }) {
         >
           <Icon name="menu" />
         </button>
-        <nav className="breadcrumb">
-          <span className="breadcrumb-root">UBB Info</span>
-          <Icon name="chevron_right" size={16} className="breadcrumb-sep" />
-          <span className="breadcrumb-current">{t(crumbKey)}</span>
-        </nav>
+
       </div>
 
       <div className="topbar-right">
