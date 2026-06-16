@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { breadcrumbForPath } from '../nav';
 import Icon from './Icon';
-import { useLanguage, LANG_FLAGS } from '../i18n/LanguageContext';
+import { useLanguage, LANG_FLAGS, LANG_NAMES } from '../i18n/LanguageContext';
 
 export default function Topbar({ onMenuClick }) {
   const { profile, activeRole } = useAuth();
@@ -42,6 +42,13 @@ export default function Topbar({ onMenuClick }) {
           <input type="text" placeholder={t('topbar.search')} />
         </div>
 
+        <button type="button" className="topbar-bell" aria-label="Notifications">
+          <Icon name="notifications" />
+          <span className="topbar-bell-dot" />
+        </button>
+
+        <div className="topbar-divider mobile-divider" />
+
         {/* Language switcher */}
         <div className="lang-switcher" ref={langRef}>
           <button
@@ -63,7 +70,7 @@ export default function Topbar({ onMenuClick }) {
                     onClick={() => { setLang(code); setLangOpen(false); }}
                   >
                     <span className="lang-flag">{LANG_FLAGS[code]}</span>
-                    <span>{t(`lang.${code}`)}</span>
+                    <span>{LANG_NAMES[code]}</span>
                   </button>
                 </li>
               ))}
@@ -71,12 +78,7 @@ export default function Topbar({ onMenuClick }) {
           )}
         </div>
 
-        <button type="button" className="topbar-bell" aria-label="Notifications">
-          <Icon name="notifications" />
-          <span className="topbar-bell-dot" />
-        </button>
-
-        <div className="topbar-divider" />
+        <div className="topbar-divider desktop-divider" />
 
         <div className="topbar-user">
           <div className="topbar-user-text">

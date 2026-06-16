@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Icon from './Icon';
-import { useLanguage, LANG_FLAGS } from '../i18n/LanguageContext';
+import { useLanguage, LANG_FLAGS, LANG_NAMES } from '../i18n/LanguageContext';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const { t, lang, setLang, SUPPORTED_LANGS } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -77,7 +78,7 @@ export default function LoginPage() {
                       onClick={() => { setLang(code); setLangOpen(false); }}
                     >
                       <span className="lang-flag">{LANG_FLAGS[code]}</span>
-                      <span>{t(`lang.${code}`)}</span>
+                      <span>{LANG_NAMES[code]}</span>
                     </button>
                   </li>
                 ))}
@@ -112,13 +113,22 @@ export default function LoginPage() {
               <div className="input-wrap">
                 <Icon name="lock" className="input-icon" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label="Toggle password visibility"
+                  style={{ opacity: 0.5, padding: 4 }}
+                >
+                  <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={20} />
+                </button>
               </div>
             </label>
 

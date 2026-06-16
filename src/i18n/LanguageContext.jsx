@@ -4,6 +4,13 @@ import translations from './translations';
 const SUPPORTED_LANGS = ['ro', 'en', 'hu', 'de'];
 const STORAGE_KEY = 'ubb-info-lang';
 
+export const LANG_NAMES = {
+  ro: 'Română',
+  en: 'English',
+  hu: 'Magyar',
+  de: 'Deutsch',
+};
+
 function getInitialLang() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
