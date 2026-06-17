@@ -125,7 +125,7 @@ export default function ProfessorDashboard() {
                 <th>Data</th>
                 <th>Ora</th>
                 <th>Sala</th>
-                <th>Studenți înscriși</th>
+                <th style={{ width: '140px', textAlign: 'center' }}>Studenți înscriși</th>
               </tr>
             </thead>
             <tbody>
@@ -135,7 +135,7 @@ export default function ProfessorDashboard() {
                   <td>{e.exam_date}</td>
                   <td>{e.exam_time ? e.exam_time.slice(0, 5) : '—'}</td>
                   <td>{e.room}</td>
-                  <td>{e.enrolled_count}</td>
+                  <td className="center">{e.enrolled_count}</td>
                 </tr>
               ))}
               {exams.length === 0 && (

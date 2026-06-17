@@ -226,20 +226,19 @@ export default function Catalog() {
                   <th>Student</th>
                   <th>Nr. matricol</th>
                   <th>Grupa</th>
-                  <th>An / Sem</th>
                   <th>Nota</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingRows ? (
                   <tr>
-                    <td colSpan={5} className="muted center">
+                    <td colSpan={4} className="muted center">
                       Se încarcă studenții…
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="muted center">
+                    <td colSpan={4} className="muted center">
                       Niciun student înscris la această disciplină.
                     </td>
                   </tr>
@@ -252,9 +251,6 @@ export default function Catalog() {
                       </td>
                       <td className="mono">{r.studentId || '—'}</td>
                       <td>{r.group || '—'}</td>
-                      <td>
-                        {r.year} · S{r.semester}
-                      </td>
                       <td>
                         <input
                           type="text"

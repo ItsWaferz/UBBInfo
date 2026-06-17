@@ -218,7 +218,6 @@ export default function StudentDashboard() {
                 <th>{t('table.credits')}</th>
                 <th>{t('table.grade')}</th>
                 <th>{t('table.profile')}</th>
-                <th>{t('table.group')}</th>
               </tr>
             </thead>
             <tbody>
@@ -228,7 +227,6 @@ export default function StudentDashboard() {
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
                   <td>{e.courses?.profile || '—'}</td>
-                  <td>{e.group_name || '—'}</td>
                 </tr>
               ))}
 
@@ -240,13 +238,12 @@ export default function StudentDashboard() {
                   <td>{e.courses?.credits}</td>
                   <td className="muted">—</td>
                   <td>{e.courses?.profile || '—'}</td>
-                  <td>{e.group_name || '—'}</td>
                 </tr>
               ))}
 
               {currentCourses.length === 0 && restante.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="muted center">
+                  <td colSpan={4} className="muted center">
                     {t('dashboard.noEnrollments')}
                   </td>
                 </tr>
