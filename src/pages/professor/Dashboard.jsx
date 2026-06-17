@@ -125,7 +125,7 @@ export default function ProfessorDashboard() {
                 <th>Data</th>
                 <th>Ora</th>
                 <th>Sala</th>
-                <th style={{ width: '140px', textAlign: 'center' }}>Studenți înscriși</th>
+                <th style={{ width: '70px', textAlign: 'center', fontSize: '11px' }}>Înscriși</th>
               </tr>
             </thead>
             <tbody>

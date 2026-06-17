@@ -164,7 +164,6 @@ export default function Evaluari() {
         <section className="card" key={p.profId}>
           <div className="card-header">
             <h2 className="card-title">
-              <Icon name="person" />
               {professorTitle(p.professor)}
             </h2>
             <div className="eval-overall">

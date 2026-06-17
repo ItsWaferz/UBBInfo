@@ -211,6 +211,7 @@ export default function Examene() {
                 <div className="input-wrap">
                   <input
                     type="date"
+                    style={{ textTransform: 'uppercase' }}
                     value={form.exam_date}
                     onChange={(e) => setForm({ ...form, exam_date: e.target.value })}
                   />

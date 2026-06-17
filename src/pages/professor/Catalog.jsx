@@ -226,7 +226,7 @@ export default function Catalog() {
                   <th>Student</th>
                   <th>Nr. matricol</th>
                   <th>Grupa</th>
-                  <th>Nota</th>
+                  <th className="center" style={{ width: '80px' }}>Nota</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,7 +251,7 @@ export default function Catalog() {
                       </td>
                       <td className="mono">{r.studentId || '—'}</td>
                       <td>{r.group || '—'}</td>
-                      <td>
+                      <td className="center">
                         <input
                           type="text"
                           inputMode="numeric"

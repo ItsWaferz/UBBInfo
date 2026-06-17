@@ -269,31 +269,27 @@ export default function Links() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>{t('admin.links.order')}</th>
                 <th>{t('admin.links.title')}</th>
-                <th>URL</th>
                 <th>{t('admin.links.activeLabel')}</th>
-                <th></th>
+                <th style={{ width: '80px' }}></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="muted center">
+                  <td colSpan={3} className="muted center">
                     {t('admin.links.loading')}
                   </td>
                 </tr>
               ) : (
                 links.map((l) => (
                   <tr key={l.id}>
-                    <td>{l.sort_order}</td>
                     <td>
                       <span className="link-title-cell">
                         <Icon name={l.icon} />
                         {l.title}
                       </span>
                     </td>
-                    <td className="mono link-url-cell">{l.url}</td>
                     <td>
                       <button
                         type="button"
@@ -307,7 +303,7 @@ export default function Links() {
                       <div className="row-actions">
                         <button
                           type="button"
-                          className="icon-btn"
+                          className="icon-btn icon-btn-sm"
                           onClick={() => startEdit(l)}
                           aria-label={t('common.edit')}
                         >
@@ -315,7 +311,7 @@ export default function Links() {
                         </button>
                         <button
                           type="button"
-                          className="icon-btn icon-btn-danger"
+                          className="icon-btn icon-btn-sm icon-btn-danger"
                           onClick={() => handleDelete(l)}
                           aria-label={t('common.delete')}
                         >

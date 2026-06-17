@@ -222,7 +222,7 @@ export default function Calendar() {
                   <th>Sem</th>
                   <th>Start</th>
                   <th>Final</th>
-                  <th></th>
+                  <th style={{ width: '80px' }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -234,12 +234,12 @@ export default function Calendar() {
                     <td>{s.end_date || '—'}</td>
                     <td>
                       <div className="row-actions">
-                        <button type="button" className="icon-btn" onClick={() => editSem(s)}>
+                        <button type="button" className="icon-btn icon-btn-sm" onClick={() => editSem(s)}>
                           <Icon name="edit" />
                         </button>
                         <button
                           type="button"
-                          className="icon-btn icon-btn-danger"
+                          className="icon-btn icon-btn-sm icon-btn-danger"
                           onClick={() => deleteSem(s)}
                         >
                           <Icon name="delete" />
@@ -321,7 +321,7 @@ export default function Calendar() {
                   <th>Denumire</th>
                   <th>De la</th>
                   <th>Până la</th>
-                  <th></th>
+                  <th style={{ width: '80px' }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -332,12 +332,12 @@ export default function Calendar() {
                     <td>{v.end_date}</td>
                     <td>
                       <div className="row-actions">
-                        <button type="button" className="icon-btn" onClick={() => editVac(v)}>
+                        <button type="button" className="icon-btn icon-btn-sm" onClick={() => editVac(v)}>
                           <Icon name="edit" />
                         </button>
                         <button
                           type="button"
-                          className="icon-btn icon-btn-danger"
+                          className="icon-btn icon-btn-sm icon-btn-danger"
                           onClick={() => deleteVac(v)}
                         >
                           <Icon name="delete" />

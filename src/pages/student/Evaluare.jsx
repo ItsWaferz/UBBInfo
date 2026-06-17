@@ -79,7 +79,6 @@ function EvaluationCard({ professor, courses, existingByCourse, onSaved }) {
     <section className="card">
       <div className="card-header">
         <h2 className="card-title">
-          <Icon name="person" />
           {professorTitle(professor)}
         </h2>
         {existing && (
