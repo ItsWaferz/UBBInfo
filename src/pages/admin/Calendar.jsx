@@ -6,6 +6,12 @@ import Toast from '../../components/Toast';
 const BLANK_SEM = { academic_year: '', semester: '1', start_date: '', end_date: '' };
 const BLANK_VAC = { name: '', start_date: '', end_date: '' };
 
+const fmtDate = (d) => {
+  if (!d) return '—';
+  const [y, m, day] = d.split('-');
+  return `${day}.${m}.${y}`;
+};
+
 export default function Calendar() {
   const [semesters, setSemesters] = useState([]);
   const [vacations, setVacations] = useState([]);
@@ -180,6 +186,7 @@ export default function Calendar() {
               <div className="input-wrap">
                 <input
                   type="date"
+                  style={{ textTransform: 'uppercase' }}
                   value={semForm.start_date}
                   onChange={(e) => setSemForm({ ...semForm, start_date: e.target.value })}
                 />
@@ -190,6 +197,7 @@ export default function Calendar() {
               <div className="input-wrap">
                 <input
                   type="date"
+                  style={{ textTransform: 'uppercase' }}
                   value={semForm.end_date}
                   onChange={(e) => setSemForm({ ...semForm, end_date: e.target.value })}
                 />
@@ -207,6 +215,17 @@ export default function Calendar() {
                 }}
               >
                 Anulează
+              </button>
+            )}
+            {semEditId && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                onClick={() => deleteSem({ id: semEditId, academic_year: semForm.academic_year, semester: semForm.semester })}
+              >
+                <Icon name="delete" />
+                Șterge
               </button>
             )}
             <button type="submit" className="btn btn-primary">
@@ -230,21 +249,12 @@ export default function Calendar() {
                   <tr key={s.id}>
                     <td>{s.academic_year}</td>
                     <td>{s.semester}</td>
-                    <td>{s.start_date}</td>
-                    <td>{s.end_date || '—'}</td>
+                    <td style={{ textTransform: 'uppercase' }}>{fmtDate(s.start_date)}</td>
+                    <td style={{ textTransform: 'uppercase' }}>{fmtDate(s.end_date)}</td>
                     <td>
-                      <div className="row-actions">
-                        <button type="button" className="icon-btn icon-btn-sm" onClick={() => editSem(s)}>
-                          <Icon name="edit" />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-btn icon-btn-sm icon-btn-danger"
-                          onClick={() => deleteSem(s)}
-                        >
-                          <Icon name="delete" />
-                        </button>
-                      </div>
+                      <button type="button" className="icon-btn icon-btn-sm" onClick={() => editSem(s)}>
+                        <Icon name="edit" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -280,6 +290,7 @@ export default function Calendar() {
               <div className="input-wrap">
                 <input
                   type="date"
+                  style={{ textTransform: 'uppercase' }}
                   value={vacForm.start_date}
                   onChange={(e) => setVacForm({ ...vacForm, start_date: e.target.value })}
                 />
@@ -290,6 +301,7 @@ export default function Calendar() {
               <div className="input-wrap">
                 <input
                   type="date"
+                  style={{ textTransform: 'uppercase' }}
                   value={vacForm.end_date}
                   onChange={(e) => setVacForm({ ...vacForm, end_date: e.target.value })}
                 />
@@ -307,6 +319,17 @@ export default function Calendar() {
                 }}
               >
                 Anulează
+              </button>
+            )}
+            {vacEditId && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                onClick={() => deleteVac({ id: vacEditId })}
+              >
+                <Icon name="delete" />
+                Șterge
               </button>
             )}
             <button type="submit" className="btn btn-primary">
@@ -328,21 +351,12 @@ export default function Calendar() {
                 {vacations.map((v) => (
                   <tr key={v.id}>
                     <td>{v.name}</td>
-                    <td>{v.start_date}</td>
-                    <td>{v.end_date}</td>
+                    <td style={{ textTransform: 'uppercase' }}>{fmtDate(v.start_date)}</td>
+                    <td style={{ textTransform: 'uppercase' }}>{fmtDate(v.end_date)}</td>
                     <td>
-                      <div className="row-actions">
-                        <button type="button" className="icon-btn icon-btn-sm" onClick={() => editVac(v)}>
-                          <Icon name="edit" />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-btn icon-btn-sm icon-btn-danger"
-                          onClick={() => deleteVac(v)}
-                        >
-                          <Icon name="delete" />
-                        </button>
-                      </div>
+                      <button type="button" className="icon-btn icon-btn-sm" onClick={() => editVac(v)}>
+                        <Icon name="edit" />
+                      </button>
                     </td>
                   </tr>
                 ))}

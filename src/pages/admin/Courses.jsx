@@ -151,6 +151,17 @@ export default function Courses() {
                 Anulează
               </button>
             )}
+            {editingId && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                onClick={() => handleDelete({ id: editingId, name: form.name })}
+              >
+                <Icon name="delete" />
+                Șterge
+              </button>
+            )}
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? <span className="spinner" /> : editingId ? 'Salvează' : 'Adaugă'}
             </button>
@@ -174,7 +185,7 @@ export default function Courses() {
                 <th>Credite</th>
                 <th>Nivel</th>
                 <th>Profil</th>
-                <th></th>
+                <th style={{ width: '50px' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -192,24 +203,14 @@ export default function Courses() {
                     <td>{c.level}</td>
                     <td>{c.profile}</td>
                     <td>
-                      <div className="row-actions">
-                        <button
-                          type="button"
-                          className="icon-btn"
-                          onClick={() => startEdit(c)}
-                          aria-label="Editează"
-                        >
-                          <Icon name="edit" />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-btn icon-btn-danger"
-                          onClick={() => handleDelete(c)}
-                          aria-label="Șterge"
-                        >
-                          <Icon name="delete" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="icon-btn icon-btn-sm"
+                        onClick={() => startEdit(c)}
+                        aria-label="Editează"
+                      >
+                        <Icon name="edit" />
+                      </button>
                     </td>
                   </tr>
                 ))

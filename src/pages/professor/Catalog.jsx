@@ -28,8 +28,21 @@ export default function Catalog() {
         console.error('Load professor_courses failed:', error);
         return;
       }
-      setCourses(data || []);
-      if (data && data.length) setSelectedCourseId(data[0].course_id);
+      // Group by course_id and merge types (e.g. CURS + LAB)
+      const grouped = [];
+      const seen = new Map();
+      for (const c of data || []) {
+        if (seen.has(c.course_id)) {
+          const existing = seen.get(c.course_id);
+          existing.type = existing.type + ' + ' + c.type;
+        } else {
+          const entry = { ...c, type: c.type };
+          seen.set(c.course_id, entry);
+          grouped.push(entry);
+        }
+      }
+      setCourses(grouped);
+      if (grouped.length) setSelectedCourseId(grouped[0].course_id);
     })();
     return () => {
       active = false;

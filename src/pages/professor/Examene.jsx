@@ -258,6 +258,17 @@ export default function Examene() {
                   Anulează
                 </button>
               )}
+              {editId && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                  onClick={() => remove({ id: editId })}
+                >
+                  <Icon name="delete" />
+                  Șterge
+                </button>
+              )}
               <button type="submit" className="btn btn-primary">
                 {editId ? 'Salvează' : 'Adaugă examen'}
               </button>
@@ -307,18 +318,9 @@ export default function Examene() {
                       <td>{hhmm(ex.exam_time)}</td>
                       <td>{formatRoom(ex.rooms, ex.room)}</td>
                       <td>
-                        <div className="row-actions">
-                          <button type="button" className="icon-btn" onClick={() => startEdit(ex)}>
-                            <Icon name="edit" />
-                          </button>
-                          <button
-                            type="button"
-                            className="icon-btn icon-btn-danger"
-                            onClick={() => remove(ex)}
-                          >
-                            <Icon name="delete" />
-                          </button>
-                        </div>
+                        <button type="button" className="icon-btn icon-btn-sm" onClick={() => startEdit(ex)}>
+                          <Icon name="edit" />
+                        </button>
                       </td>
                     </tr>
                   ))

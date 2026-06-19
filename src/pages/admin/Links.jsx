@@ -250,6 +250,17 @@ export default function Links() {
                 {t('admin.links.cancel')}
               </button>
             )}
+            {editingId && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                onClick={() => handleDelete({ id: editingId, title: form.title })}
+              >
+                <Icon name="delete" />
+                {t('common.delete')}
+              </button>
+            )}
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? <span className="spinner" /> : editingId ? t('admin.links.save') : t('admin.links.add')}
             </button>
@@ -300,24 +311,14 @@ export default function Links() {
                       </button>
                     </td>
                     <td>
-                      <div className="row-actions">
-                        <button
-                          type="button"
-                          className="icon-btn icon-btn-sm"
-                          onClick={() => startEdit(l)}
-                          aria-label={t('common.edit')}
-                        >
-                          <Icon name="edit" />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-btn icon-btn-sm icon-btn-danger"
-                          onClick={() => handleDelete(l)}
-                          aria-label={t('common.delete')}
-                        >
-                          <Icon name="delete" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="icon-btn icon-btn-sm"
+                        onClick={() => startEdit(l)}
+                        aria-label={t('common.edit')}
+                      >
+                        <Icon name="edit" />
+                      </button>
                     </td>
                   </tr>
                 ))

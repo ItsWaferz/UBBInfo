@@ -39,14 +39,14 @@ whole thing runs on a real backend with proper roles and permissions.
 | **Acasă** | Dashboard: welcome card, my institutional account (with copy-email + change password), useful links, my student ID card, and my current academic situation. |
 | **Identitatea Ta** | Edit my personal data — phone, personal email, IBAN, CNP, ID series, address. All optional. |
 | **Consultă Note** | All my grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Unresolved restanțe from previous years show up in the current semester. |
-| **Orar** | My **weekly timetable per semigroup**. It shows whether the current week is **pară/impară** (computed from the semester start date and the official holidays), a **week navigator** to jump to any week, and I can peek at **other semigroups'** schedules too. |
+| **Orar** | My **weekly timetable per semigroup**. It shows whether the current week is **pară/impară** (computed from the semester start date and the official holidays), a **week navigator** to jump to any week, and I can peek at **other semigroups'** schedules too. Responsive grid: 1 col (phone) → 2 (tablet) → 3 (laptop) → 5 (desktop). |
 | **Evaluare Profesori** | Rate every professor who teaches me, on 5 criteria (1–5 ⭐) plus a free-text comment. **Anonymous.** |
 | **Înscriere Examen** | For each subject, pick the **principal** or **secondary** exam date; the **restanță/mărire** date is shown too. My choice is saved. |
 
 ### 👨‍🏫 As a professor
 
 - **Catalog Note** — enter/edit grades for the students in my courses.
-- **Examene** — add/edit exams (date, time, **building → room**, session type, kind).
+- **Examene** — add/edit/delete exams (date, time, **building → room**, session type, kind).
 
 ### 🛠️ As an administrator
 
@@ -61,12 +61,27 @@ whole thing runs on a real backend with proper roles and permissions.
 
 ---
 
+## 📊 Academic data
+
+The database contains **real academic history** spanning 4 semesters:
+
+| Period | Groups | Courses | Status |
+|--------|--------|---------|--------|
+| 2024-2025 Sem 1 | 1311, 1312 | 8 courses (Prog. calc., Grafică, Fizică, Chimie, Analiză mat. 1, Algebră 1, Psihologie, Prog. C) | ✅ Graded |
+| 2024-2025 Sem 2 | 1311, 1312 | 7 courses (Grafică 2, POO, Metode avansate, Algebră 2, SDA, Electrotehnică, Analiză mat. 2) | ✅ Graded |
+| 2025-2026 Sem 1 | 1321, 1322 | 8 courses (Arhitectură, Paradigme, Teoria prob., Ec. dif., Disp. electr., BD 1, Germană, Engleză) | ✅ Graded |
+| 2025-2026 Sem 2 | 1321, 1322 | 7 courses (Germană 2, Prog. Web, Sist. operare, Proiect. alg., BD 2, El. digitală, Engleză 2) | 🔄 Current |
+
+**49 professor accounts** with real names extracted from official schedules, all linked to their respective courses with correct teaching types (CURS/SEMINAR/LABORATOR).
+
+---
+
 ## 🔐 Demo accounts
 
 | Role | Email | Password |
 |------|-------|----------|
 | 🎓 Student | `corneliu.marinescu@stud.ubbcluj.ro` | `cal123` |
-| 👨‍🏫 Professor | `ion.popescu@ubbcluj.ro` | `profesor123` |
+| 👨‍🏫 Professor (any) | `prenume.nume@ubbcluj.ro` | `profesor123` |
 | 🛠️ Admin | `admin@ubbcluj.ro` | `admin123` |
 
 > Sessions use `sessionStorage` — they survive a page refresh but clear when you
@@ -120,9 +135,10 @@ SQL Editor):
 2. `grades_admin.sql` — professor grading + admin RLS + helper functions
 3. `v2_schema.sql` — calendar, buildings/rooms, exams, evaluations, registrations
 4. `v2_seed.sql` — buildings/rooms, calendar, semigroup timetables, exams
-5. *(optional)* `v2_seed_professors.sql` — extra professor accounts (run on its own)
-6. `v2_fix.sql` — lets students see who teaches them (safe professor view)
-7. `v2_evaluari_anon.sql` — admins read evaluations anonymously
+5. `v2_fix.sql` — lets students see who teaches them (safe professor view)
+6. `v2_evaluari_anon.sql` — admins read evaluations anonymously
+7. `rebuild_database.sql` — full academic history: 30 courses, 49 professors, enrollments with grades
+8. `update_orar.sql` — real timetable for 3 semigroups (1321/1, 1321/2, 1322)
 
 Then deploy the `supabase/functions/create-user/` **Edge Function** (Supabase
 dashboard → Edge Functions → name it `create-user` → paste the file → Deploy).
@@ -167,5 +183,5 @@ supabase/                    # SQL migrations/seeds + create-user Edge Function
 ## 📝 Notes & disclaimer
 
 This is a **student project**, not an official UBB product. Room data was adapted
-from public UBB room listings; demo accounts and grades are fictional. Built with
-❤️ for a faculty I actually attend.
+from public UBB room listings; professor names are from official public schedules.
+Built with ❤️ for a faculty I actually attend.

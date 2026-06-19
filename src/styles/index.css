@@ -1453,7 +1453,7 @@ a {
 
 .orar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -1568,12 +1568,25 @@ a {
   margin-top: 1px;
 }
 
-@media (max-width: 1024px) {
+/* 3 columns on medium screens (tablet landscape / small laptop) */
+@media (max-width: 1200px) {
   .orar-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* 2 columns on tablets */
+@media (max-width: 768px) {
+  .orar-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   .orar-day-body {
     min-height: 0;
+  }
+}
+/* 1 column on phones */
+@media (max-width: 480px) {
+  .orar-grid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -20,48 +20,53 @@ export default function StudentDashboard() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
   const [pwToast, setPwToast] = useState(false);
 
+  const fetchData = async () => {
+    const [linksRes, currentRes, restanteRes] = await Promise.all([
+      supabase
+        .from('useful_links')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order'),
+      supabase
+        .from('enrollments')
+        .select('*, courses(*)')
+        .eq('student_id', user.id)
+        .eq('academic_year', ACADEMIC_YEAR)
+        .eq('semester', CURRENT_SEMESTER),
+      supabase
+        .from('enrollments')
+        .select('*, courses(*)')
+        .eq('student_id', user.id)
+        .eq('is_restanta', true),
+    ]);
+
+    setLinks(linksRes.data || []);
+    setCurrentCourses(currentRes.data || []);
+
+    // Past restanțe: exclude current semester, only grade < 5 OR null
+    const past = (restanteRes.data || []).filter((e) => {
+      const isCurrent =
+        e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER;
+      const failingOrUngraded = e.grade === null || e.grade < 5;
+      return !isCurrent && failingOrUngraded;
+    });
+    setRestante(past);
+  };
+
   useEffect(() => {
     if (!user) return;
-    let active = true;
+    fetchData();
 
-    (async () => {
-      const [linksRes, currentRes, restanteRes] = await Promise.all([
-        supabase
-          .from('useful_links')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order'),
-        supabase
-          .from('enrollments')
-          .select('*, courses(*)')
-          .eq('student_id', user.id)
-          .eq('academic_year', ACADEMIC_YEAR)
-          .eq('semester', CURRENT_SEMESTER),
-        supabase
-          .from('enrollments')
-          .select('*, courses(*)')
-          .eq('student_id', user.id)
-          .eq('is_restanta', true),
-      ]);
-
-      if (!active) return;
-
-      setLinks(linksRes.data || []);
-      setCurrentCourses(currentRes.data || []);
-
-      // Past restanțe: exclude current semester, only grade < 5 OR null
-      const past = (restanteRes.data || []).filter((e) => {
-        const isCurrent =
-          e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER;
-        const failingOrUngraded = e.grade === null || e.grade < 5;
-        return !isCurrent && failingOrUngraded;
-      });
-      setRestante(past);
-    })();
+    // Auto-refresh grades when user switches back to this tab
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchData();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
-      active = false;
+      document.removeEventListener('visibilitychange', onVisibility);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleCopyEmail = async () => {
@@ -225,7 +230,7 @@ export default function StudentDashboard() {
                 <tr key={e.id}>
                   <td>{e.courses?.name}</td>
                   <td>{e.courses?.credits}</td>
-                  <td className="muted">—</td>
+                  <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>
                   <td>{e.courses?.profile || '—'}</td>
                 </tr>
               ))}
@@ -236,7 +241,7 @@ export default function StudentDashboard() {
                     {e.courses?.name} <span className="restanta-tag">{t('status.restanta')}</span>
                   </td>
                   <td>{e.courses?.credits}</td>
-                  <td className="muted">—</td>
+                  <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>
                   <td>{e.courses?.profile || '—'}</td>
                 </tr>
               ))}
