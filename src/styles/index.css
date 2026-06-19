@@ -1459,17 +1459,18 @@ a {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
-  align-items: start;
+  grid-auto-rows: auto;
 }
 
 .orar-day {
-  display: flex;
-  flex-direction: column;
-  background: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
-  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 8; /* Header + up to 7 slots */
+  gap: 10px;
+  padding-bottom: 10px;
 }
 
 .orar-day-header {
@@ -1482,12 +1483,7 @@ a {
 }
 
 .orar-day-body {
-  flex: 1;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 80px;
+  display: contents;
 }
 
 .orar-empty {
@@ -1495,6 +1491,7 @@ a {
   font-size: 13px;
   text-align: center;
   padding: 16px 0;
+  margin: 0 10px;
 }
 
 .orar-slot {
@@ -1506,6 +1503,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin: 0 10px; /* replacing body padding */
 }
 .orar-slot.type-CURS {
   border-left-color: #1b3a5c;
@@ -1591,6 +1589,9 @@ a {
 @media (max-width: 480px) {
   .orar-grid {
     grid-template-columns: 1fr;
+  }
+  .orar-slot {
+    height: auto;
   }
 }
 
