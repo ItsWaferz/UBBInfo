@@ -228,7 +228,10 @@ export default function StudentDashboard() {
             <tbody>
               {currentCourses.map((e) => (
                 <tr key={e.id}>
-                  <td>{e.courses?.name}</td>
+                  <td>
+                    {e.courses?.name}
+                    {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                  </td>
                   <td>{e.courses?.credits}</td>
                   <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>
                   <td>{e.courses?.profile || '—'}</td>
@@ -238,7 +241,9 @@ export default function StudentDashboard() {
               {restante.map((e) => (
                 <tr key={e.id}>
                   <td className="text-danger">
-                    {e.courses?.name} <span className="restanta-tag">{t('status.restanta')}</span>
+                    {e.courses?.name} 
+                    {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                    <span className="restanta-tag">{t('status.restanta')}</span>
                   </td>
                   <td>{e.courses?.credits}</td>
                   <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>

@@ -139,6 +139,8 @@ SQL Editor):
 6. `v2_evaluari_anon.sql` — admins read evaluations anonymously
 7. `rebuild_database.sql` — full academic history: 30 courses, 49 professors, enrollments with grades
 8. `update_orar.sql` — real timetable for 3 semigroups (1321/1, 1321/2, 1322)
+9. `fix_admin.sql` — reinstates the `admin@ubbcluj.ro` account if it was cleared
+10. `optional_courses.sql` — adds the `is_optional` flag and marks facultative courses
 
 Then deploy the `supabase/functions/create-user/` **Edge Function** (Supabase
 dashboard → Edge Functions → name it `create-user` → paste the file → Deploy).

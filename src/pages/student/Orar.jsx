@@ -35,6 +35,7 @@ export default function Orar() {
   const [semigroups, setSemigroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [entries, setEntries] = useState([]);
+  const [optionalCourses, setOptionalCourses] = useState([]);
   const [weekIdx, setWeekIdx] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -43,15 +44,17 @@ export default function Orar() {
     if (!user) return;
     let active = true;
     (async () => {
-      const [cfgRes, vacRes, sgRes] = await Promise.all([
+      const [cfgRes, vacRes, sgRes, optRes] = await Promise.all([
         supabase.from('semester_config').select('*'),
         supabase.from('vacations').select('*'),
         supabase.from('orar').select('semigroup, group_name'),
+        supabase.from('courses').select('name').eq('is_optional', true),
       ]);
       if (!active) return;
 
       setSemester(pickActiveSemester(cfgRes.data || []));
       setVacations(vacRes.data || []);
+      setOptionalCourses((optRes.data || []).map((c) => c.name));
 
       const groups = [
         ...new Set(
@@ -242,9 +245,14 @@ export default function Orar() {
                           <Icon name="schedule" />
                           {hhmm(e.start_time)}–{hhmm(e.end_time)}
                         </div>
-                        <div className="orar-slot-course">{e.course_name}</div>
+                        <div className="orar-slot-course">
+                          {e.course_name}
+                        </div>
                         <div className="orar-slot-meta">
                           <span className={`badge ${typeClass(e.type)}`}>{e.type}</span>
+                          {optionalCourses.includes(e.course_name) && (
+                            <span className="badge badge-optional">Opțional</span>
+                          )}
                           {e.week_parity !== 'saptamanal' && (
                             <span className="orar-parity">
                               {e.week_parity === 'par' ? 'săpt. pară' : 'săpt. impară'}

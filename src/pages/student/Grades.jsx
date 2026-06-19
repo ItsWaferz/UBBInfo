@@ -179,6 +179,7 @@ export default function Grades() {
                     <tr key={e.id}>
                       <td>
                         {e.courses?.name}
+                        {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
                         {e.is_restanta && (
                           <span className="restanta-tag"> {t('status.restanta')}</span>
                         )}
@@ -195,6 +196,7 @@ export default function Grades() {
                     <tr key={`carry-${e.id}`}>
                       <td className="text-danger">
                         {e.courses?.name}
+                        {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
                         <span className="restanta-tag">
                           {' '}
                           {t('grades.restantaFrom', { year: e.academic_year, sem: e.semester })}

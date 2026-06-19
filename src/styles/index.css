@@ -809,6 +809,10 @@ a {
   background: #e8eaf0;
   color: var(--on-surface-variant);
 }
+.badge-optional {
+  background: #e8eaed;
+  color: #3c4043;
+}
 .badge-courselab {
   background: #d9e7ff;
   color: #1b3a5c;
@@ -1574,8 +1578,8 @@ a {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-/* 2 columns on tablets */
-@media (max-width: 768px) {
+/* 2 columns on tablets/small screens */
+@media (max-width: 900px) {
   .orar-grid {
     grid-template-columns: repeat(2, 1fr);
   }
