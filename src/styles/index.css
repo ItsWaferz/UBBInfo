@@ -817,6 +817,7 @@ td .badge-optional {
   margin-left: 8px;
   font-size: 0.65em;
   padding: 0.25em 0.7em;
+  vertical-align: middle;
 }
 .badge-courselab {
   background: #d9e7ff;
