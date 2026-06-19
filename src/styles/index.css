@@ -813,6 +813,9 @@ a {
   background: #e8eaed;
   color: #3c4043;
 }
+td .badge-optional {
+  margin-left: 8px;
+}
 .badge-courselab {
   background: #d9e7ff;
   color: #1b3a5c;
