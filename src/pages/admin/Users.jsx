@@ -203,7 +203,7 @@ export default function Users() {
                           onClick={() => toggleSpec(spec)}
                         >
                           <div className="users-accordion-left">
-                            <Icon name="folder" />
+                            {spec === 'Fără specializare' && <Icon name="help" />}
                             <span className="users-accordion-label">{spec}</span>
                             <span className="users-accordion-count">{specStudents.length}</span>
                           </div>

@@ -208,7 +208,7 @@ export default function OrarEditor() {
         <div className="card-header">
           <h2 className="card-title">
             <Icon name="calendar_view_week" />
-            Orar ({allEntries.length} ore)
+            Orar
           </h2>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <div className="input-wrap" style={{ minWidth: 140 }}>
@@ -251,7 +251,7 @@ export default function OrarEditor() {
                   <div className="users-accordion-left">
                     <Icon name="groups" />
                     <span className="users-accordion-label">{group}</span>
-                    <span className="users-accordion-count">{groupEntries.length}</span>
+                    <span className="users-accordion-count">{groupEntries.length} ore</span>
                   </div>
                   <Icon name="expand_more" className={`users-accordion-chevron${isOpen ? ' rotated' : ''}`} />
                 </button>
@@ -274,10 +274,13 @@ export default function OrarEditor() {
                       <p className="muted center" style={{ padding: 16 }}>Nicio oră pentru această semigrupă.</p>
                     ) : (
                       <div className="orar-grid">
-                        {(activeDays.length > 0 ? activeDays : DAYS.slice(0, 5)).map((day) => {
-                          const slots = byDay.get(day.n) || [];
-                          return (
-                            <section className="orar-day" key={day.n}>
+                        {(() => {
+                          const daysToRender = activeDays.length > 0 ? activeDays : DAYS.slice(0, 5);
+                          const maxSlots = Math.max(1, ...daysToRender.map((day) => (byDay.get(day.n) || []).length));
+                          return daysToRender.map((day) => {
+                            const slots = byDay.get(day.n) || [];
+                            return (
+                              <section className="orar-day" key={day.n} style={{ gridRow: `span ${maxSlots + 1}` }}>
                               <div className="orar-day-header">{day.label}</div>
                               <div className="orar-day-body">
                                 {slots.length === 0 ? (
@@ -330,7 +333,8 @@ export default function OrarEditor() {
                               </div>
                             </section>
                           );
-                        })}
+                          });
+                        })()}
                       </div>
                     )}
                   </div>

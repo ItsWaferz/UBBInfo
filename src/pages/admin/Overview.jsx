@@ -10,11 +10,12 @@ export default function Overview() {
     let active = true;
     (async () => {
       try {
-        const [rolesRes, profilesRes, coursesRes, enrollRes] = await Promise.all([
+        const [rolesRes, profilesRes, coursesRes, enrollRes, evalsRes] = await Promise.all([
           supabase.from('user_roles').select('user_id, roles(name)'),
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
           supabase.from('courses').select('id', { count: 'exact', head: true }),
           supabase.from('enrollments').select('grade'),
+          supabase.from('professor_evaluations').select('professor_id'),
         ]);
 
         if (rolesRes.error) throw rolesRes.error;
@@ -39,6 +40,7 @@ export default function Overview() {
           enrollments: enrollments.length,
           graded: graded.length,
           pending: enrollments.length - graded.length,
+          evaluatedProfs: new Set((evalsRes.data || []).map(e => e.professor_id).filter(Boolean)).size,
         });
       } catch (err) {
         console.error('Overview stats failed:', err);
@@ -68,13 +70,17 @@ export default function Overview() {
     );
   }
 
+  const percentageGraded = stats.enrollments > 0
+    ? Math.round((stats.graded / stats.enrollments) * 100)
+    : 0;
+
   const cards = [
     { icon: 'groups', value: stats.students, label: 'Studenți', tone: 'blue' },
     { icon: 'co_present', value: stats.professors, label: 'Cadre didactice', tone: 'gold' },
     { icon: 'admin_panel_settings', value: stats.admins, label: 'Administratori', tone: 'green' },
     { icon: 'menu_book', value: stats.courses, label: 'Discipline', tone: 'blue' },
-    { icon: 'how_to_reg', value: stats.enrollments, label: 'Înscrieri', tone: 'gold' },
-    { icon: 'grading', value: stats.graded, label: 'Note acordate', tone: 'green' },
+    { icon: 'star', value: stats.evaluatedProfs, label: 'Cadre didactice evaluate', tone: 'gold' },
+    { icon: 'grading', value: `${percentageGraded}%`, label: 'Note acordate', tone: 'green' },
   ];
 
   return (

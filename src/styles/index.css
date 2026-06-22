@@ -1481,8 +1481,9 @@ td .badge-optional {
   background: var(--surface-container-low);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: subgrid;
+  /* grid-row will be set dynamically in React */
   gap: 10px;
   padding-bottom: 10px;
 }
@@ -1497,9 +1498,7 @@ td .badge-optional {
 }
 
 .orar-day-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: contents;
 }
 
 .orar-empty {

@@ -230,10 +230,12 @@ export default function Orar() {
         </section>
       ) : (
         <div className="orar-grid">
-          {DAYS.map((day) => {
-            const slots = byDay.get(day.n) || [];
-            return (
-              <section className="orar-day" key={day.n}>
+          {(() => {
+            const maxSlots = Math.max(1, ...DAYS.map((day) => (byDay.get(day.n) || []).length));
+            return DAYS.map((day) => {
+              const slots = byDay.get(day.n) || [];
+              return (
+                <section className="orar-day" key={day.n} style={{ gridRow: `span ${maxSlots + 1}` }}>
                 <div className="orar-day-header">{day.label}</div>
                 <div className="orar-day-body">
                   {slots.length === 0 ? (
@@ -277,7 +279,8 @@ export default function Orar() {
                 </div>
               </section>
             );
-          })}
+            });
+          })()}
         </div>
       )}
     </div>

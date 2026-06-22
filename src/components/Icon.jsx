@@ -15,7 +15,7 @@ import {
   UserCog, Database, MonitorDot, PersonStanding, Newspaper,
   CalendarClock, Layers, ClipboardList, PanelLeft, BarChart,
   Umbrella, Zap, MessageCircle, Quote, LineChart,
-  Upload, Presentation, UserCheck, ClipboardCheck,
+  Upload, Presentation, UserCheck, ClipboardCheck, HelpCircle
 } from 'lucide-react';
 
 /** Map every icon name string used in the app (nav, DB, etc.) to a Lucide component */
@@ -142,6 +142,7 @@ const ICON_MAP = {
   co_present: Presentation,
   how_to_reg: UserCheck,
   grading: ClipboardCheck,
+  help: HelpCircle,
 };
 
 /**
