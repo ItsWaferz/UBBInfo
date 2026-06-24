@@ -80,8 +80,8 @@ export default function StudentDashboard() {
   };
 
   const totalCredits =
-    currentCourses.reduce((acc, e) => acc + (e.courses?.credits ?? 0), 0) +
-    restante.reduce((acc, e) => acc + (e.courses?.credits ?? 0), 0);
+    currentCourses.reduce((acc, e) => e.courses?.is_optional ? acc : acc + (e.courses?.credits ?? 0), 0) +
+    restante.reduce((acc, e) => e.courses?.is_optional ? acc : acc + (e.courses?.credits ?? 0), 0);
 
   return (
     <div className="page">

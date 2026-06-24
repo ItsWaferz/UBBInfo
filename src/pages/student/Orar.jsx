@@ -38,6 +38,7 @@ export default function Orar() {
   const [optionalCourses, setOptionalCourses] = useState([]);
   const [weekIdx, setWeekIdx] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [configLoaded, setConfigLoaded] = useState(false);
 
   // Load calendar + vacations + list of semigroups once
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function Orar() {
       ].sort();
       setSemigroups(groups);
       setSelectedGroup(myGroup && groups.includes(myGroup) ? myGroup : groups[0] || '');
+      setConfigLoaded(true);
     })();
     return () => {
       active = false;
@@ -218,7 +220,7 @@ export default function Orar() {
         </div>
       </section>
 
-      {loading ? (
+      {!configLoaded || loading ? (
         <section className="card">
           <div className="card-body muted center">Se încarcă orarul…</div>
         </section>
@@ -229,13 +231,14 @@ export default function Orar() {
           </div>
         </section>
       ) : (
-        <div className="orar-grid">
-          {(() => {
-            const maxSlots = Math.max(1, ...DAYS.map((day) => (byDay.get(day.n) || []).length));
-            return DAYS.map((day) => {
-              const slots = byDay.get(day.n) || [];
-              return (
-                <section className="orar-day" key={day.n} style={{ gridRow: `span ${maxSlots + 1}` }}>
+        <section className="card">
+          <div className="card-body" style={{ padding: '24px 20px' }}>
+            <div className="orar-grid" style={{ '--max-slots': Math.max(1, ...DAYS.map((day) => (byDay.get(day.n) || []).length)) + 1 }}>
+              {(() => {
+                return DAYS.map((day) => {
+                  const slots = byDay.get(day.n) || [];
+                  return (
+                    <section className="orar-day" key={day.n}>
                 <div className="orar-day-header">{day.label}</div>
                 <div className="orar-day-body">
                   {slots.length === 0 ? (
@@ -281,7 +284,9 @@ export default function Orar() {
             );
             });
           })()}
-        </div>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   );

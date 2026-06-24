@@ -265,7 +265,7 @@ export default function OrarEditor() {
                         className="btn btn-primary btn-sm"
                         onClick={() => openNew(group)}
                       >
-                        <Icon name="add_circle" />
+                        <Icon name="add" />
                         Adaugă oră
                       </button>
                     </div>
@@ -273,14 +273,16 @@ export default function OrarEditor() {
                     {groupEntries.length === 0 ? (
                       <p className="muted center" style={{ padding: 16 }}>Nicio oră pentru această semigrupă.</p>
                     ) : (
-                      <div className="orar-grid">
+                      <div className="orar-grid" style={{ '--max-slots': (() => {
+                        const daysToRender = activeDays.length > 0 ? activeDays : DAYS.slice(0, 5);
+                        return Math.max(1, ...daysToRender.map((day) => (byDay.get(day.n) || []).length)) + 1;
+                      })() }}>
                         {(() => {
                           const daysToRender = activeDays.length > 0 ? activeDays : DAYS.slice(0, 5);
-                          const maxSlots = Math.max(1, ...daysToRender.map((day) => (byDay.get(day.n) || []).length));
                           return daysToRender.map((day) => {
                             const slots = byDay.get(day.n) || [];
                             return (
-                              <section className="orar-day" key={day.n} style={{ gridRow: `span ${maxSlots + 1}` }}>
+                              <section className="orar-day" key={day.n}>
                               <div className="orar-day-header">{day.label}</div>
                               <div className="orar-day-body">
                                 {slots.length === 0 ? (

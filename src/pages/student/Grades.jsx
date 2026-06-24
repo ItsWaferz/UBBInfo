@@ -13,7 +13,7 @@ function fmtAvg(value) {
 
 function GradeBadge({ grade }) {
   if (grade === null || grade === undefined)
-    return <span className="muted">—</span>;
+    return <span className="muted" style={{ display: 'inline-flex', height: '28px', alignItems: 'center' }}>—</span>;
   const cls = grade >= 5 ? 'grade-pass' : 'grade-fail';
   return <span className={`grade-badge ${cls}`}>{grade}</span>;
 }
@@ -169,9 +169,9 @@ export default function Grades() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>{t('table.discipline')}</th>
-                    <th>{t('table.credits')}</th>
-                    <th>{t('table.grade')}</th>
+                    <th style={{ width: '70%' }}>{t('table.discipline')}</th>
+                    <th style={{ width: '15%' }}>{t('table.credits')}</th>
+                    <th style={{ width: '15%' }}>{t('table.grade')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,6 +220,110 @@ export default function Grades() {
           </div>
         </section>
       )}
+      {semesters.length > 0 && activeYear === CURRENT_YEAR && (() => {
+        // Find courses for the current semester in the active year
+        const currentSem = semesters.find(([sem]) => sem === 2) || semesters[semesters.length - 1];
+        if (!currentSem) return null;
+        // Exclude optional courses from the calculator
+        const calcCourses = currentSem[1].filter(e => !e.courses?.is_optional);
+        return <GradeCalculator courses={calcCourses} semester={currentSem[0]} t={t} />;
+      })()}
     </div>
+  );
+}
+
+function GradeCalculator({ courses, semester, t }) {
+  const [simulatedGrades, setSimulatedGrades] = useState({});
+
+  useEffect(() => {
+    const initial = {};
+    courses.forEach(e => {
+      initial[e.id] = e.grade !== null && e.grade !== undefined ? e.grade.toString() : '';
+    });
+    setSimulatedGrades(initial);
+  }, [courses]);
+
+  const handleGradeChange = (id, val) => {
+    setSimulatedGrades(prev => ({ ...prev, [id]: val }));
+  };
+
+  let sumGC = 0;
+  let sumC = 0;
+  let totalSimCredits = 0;
+  
+  courses.forEach(e => {
+    const val = simulatedGrades[e.id];
+    const credits = e.courses?.credits ?? 0;
+    totalSimCredits += credits;
+    
+    const isEnglish = e.courses?.name?.toLowerCase().includes('engleza');
+    if (!isEnglish && val && val.trim() !== '') {
+      const gradeNum = parseFloat(val);
+      if (!isNaN(gradeNum)) {
+        sumGC += gradeNum * credits;
+        sumC += credits;
+      }
+    }
+  });
+
+  const avg = sumC > 0 ? sumGC / sumC : null;
+
+  return (
+    <section className="card" style={{ marginTop: 32 }}>
+      <div className="card-header semester-header">
+        <h2 className="card-title">Calculator medie (Semestrul {semester})</h2>
+        <div className="semester-meta">
+          <span>
+            {t('grades.average')}: <strong>{fmtAvg(avg)}</strong>
+          </span>
+          <span>
+            {t('grades.totalCredits')}: <strong>{totalSimCredits}</strong>
+          </span>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th style={{ width: '70%' }}>{t('table.discipline')}</th>
+              <th style={{ width: '15%' }}>{t('table.credits')}</th>
+              <th style={{ width: '15%' }}>{t('table.grade')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {courses.map((e) => (
+              <tr key={e.id}>
+                <td>
+                  {e.courses?.name}
+                  {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                </td>
+                <td>{e.courses?.credits}</td>
+                <td>
+                  <input
+                    type="number"
+                    className="form-control"
+                    style={{ 
+                      padding: '2px 4px', 
+                      width: '60px', 
+                      height: '28px',
+                      background: 'transparent', 
+                      border: '1px solid var(--outline-variant)', 
+                      borderRadius: 'var(--radius)',
+                      color: 'var(--on-surface)'
+                    }}
+                    min="1"
+                    max="10"
+                    step="1"
+                    value={simulatedGrades[e.id] ?? ''}
+                    onChange={(ev) => handleGradeChange(e.id, ev.target.value)}
+                    placeholder="—"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

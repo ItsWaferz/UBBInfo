@@ -1483,7 +1483,8 @@ td .badge-optional {
   box-shadow: var(--shadow-sm);
   display: grid;
   grid-template-rows: subgrid;
-  /* grid-row will be set dynamically in React */
+  /* grid-row is dynamically set via CSS variable to span all slots uniformly */
+  grid-row: span var(--max-slots, 1);
   gap: 10px;
   padding-bottom: 10px;
 }
@@ -1609,14 +1610,21 @@ td .badge-optional {
   .orar-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+  .orar-day {
+    display: flex;
+    flex-direction: column;
+    grid-row: auto;
+  }
+  .orar-day-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 /* 2 columns on tablets/small screens */
 @media (max-width: 900px) {
   .orar-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .orar-day-body {
-    min-height: 0;
   }
 }
 /* 1 column on phones */

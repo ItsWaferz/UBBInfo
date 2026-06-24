@@ -17,15 +17,19 @@ export function firstNameOf(fullName = '') {
   return parts.length ? parts[parts.length - 1] : '';
 }
 
-// Weighted average: Σ(grade × credits) / Σ(credits), only graded courses
+// Weighted average: Σ(grade × credits) / Σ(credits), only graded courses (excluding optionals)
 export function weightedAverage(enrollments) {
   const graded = enrollments.filter(
-    (e) => e.grade !== null && e.grade !== undefined
+    (e) => e.grade !== null && e.grade !== undefined && !e.courses?.is_optional
   );
   if (graded.length === 0) return null;
   let sumGC = 0;
   let sumC = 0;
   for (const e of graded) {
+    // Exclude English from average calculation
+    const isEnglish = e.courses?.name?.toLowerCase().includes('engleza');
+    if (isEnglish) continue;
+
     const credits = e.courses?.credits ?? 0;
     sumGC += e.grade * credits;
     sumC += credits;
@@ -34,6 +38,10 @@ export function weightedAverage(enrollments) {
   return sumGC / sumC;
 }
 
+// Sum credits (excluding optionals)
 export function sumCredits(enrollments) {
-  return enrollments.reduce((acc, e) => acc + (e.courses?.credits ?? 0), 0);
+  return enrollments.reduce((acc, e) => {
+    if (e.courses?.is_optional) return acc;
+    return acc + (e.courses?.credits ?? 0);
+  }, 0);
 }
