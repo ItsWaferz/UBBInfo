@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 
@@ -15,13 +15,14 @@ export default function Courses() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*')
-      .order('name');
-    if (error) console.error('Load courses failed:', error);
-    setCourses(data || []);
-    setLoading(false);
+    try {
+      const data = await api.get('/api/courses');
+      setCourses(data || []);
+    } catch (err) {
+      console.error('Load courses failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -62,16 +63,16 @@ export default function Courses() {
       profile: form.profile.trim() || null,
     };
 
-    const { error } = editingId
-      ? await supabase.from('courses').update(payload).eq('id', editingId)
-      : await supabase.from('courses').insert(payload);
-
-    setSaving(false);
-    if (error) {
-      console.error('Save course failed:', error);
+    try {
+      if (editingId) await api.put(`/api/courses/${editingId}`, payload);
+      else await api.post('/api/courses', payload);
+    } catch (err) {
+      console.error('Save course failed:', err);
+      setSaving(false);
       flashToast('error', 'Eroare la salvarea disciplinei.');
       return;
     }
+    setSaving(false);
     flashToast('success', editingId ? 'Disciplină actualizată.' : 'Disciplină adăugată.');
     resetForm();
     load();
@@ -79,9 +80,10 @@ export default function Courses() {
 
   const handleDelete = async (c) => {
     if (!window.confirm(`Ștergi disciplina „${c.name}"?`)) return;
-    const { error } = await supabase.from('courses').delete().eq('id', c.id);
-    if (error) {
-      console.error('Delete course failed:', error);
+    try {
+      await api.del(`/api/courses/${c.id}`);
+    } catch (err) {
+      console.error('Delete course failed:', err);
       flashToast('error', 'Eroare la ștergere (poate are înscrieri asociate).');
       return;
     }

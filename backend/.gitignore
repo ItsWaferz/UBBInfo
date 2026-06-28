@@ -1,0 +1,11 @@
+target/
+backend.log
+!.mvn/wrapper/maven-wrapper.jar
+*.iml
+.idea/
+.DS_Store
+
+# Local secrets — never commit DB password or JWT secret
+application-local.properties
+.env
+.env.local

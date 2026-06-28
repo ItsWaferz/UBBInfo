@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { weightedAverage, sumCredits } from '../../utils/format';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -35,18 +35,13 @@ export default function Grades() {
     if (!user) return;
     let active = true;
     (async () => {
-      const { data, error } = await supabase
-        .from('enrollments')
-        .select('*, courses(*)')
-        .eq('student_id', user.id)
-        .order('academic_year', { ascending: true })
-        .order('semester', { ascending: true });
-      if (!active) return;
-      if (error) {
-        console.error('Load grades failed:', error);
-        return;
+      try {
+        const data = await api.get('/api/enrollments/me');
+        if (!active) return;
+        setEnrollments(data || []);
+      } catch (err) {
+        if (active) console.error('Load grades failed:', err);
       }
-      setEnrollments(data || []);
     })();
     return () => {
       active = false;

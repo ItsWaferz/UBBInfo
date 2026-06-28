@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatRoom } from '../../utils/rooms';
 import { parseDate } from '../../utils/calendar';
@@ -49,22 +49,19 @@ export default function Examene() {
 
   const load = async () => {
     setLoading(true);
-    const [pcRes, exRes] = await Promise.all([
-      supabase
-        .from('professor_courses')
-        .select('course_id, courses(name)')
-        .eq('professor_id', user.id),
-      supabase
-        .from('exams')
-        .select('*, rooms(code, note, buildings(name)), courses(name)')
-        .eq('professor_id', user.id)
-        .order('exam_date'),
-    ]);
-    const cs = pcRes.data || [];
-    setCourses(cs);
-    setExams(exRes.data || []);
-    setForm((f) => ({ ...f, course_id: f.course_id || cs[0]?.course_id || '' }));
-    setLoading(false);
+    try {
+      const [cs, ex] = await Promise.all([
+        api.get('/api/professor-courses/mine'),
+        api.get('/api/exams/teaching'),
+      ]);
+      setCourses(cs || []);
+      setExams(ex || []);
+      setForm((f) => ({ ...f, course_id: f.course_id || (cs || [])[0]?.course_id || '' }));
+    } catch (err) {
+      console.error('Load exams failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -96,7 +93,6 @@ export default function Examene() {
     }
     const payload = {
       course_id: form.course_id,
-      professor_id: user.id,
       kind: form.kind,
       session_type: form.session_type,
       exam_date: form.exam_date,
@@ -105,11 +101,11 @@ export default function Examene() {
       room: null,
       enrolled_count: form.enrolled_count === '' ? null : Number(form.enrolled_count),
     };
-    const { error } = editId
-      ? await supabase.from('exams').update(payload).eq('id', editId)
-      : await supabase.from('exams').insert(payload);
-    if (error) {
-      console.error('Save exam failed:', error);
+    try {
+      if (editId) await api.put(`/api/exams/${editId}`, payload);
+      else await api.post('/api/exams', payload);
+    } catch (err) {
+      console.error('Save exam failed:', err);
       flash('error', 'Eroare la salvare.');
       return;
     }
@@ -121,8 +117,12 @@ export default function Examene() {
 
   const remove = async (ex) => {
     if (!window.confirm('Ștergi acest examen?')) return;
-    const { error } = await supabase.from('exams').delete().eq('id', ex.id);
-    if (error) return flash('error', 'Eroare la ștergere.');
+    try {
+      await api.del(`/api/exams/${ex.id}`);
+    } catch (err) {
+      console.error('Delete exam failed:', err);
+      return flash('error', 'Eroare la ștergere.');
+    }
     flash('success', 'Șters.');
     if (editId === ex.id) {
       setEditId(null);

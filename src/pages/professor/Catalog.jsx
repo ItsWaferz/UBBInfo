@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
@@ -19,15 +19,14 @@ export default function Catalog() {
     if (!user) return;
     let active = true;
     (async () => {
-      const { data, error } = await supabase
-        .from('professor_courses')
-        .select('*, courses(*)')
-        .eq('professor_id', user.id);
-      if (!active) return;
-      if (error) {
-        console.error('Load professor_courses failed:', error);
+      let data;
+      try {
+        data = await api.get('/api/professor-courses/mine');
+      } catch (err) {
+        if (active) console.error('Load professor_courses failed:', err);
         return;
       }
+      if (!active) return;
       // Group by course_id and merge types (e.g. CURS + LAB)
       const grouped = [];
       const seen = new Map();
@@ -58,15 +57,13 @@ export default function Catalog() {
     let active = true;
     setLoadingRows(true);
     (async () => {
-      const { data: enrollments, error } = await supabase
-        .from('enrollments')
-        .select('id, student_id, group_name, academic_year, semester, grade, is_restanta')
-        .eq('course_id', selectedCourseId)
-        .order('academic_year', { ascending: false })
-        .order('semester', { ascending: false });
-
-      if (error) {
-        console.error('Load enrollments failed:', error);
+      let catalog;
+      try {
+        catalog = await api.get(
+          `/api/professor/catalog?courseId=${encodeURIComponent(selectedCourseId)}`
+        );
+      } catch (err) {
+        console.error('Load enrollments failed:', err);
         if (active) {
           setRows([]);
           setLoadingRows(false);
@@ -74,32 +71,19 @@ export default function Catalog() {
         return;
       }
 
-      const studentIds = [...new Set((enrollments || []).map((e) => e.student_id))];
-      let profileMap = {};
-      if (studentIds.length) {
-        const { data: profs } = await supabase
-          .from('profiles')
-          .select('id, full_name, short_name, student_id')
-          .in('id', studentIds);
-        profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
-      }
-
       if (!active) return;
       setRows(
-        (enrollments || []).map((e) => {
-          const p = profileMap[e.student_id];
-          return {
-            enrollmentId: e.id,
-            studentName: p?.full_name || '(necunoscut)',
-            studentId: p?.student_id || '',
-            group: e.group_name,
-            year: e.academic_year,
-            semester: e.semester,
-            isRestanta: e.is_restanta,
-            grade: e.grade,
-            draft: e.grade === null || e.grade === undefined ? '' : String(e.grade),
-          };
-        })
+        (catalog || []).map((e) => ({
+          enrollmentId: e.id,
+          studentName: e.student_name || '(necunoscut)',
+          studentId: '',
+          group: e.group_name,
+          year: e.academic_year,
+          semester: e.semester,
+          isRestanta: e.is_restanta,
+          grade: e.grade,
+          draft: e.grade === null || e.grade === undefined ? '' : String(e.grade),
+        }))
       );
       setLoadingRows(false);
     })();
@@ -130,18 +114,16 @@ export default function Catalog() {
     setSaving(true);
     setToast(null);
     try {
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         dirtyRows.map((r) =>
-          supabase
-            .from('enrollments')
-            .update({ grade: r.draft === '' ? null : Number(r.draft) })
-            .eq('id', r.enrollmentId)
-            .select('id, grade')
+          api.patch(`/api/enrollments/${r.enrollmentId}`, {
+            grade: r.draft === '' ? null : Number(r.draft),
+          })
         )
       );
-      const failed = results.filter((res) => res.error);
+      const failed = results.filter((res) => res.status === 'rejected');
       if (failed.length) {
-        console.error('Some grade updates failed:', failed.map((f) => f.error));
+        console.error('Some grade updates failed:', failed.map((f) => f.reason));
         setToast({
           variant: 'error',
           message: `Eroare la salvarea a ${failed.length} note.`,

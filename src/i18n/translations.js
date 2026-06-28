@@ -12,6 +12,7 @@ const translations = {
   'nav.taxe': { ro: 'Plata Taxe', en: 'Fee Payment', hu: 'Tandíjfizetés', de: 'Gebührenzahlung' },
   'nav.catalog': { ro: 'Catalog Note', en: 'Grade Book', hu: 'Osztálynapló', de: 'Notenbuch' },
   'nav.examene': { ro: 'Examene', en: 'Exams', hu: 'Vizsgák', de: 'Prüfungen' },
+  'nav.availability': { ro: 'Disponibilitate', en: 'Availability', hu: 'Elérhetőség', de: 'Verfügbarkeit' },
   'nav.settings': { ro: 'Setări Cont', en: 'Account Settings', hu: 'Fiókbeállítások', de: 'Kontoeinstellungen' },
   'nav.logout': { ro: 'Deconectare', en: 'Log Out', hu: 'Kijelentkezés', de: 'Abmelden' },
 
@@ -128,6 +129,7 @@ const translations = {
   'admin.tab.users': { ro: 'Utilizatori', en: 'Users', hu: 'Felhasználók', de: 'Benutzer' },
   'admin.tab.courses': { ro: 'Discipline', en: 'Courses', hu: 'Tantárgyak', de: 'Fächer' },
   'admin.tab.orar': { ro: 'Orar', en: 'Schedule', hu: 'Órarend', de: 'Stundenplan' },
+  'admin.tab.generator': { ro: 'Generare orar', en: 'Timetable generator', hu: 'Órarend-generátor', de: 'Stundenplan-Generator' },
   'admin.tab.calendar': { ro: 'Calendar', en: 'Calendar', hu: 'Naptár', de: 'Kalender' },
   'admin.tab.evaluari': { ro: 'Evaluări', en: 'Evaluations', hu: 'Értékelések', de: 'Bewertungen' },
   'admin.tab.links': { ro: 'Linkuri utile', en: 'Useful links', hu: 'Hasznos linkek', de: 'Nützliche Links' },

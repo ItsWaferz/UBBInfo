@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { api } from '../api';
 import Icon from './Icon';
 
 // Editable profile fields (admin can change anything on the profile).
@@ -19,8 +19,10 @@ function deriveNames(fullName = '') {
   };
 }
 
-export default function EditUserModal({ open, user, onClose, onSaved }) {
+export default function EditUserModal({ open, user, roles = [], onClose, onSaved }) {
   const [form, setForm] = useState({});
+  const [roleIds, setRoleIds] = useState(new Set());
+  const [primaryRoleId, setPrimaryRoleId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,12 +31,27 @@ export default function EditUserModal({ open, user, onClose, onSaved }) {
       const next = {};
       for (const f of FIELDS) next[f] = user[f] ?? '';
       setForm(next);
+      setRoleIds(new Set(user.roleIds || []));
+      setPrimaryRoleId(user.primaryRoleId || null);
     }
   }, [user]);
 
   if (!open || !user) return null;
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const toggleRole = (id) =>
+    setRoleIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        if (primaryRoleId === id) setPrimaryRoleId(null);
+      } else {
+        next.add(id);
+        if (!primaryRoleId) setPrimaryRoleId(id);
+      }
+      return next;
+    });
 
   const submit = async (e) => {
     e.preventDefault();
@@ -43,6 +60,14 @@ export default function EditUserModal({ open, user, onClose, onSaved }) {
       setError('Numele este obligatoriu.');
       return;
     }
+    if (roleIds.size === 0) {
+      setError('Selectează cel puțin un rol.');
+      return;
+    }
+    const primary = primaryRoleId && roleIds.has(primaryRoleId)
+      ? primaryRoleId
+      : [...roleIds][0];
+
     const payload = {};
     for (const f of FIELDS) {
       const v = typeof form[f] === 'string' ? form[f].trim() : form[f];
@@ -54,16 +79,19 @@ export default function EditUserModal({ open, user, onClose, onSaved }) {
     payload.initials = initials;
 
     setSaving(true);
-    const { error: upErr } = await supabase
-      .from('profiles')
-      .update(payload)
-      .eq('id', user.id);
-    setSaving(false);
-    if (upErr) {
-      console.error('Update profile failed:', upErr);
+    try {
+      await api.put(`/api/users/${user.id}`, payload);
+      await api.put(`/api/users/${user.id}/roles`, {
+        role_ids: [...roleIds],
+        primary_role_id: primary,
+      });
+    } catch (err) {
+      console.error('Update user failed:', err);
+      setSaving(false);
       setError('Eroare la salvare.');
       return;
     }
+    setSaving(false);
     onSaved?.();
     onClose();
   };
@@ -130,6 +158,39 @@ export default function EditUserModal({ open, user, onClose, onSaved }) {
             {field('personal_email', 'Email personal', { type: 'email' })}
           </div>
           {field('address', 'Adresă')}
+
+          <div className="field">
+            <span className="field-label">Roluri</span>
+            <div className="course-multiselect">
+              {roles.map((r) => {
+                const checked = roleIds.has(r.id);
+                return (
+                  <div key={r.id} className="role-assign-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <label className="course-check">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleRole(r.id)}
+                      />
+                      <span>{r.label || r.name}</span>
+                    </label>
+                    {checked && (
+                      <label className="course-check" style={{ fontSize: 12, opacity: 0.85 }}>
+                        <input
+                          type="radio"
+                          name="primaryRole"
+                          checked={primaryRoleId === r.id}
+                          onChange={() => setPrimaryRoleId(r.id)}
+                        />
+                        <span>Principal</span>
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
+              {roles.length === 0 && <span className="muted">Se încarcă rolurile…</span>}
+            </div>
+          </div>
 
           <p className="muted" style={{ fontSize: 12 }}>
             Notă: schimbarea emailului aici actualizează doar profilul, nu și emailul de

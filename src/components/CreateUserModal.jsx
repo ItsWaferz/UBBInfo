@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseClient'; // kept: user creation is an auth op (create-user Edge Function)
+import { api } from '../api';
 import Icon from './Icon';
 
 const ACADEMIC_RANKS = [
@@ -36,13 +37,12 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
   useEffect(() => {
     if (!open) return;
     let active = true;
-    supabase
-      .from('courses')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
+    api
+      .get('/api/courses')
+      .then((data) => {
         if (active) setCourses(data || []);
-      });
+      })
+      .catch((err) => console.error('Load courses failed:', err));
     return () => {
       active = false;
     };

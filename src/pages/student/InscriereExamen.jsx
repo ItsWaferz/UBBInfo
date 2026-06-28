@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatRoom } from '../../utils/rooms';
 import { parseDate } from '../../utils/calendar';
@@ -53,50 +53,39 @@ export default function InscriereExamen() {
 
   const load = async () => {
     setLoading(true);
-    const { data: enr } = await supabase
-      .from('enrollments')
-      .select('course_id')
-      .eq('student_id', user.id);
-    const courseIds = [...new Set((enr || []).map((e) => e.course_id))];
-    if (!courseIds.length) {
-      setCourses([]);
-      setLoading(false);
-      return;
-    }
+    try {
+      const [exams, regs] = await Promise.all([
+        api.get('/api/exams/mine'),
+        api.get('/api/exam-registrations/me'),
+      ]);
 
-    const { data: exams } = await supabase
-      .from('exams')
-      .select('id, course_id, exam_date, exam_time, room, kind, session_type, rooms(code, note, buildings(name)), courses(name)')
-      .in('course_id', courseIds)
-      .order('exam_date');
-
-    const byCourse = new Map();
-    for (const ex of exams || []) {
-      if (!byCourse.has(ex.course_id)) {
-        byCourse.set(ex.course_id, {
-          course_id: ex.course_id,
-          name: ex.courses?.name || '—',
-          principal: null,
-          secundar: null,
-          restanta: null,
-        });
+      const byCourse = new Map();
+      for (const ex of exams || []) {
+        if (!byCourse.has(ex.course_id)) {
+          byCourse.set(ex.course_id, {
+            course_id: ex.course_id,
+            name: ex.courses?.name || '—',
+            principal: null,
+            secundar: null,
+            restanta: null,
+          });
+        }
+        const entry = byCourse.get(ex.course_id);
+        if (ex.kind === 'principal') entry.principal = ex;
+        else if (ex.kind === 'secundar') entry.secundar = ex;
+        else entry.restanta = ex;
       }
-      const entry = byCourse.get(ex.course_id);
-      if (ex.kind === 'principal') entry.principal = ex;
-      else if (ex.kind === 'secundar') entry.secundar = ex;
-      else entry.restanta = ex;
+
+      const regMap = {};
+      for (const r of regs || []) regMap[r.course_id] = r.exam_id;
+
+      setCourses([...byCourse.values()].sort((a, b) => a.name.localeCompare(b.name)));
+      setRegistrations(regMap);
+    } catch (err) {
+      console.error('Load exams failed:', err);
+    } finally {
+      setLoading(false);
     }
-
-    const { data: regs } = await supabase
-      .from('exam_registrations')
-      .select('course_id, exam_id')
-      .eq('student_id', user.id);
-    const regMap = {};
-    for (const r of regs || []) regMap[r.course_id] = r.exam_id;
-
-    setCourses([...byCourse.values()].sort((a, b) => a.name.localeCompare(b.name)));
-    setRegistrations(regMap);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -106,35 +95,33 @@ export default function InscriereExamen() {
 
   const register = async (courseId, exam) => {
     setBusy(courseId);
-    const { error } = await supabase
-      .from('exam_registrations')
-      .upsert(
-        { student_id: user.id, course_id: courseId, exam_id: exam.id },
-        { onConflict: 'student_id,course_id' }
-      );
-    setBusy(null);
-    if (error) {
-      console.error('Register exam failed:', error);
+    try {
+      await api.put('/api/exam-registrations', {
+        course_id: courseId,
+        exam_id: exam.id,
+      });
+    } catch (err) {
+      console.error('Register exam failed:', err);
+      setBusy(null);
       flash('error', 'Eroare la înscriere.');
       return;
     }
+    setBusy(null);
     setRegistrations((r) => ({ ...r, [courseId]: exam.id }));
     flash('success', 'Înscriere salvată.');
   };
 
   const cancel = async (courseId) => {
     setBusy(courseId);
-    const { error } = await supabase
-      .from('exam_registrations')
-      .delete()
-      .eq('student_id', user.id)
-      .eq('course_id', courseId);
-    setBusy(null);
-    if (error) {
-      console.error('Cancel registration failed:', error);
+    try {
+      await api.del(`/api/exam-registrations?courseId=${encodeURIComponent(courseId)}`);
+    } catch (err) {
+      console.error('Cancel registration failed:', err);
+      setBusy(null);
       flash('error', 'Eroare la anulare.');
       return;
     }
+    setBusy(null);
     setRegistrations((r) => {
       const next = { ...r };
       delete next[courseId];

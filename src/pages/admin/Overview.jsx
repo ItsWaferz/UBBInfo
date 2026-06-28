@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import Icon from '../../components/Icon';
 
 export default function Overview() {
@@ -10,38 +10,9 @@ export default function Overview() {
     let active = true;
     (async () => {
       try {
-        const [rolesRes, profilesRes, coursesRes, enrollRes, evalsRes] = await Promise.all([
-          supabase.from('user_roles').select('user_id, roles(name)'),
-          supabase.from('profiles').select('id', { count: 'exact', head: true }),
-          supabase.from('courses').select('id', { count: 'exact', head: true }),
-          supabase.from('enrollments').select('grade'),
-          supabase.from('professor_evaluations').select('professor_id'),
-        ]);
-
-        if (rolesRes.error) throw rolesRes.error;
-
-        // Distinct users per role
-        const perRole = { student: new Set(), profesor: new Set(), administrator: new Set() };
-        for (const r of rolesRes.data || []) {
-          const name = r.roles?.name;
-          if (perRole[name]) perRole[name].add(r.user_id);
-        }
-
-        const enrollments = enrollRes.data || [];
-        const graded = enrollments.filter((e) => e.grade !== null && e.grade !== undefined);
-
+        const data = await api.get('/api/admin/overview');
         if (!active) return;
-        setStats({
-          students: perRole.student.size,
-          professors: perRole.profesor.size,
-          admins: perRole.administrator.size,
-          profiles: profilesRes.count ?? 0,
-          courses: coursesRes.count ?? 0,
-          enrollments: enrollments.length,
-          graded: graded.length,
-          pending: enrollments.length - graded.length,
-          evaluatedProfs: new Set((evalsRes.data || []).map(e => e.professor_id).filter(Boolean)).size,
-        });
+        setStats(data);
       } catch (err) {
         console.error('Overview stats failed:', err);
         if (active) setError(true);
@@ -79,7 +50,7 @@ export default function Overview() {
     { icon: 'co_present', value: stats.professors, label: 'Cadre didactice', tone: 'gold' },
     { icon: 'admin_panel_settings', value: stats.admins, label: 'Administratori', tone: 'green' },
     { icon: 'menu_book', value: stats.courses, label: 'Discipline', tone: 'blue' },
-    { icon: 'star', value: stats.evaluatedProfs, label: 'Cadre didactice evaluate', tone: 'gold' },
+    { icon: 'star', value: stats.evaluated_profs, label: 'Cadre didactice evaluate', tone: 'gold' },
     { icon: 'grading', value: `${percentageGraded}%`, label: 'Note acordate', tone: 'green' },
   ];
 

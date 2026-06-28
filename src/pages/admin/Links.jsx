@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import Icon from '../../components/Icon';
 import IconPicker from '../../components/IconPicker';
@@ -18,13 +18,14 @@ export default function Links() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('useful_links')
-      .select('*')
-      .order('sort_order');
-    if (error) console.error('Load links failed:', error);
-    setLinks(data || []);
-    setLoading(false);
+    try {
+      const data = await api.get('/api/links');
+      setLinks(data || []);
+    } catch (err) {
+      console.error('Load links failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -79,28 +80,27 @@ export default function Links() {
       is_active: form.is_active,
     };
 
-    const { error } = editingId
-      ? await supabase.from('useful_links').update(payload).eq('id', editingId)
-      : await supabase.from('useful_links').insert(payload);
-
-    setSaving(false);
-    if (error) {
-      console.error('Save link failed:', error);
+    try {
+      if (editingId) await api.put(`/api/links/${editingId}`, payload);
+      else await api.post('/api/links', payload);
+    } catch (err) {
+      console.error('Save link failed:', err);
+      setSaving(false);
       flashToast('error', t('admin.links.saveError'));
       return;
     }
+    setSaving(false);
     flashToast('success', editingId ? t('admin.links.updated') : t('admin.links.added'));
     resetForm();
     load();
   };
 
   const toggleActive = async (l) => {
-    const { error } = await supabase
-      .from('useful_links')
-      .update({ is_active: !l.is_active })
-      .eq('id', l.id);
-    if (error) {
-      console.error('Toggle link failed:', error);
+    try {
+      // PUT replaces all fields — send the full link with the flag flipped.
+      await api.put(`/api/links/${l.id}`, { ...l, is_active: !l.is_active });
+    } catch (err) {
+      console.error('Toggle link failed:', err);
       flashToast('error', t('admin.links.toggleError'));
       return;
     }
@@ -111,9 +111,10 @@ export default function Links() {
 
   const handleDelete = async (l) => {
     if (!window.confirm(t('admin.links.deleteConfirm', { title: l.title }))) return;
-    const { error } = await supabase.from('useful_links').delete().eq('id', l.id);
-    if (error) {
-      console.error('Delete link failed:', error);
+    try {
+      await api.del(`/api/links/${l.id}`);
+    } catch (err) {
+      console.error('Delete link failed:', err);
       flashToast('error', t('admin.links.deleteError'));
       return;
     }

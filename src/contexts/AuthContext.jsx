@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { api } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -10,34 +11,30 @@ export function AuthProvider({ children }) {
   const [roles, setRoles] = useState([]); // [{ name, label, icon, badge_class, home_page, is_primary }]
   const [currentRole, setCurrentRole] = useState(null); // active role name string
 
-  // Load profile + roles for a given auth user
+  // Load profile + roles for a given auth user.
+  // Auth stays in Supabase; profile/roles now come from the Spring Boot API
+  // (GET /api/me/profile) instead of direct Supabase DB queries.
   const loadUserData = useCallback(async (authUser) => {
-    const uid = authUser.id;
+    const me = await api.get('/api/me/profile');
 
-    const [profileRes, rolesRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', uid).single(),
-      supabase
-        .from('user_roles')
-        .select('is_primary, roles(name, label, icon, badge_class, home_page)')
-        .eq('user_id', uid),
-    ]);
-
-    if (profileRes.error) throw profileRes.error;
-    if (rolesRes.error) throw rolesRes.error;
-
-    const flatRoles = (rolesRes.data || [])
-      .filter((r) => r.roles)
-      .map((r) => ({ ...r.roles, is_primary: r.is_primary }));
-
+    const flatRoles = me.roles || [];
     // Primary role first, then the rest
     flatRoles.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
 
     const primary = flatRoles.find((r) => r.is_primary) || flatRoles[0] || null;
 
-    setProfile(profileRes.data);
+    setProfile(me.profile);
     setRoles(flatRoles);
     setCurrentRole(primary ? primary.name : null);
     setUser(authUser);
+  }, []);
+
+  // Expose the current Supabase access token (JWT) for ad-hoc API calls.
+  const getToken = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
   }, []);
 
   // On mount: check for an existing session (loading screen stays up until done)
@@ -108,6 +105,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     switchRole,
+    getToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

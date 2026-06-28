@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { formatRoom } from '../../utils/rooms';
 import Icon from '../../components/Icon';
 import RoomPicker from '../../components/RoomPicker';
@@ -60,29 +60,27 @@ export default function OrarEditor() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [orarRes, cRes, optRes] = await Promise.all([
-      supabase
-        .from('orar')
-        .select('*, rooms(code, note, location, buildings(name, code))')
-        .order('day_of_week')
-        .order('start_time'),
-      supabase.from('courses').select('name').order('name'),
-      supabase.from('courses').select('name').eq('is_optional', true),
-    ]);
+    try {
+      const [data, allCourses, optCourses] = await Promise.all([
+        api.get('/api/orar'),
+        api.get('/api/courses'),
+        api.get('/api/courses?optional=true'),
+      ]);
 
-    if (orarRes.error) console.error(orarRes.error);
-    if (cRes.error) console.error(cRes.error);
+      const entries = data || [];
+      setAllEntries(entries);
+      setCourses((allCourses || []).map((c) => c.name));
+      setOptionalCourses((optCourses || []).map((c) => c.name));
 
-    const data = orarRes.data || [];
-    setAllEntries(data);
-    setCourses((cRes.data || []).map((c) => c.name));
-    setOptionalCourses((optRes.data || []).map((c) => c.name));
-
-    const groups = [
-      ...new Set(data.map((r) => r.semigroup || r.group_name).filter(Boolean)),
-    ].sort();
-    setSemigroups(groups);
-    setLoading(false);
+      const groups = [
+        ...new Set(entries.map((r) => r.semigroup || r.group_name).filter(Boolean)),
+      ].sort();
+      setSemigroups(groups);
+    } catch (err) {
+      console.error('Load orar editor failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -170,15 +168,16 @@ export default function OrarEditor() {
       professor: form.professor.trim() || null,
     };
     setSaving(true);
-    const { error } = editEntry._new
-      ? await supabase.from('orar').insert(payload)
-      : await supabase.from('orar').update(payload).eq('id', editEntry.id);
-    setSaving(false);
-    if (error) {
-      console.error(error);
+    try {
+      if (editEntry._new) await api.post('/api/orar', payload);
+      else await api.put(`/api/orar/${editEntry.id}`, payload);
+    } catch (err) {
+      console.error(err);
+      setSaving(false);
       flash('error', 'Eroare la salvare.');
       return;
     }
+    setSaving(false);
     flash('success', editEntry._new ? 'Oră adăugată.' : 'Oră actualizată.');
     closeModal();
     loadAll();
@@ -186,8 +185,12 @@ export default function OrarEditor() {
 
   const remove = async (entry) => {
     if (!window.confirm('Ștergi această oră din orar?')) return;
-    const { error } = await supabase.from('orar').delete().eq('id', entry.id);
-    if (error) return flash('error', 'Eroare la ștergere.');
+    try {
+      await api.del(`/api/orar/${entry.id}`);
+    } catch (err) {
+      console.error(err);
+      return flash('error', 'Eroare la ștergere.');
+    }
     flash('success', 'Șters.');
     loadAll();
   };

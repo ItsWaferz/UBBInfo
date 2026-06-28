@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { formatRomanianDate } from '../../utils/format';
@@ -28,20 +28,17 @@ export default function ProfessorDashboard() {
     if (!user) return;
     let active = true;
     (async () => {
-      const [coursesRes, examsRes] = await Promise.all([
-        supabase
-          .from('professor_courses')
-          .select('*, courses(*)')
-          .eq('professor_id', user.id),
-        supabase
-          .from('exams')
-          .select('*, courses(*)')
-          .eq('professor_id', user.id)
-          .order('exam_date'),
-      ]);
-      if (!active) return;
-      setCourses(coursesRes.data || []);
-      setExams(examsRes.data || []);
+      try {
+        const [courses, exams] = await Promise.all([
+          api.get('/api/professor-courses/mine'),
+          api.get('/api/exams/teaching'),
+        ]);
+        if (!active) return;
+        setCourses(courses || []);
+        setExams(exams || []);
+      } catch (err) {
+        if (active) console.error('Load professor dashboard failed:', err);
+      }
     })();
     return () => {
       active = false;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatRomanianDate, firstNameOf } from '../../utils/format';
 import PasswordModal from '../../components/PasswordModal';
@@ -21,36 +21,34 @@ export default function StudentDashboard() {
   const [pwToast, setPwToast] = useState(false);
 
   const fetchData = async () => {
-    const [linksRes, currentRes, restanteRes] = await Promise.all([
-      supabase
-        .from('useful_links')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order'),
-      supabase
-        .from('enrollments')
-        .select('*, courses(*)')
-        .eq('student_id', user.id)
-        .eq('academic_year', ACADEMIC_YEAR)
-        .eq('semester', CURRENT_SEMESTER),
-      supabase
-        .from('enrollments')
-        .select('*, courses(*)')
-        .eq('student_id', user.id)
-        .eq('is_restanta', true),
-    ]);
+    try {
+      const [links, enrollments] = await Promise.all([
+        api.get('/api/links?active=true'),
+        api.get('/api/enrollments/me'),
+      ]);
 
-    setLinks(linksRes.data || []);
-    setCurrentCourses(currentRes.data || []);
+      setLinks(links || []);
 
-    // Past restanțe: exclude current semester, only grade < 5 OR null
-    const past = (restanteRes.data || []).filter((e) => {
-      const isCurrent =
-        e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER;
-      const failingOrUngraded = e.grade === null || e.grade < 5;
-      return !isCurrent && failingOrUngraded;
-    });
-    setRestante(past);
+      // Current-semester courses
+      setCurrentCourses(
+        (enrollments || []).filter(
+          (e) =>
+            e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER
+        )
+      );
+
+      // Past restanțe: exclude current semester, only grade < 5 OR null
+      const past = (enrollments || []).filter((e) => {
+        if (!e.is_restanta) return false;
+        const isCurrent =
+          e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER;
+        const failingOrUngraded = e.grade === null || e.grade < 5;
+        return !isCurrent && failingOrUngraded;
+      });
+      setRestante(past);
+    } catch (err) {
+      console.error('Load dashboard failed:', err);
+    }
   };
 
   useEffect(() => {

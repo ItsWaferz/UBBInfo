@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 import CreateUserModal from '../../components/CreateUserModal';
@@ -43,37 +43,27 @@ export default function Users() {
 
   const load = async () => {
     setLoading(true);
-    const [profilesRes, rolesRes, userRolesRes] = await Promise.all([
-      supabase.from('profiles').select('*'),
-      supabase.from('roles').select('id, name, label, badge_class').order('name'),
-      supabase.from('user_roles').select('user_id, role_id, is_primary'),
-    ]);
+    try {
+      const [usersData, rolesData] = await Promise.all([
+        api.get('/api/users'),
+        api.get('/api/roles'),
+      ]);
 
-    if (profilesRes.error || rolesRes.error || userRolesRes.error) {
-      console.error('Load users failed:', profilesRes.error || rolesRes.error || userRolesRes.error);
+      setRoles(rolesData || []);
+      setUsers(
+        (usersData || [])
+          .map((item) => ({
+            ...item.profile,
+            roleIds: new Set((item.roles || []).map((r) => r.role_id)),
+            primaryRoleId: (item.roles || []).find((r) => r.is_primary)?.role_id || null,
+          }))
+          .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+      );
+    } catch (err) {
+      console.error('Load users failed:', err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const rolesByUser = new Map();
-    const primaryByUser = new Map();
-    for (const ur of userRolesRes.data || []) {
-      if (!rolesByUser.has(ur.user_id)) rolesByUser.set(ur.user_id, new Set());
-      rolesByUser.get(ur.user_id).add(ur.role_id);
-      if (ur.is_primary) primaryByUser.set(ur.user_id, ur.role_id);
-    }
-
-    setRoles(rolesRes.data || []);
-    setUsers(
-      (profilesRes.data || [])
-        .map((p) => ({
-          ...p,
-          roleIds: rolesByUser.get(p.id) || new Set(),
-          primaryRoleId: primaryByUser.get(p.id) || null,
-        }))
-        .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
-    );
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -399,6 +389,7 @@ export default function Users() {
       <EditUserModal
         open={!!editUser}
         user={editUser}
+        roles={roles}
         onClose={() => setEditUser(null)}
         onSaved={() => {
           flashToast('success', 'Utilizator actualizat.');

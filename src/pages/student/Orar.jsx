@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatRoom } from '../../utils/rooms';
 import {
@@ -45,26 +45,28 @@ export default function Orar() {
     if (!user) return;
     let active = true;
     (async () => {
-      const [cfgRes, vacRes, sgRes, optRes] = await Promise.all([
-        supabase.from('semester_config').select('*'),
-        supabase.from('vacations').select('*'),
-        supabase.from('orar').select('semigroup, group_name'),
-        supabase.from('courses').select('name').eq('is_optional', true),
-      ]);
-      if (!active) return;
+      try {
+        const [cfg, vac, groups, opt] = await Promise.all([
+          api.get('/api/semester-config'),
+          api.get('/api/vacations'),
+          api.get('/api/orar/groups'),
+          api.get('/api/courses?optional=true'),
+        ]);
+        if (!active) return;
 
-      setSemester(pickActiveSemester(cfgRes.data || []));
-      setVacations(vacRes.data || []);
-      setOptionalCourses((optRes.data || []).map((c) => c.name));
+        setSemester(pickActiveSemester(cfg || []));
+        setVacations(vac || []);
+        setOptionalCourses((opt || []).map((c) => c.name));
 
-      const groups = [
-        ...new Set(
-          (sgRes.data || []).map((r) => r.semigroup || r.group_name).filter(Boolean)
-        ),
-      ].sort();
-      setSemigroups(groups);
-      setSelectedGroup(myGroup && groups.includes(myGroup) ? myGroup : groups[0] || '');
-      setConfigLoaded(true);
+        const groupList = groups || [];
+        setSemigroups(groupList);
+        setSelectedGroup(
+          myGroup && groupList.includes(myGroup) ? myGroup : groupList[0] || ''
+        );
+        setConfigLoaded(true);
+      } catch (err) {
+        if (active) console.error('Load orar config failed:', err);
+      }
     })();
     return () => {
       active = false;
@@ -91,20 +93,19 @@ export default function Orar() {
     let active = true;
     setLoading(true);
     (async () => {
-      const { data, error } = await supabase
-        .from('orar')
-        .select('*, rooms(code, note, location, buildings(name, code))')
-        .or(`semigroup.eq.${selectedGroup},and(semigroup.is.null,group_name.eq.${selectedGroup})`)
-        .order('day_of_week')
-        .order('start_time');
-      if (!active) return;
-      if (error) {
-        console.error('Load orar failed:', error);
-        setEntries([]);
-      } else {
+      try {
+        const data = await api.get(
+          `/api/orar?group=${encodeURIComponent(selectedGroup)}`
+        );
+        if (!active) return;
         setEntries(data || []);
+      } catch (err) {
+        if (!active) return;
+        console.error('Load orar failed:', err);
+        setEntries([]);
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     })();
     return () => {
       active = false;

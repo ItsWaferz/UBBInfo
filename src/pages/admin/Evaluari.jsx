@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { EVAL_CRITERIA } from '../../utils/evaluationCriteria';
 import Icon from '../../components/Icon';
 
@@ -42,37 +42,18 @@ export default function Evaluari() {
   useEffect(() => {
     let active = true;
     (async () => {
-      // Prefer the SECURITY DEFINER function (true anonymity — never returns
-      // student_id). If it isn't deployed yet, fall back to a direct read that
-      // still omits student_id in the UI.
-      const [evRes, cRes] = await Promise.all([
-        supabase.rpc('admin_professor_evaluations'),
-        supabase.from('courses').select('id, name'),
-      ]);
-      if (!active) return;
-
-      let rows = evRes.data || [];
-      if (evRes.error) {
-        console.warn('admin_professor_evaluations() unavailable, falling back:', evRes.error.message);
-        const fb = await supabase
-          .from('professor_evaluations')
-          .select('professor_id, course_id, ratings, comment, created_at')
-          .order('created_at', { ascending: false });
+      try {
+        // Backend returns anonymized evaluations (never any student_id).
+        const data = await api.get('/api/admin/evaluations');
         if (!active) return;
-        rows = fb.data || [];
+        setEvals(data.evaluations || []);
+        setCourseMap(Object.fromEntries((data.courses || []).map((c) => [c.id, c.name])));
+        setProfMap(Object.fromEntries((data.professors || []).map((p) => [p.id, p])));
+      } catch (err) {
+        console.error('Load evaluations failed:', err);
+      } finally {
+        if (active) setLoading(false);
       }
-      setEvals(rows);
-      setCourseMap(Object.fromEntries((cRes.data || []).map((c) => [c.id, c.name])));
-
-      const profIds = [...new Set(rows.map((r) => r.professor_id))];
-      if (profIds.length) {
-        const { data: profs } = await supabase
-          .from('professors_public')
-          .select('id, full_name, academic_rank, honorifics')
-          .in('id', profIds);
-        if (active) setProfMap(Object.fromEntries((profs || []).map((p) => [p.id, p])));
-      }
-      if (active) setLoading(false);
     })();
     return () => {
       active = false;

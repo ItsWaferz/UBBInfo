@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
 
@@ -29,14 +29,18 @@ export default function Calendar() {
 
   const load = async () => {
     setLoading(true);
-    const [semRes, vacRes] = await Promise.all([
-      supabase.from('semester_config').select('*').order('academic_year').order('semester'),
-      supabase.from('vacations').select('*').order('start_date'),
-    ]);
-    if (semRes.error || vacRes.error) console.error(semRes.error || vacRes.error);
-    setSemesters(semRes.data || []);
-    setVacations(vacRes.data || []);
-    setLoading(false);
+    try {
+      const [sems, vacs] = await Promise.all([
+        api.get('/api/semester-config'),
+        api.get('/api/vacations'),
+      ]);
+      setSemesters(sems || []);
+      setVacations(vacs || []);
+    } catch (err) {
+      console.error('Load calendar failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -56,11 +60,11 @@ export default function Calendar() {
       start_date: semForm.start_date,
       end_date: semForm.end_date || null,
     };
-    const { error } = semEditId
-      ? await supabase.from('semester_config').update(payload).eq('id', semEditId)
-      : await supabase.from('semester_config').insert(payload);
-    if (error) {
-      console.error(error);
+    try {
+      if (semEditId) await api.put(`/api/semester-config/${semEditId}`, payload);
+      else await api.post('/api/semester-config', payload);
+    } catch (err) {
+      console.error(err);
       flash('error', 'Eroare la salvarea semestrului.');
       return;
     }
@@ -82,8 +86,12 @@ export default function Calendar() {
 
   const deleteSem = async (s) => {
     if (!window.confirm(`Ștergi configurarea ${s.academic_year} sem ${s.semester}?`)) return;
-    const { error } = await supabase.from('semester_config').delete().eq('id', s.id);
-    if (error) return flash('error', 'Eroare la ștergere.');
+    try {
+      await api.del(`/api/semester-config/${s.id}`);
+    } catch (err) {
+      console.error(err);
+      return flash('error', 'Eroare la ștergere.');
+    }
     flash('success', 'Șters.');
     if (semEditId === s.id) {
       setSemEditId(null);
@@ -104,11 +112,11 @@ export default function Calendar() {
       start_date: vacForm.start_date,
       end_date: vacForm.end_date,
     };
-    const { error } = vacEditId
-      ? await supabase.from('vacations').update(payload).eq('id', vacEditId)
-      : await supabase.from('vacations').insert(payload);
-    if (error) {
-      console.error(error);
+    try {
+      if (vacEditId) await api.put(`/api/vacations/${vacEditId}`, payload);
+      else await api.post('/api/vacations', payload);
+    } catch (err) {
+      console.error(err);
       flash('error', 'Eroare la salvarea vacanței.');
       return;
     }
@@ -125,8 +133,12 @@ export default function Calendar() {
 
   const deleteVac = async (v) => {
     if (!window.confirm(`Ștergi vacanța „${v.name}"?`)) return;
-    const { error } = await supabase.from('vacations').delete().eq('id', v.id);
-    if (error) return flash('error', 'Eroare la ștergere.');
+    try {
+      await api.del(`/api/vacations/${v.id}`);
+    } catch (err) {
+      console.error(err);
+      return flash('error', 'Eroare la ștergere.');
+    }
     flash('success', 'Șters.');
     if (vacEditId === v.id) {
       setVacEditId(null);

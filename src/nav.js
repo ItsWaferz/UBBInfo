@@ -14,6 +14,19 @@ export const NAV_ITEMS_PROFESSOR = [
   { to: '/', key: 'acasa', labelKey: 'nav.home', icon: 'home', end: true },
   { to: '/catalog', key: 'catalog', labelKey: 'nav.catalog', icon: 'edit_note' },
   { to: '/examene', key: 'examene', labelKey: 'nav.examene', icon: 'event' },
+  { to: '/disponibilitate', key: 'disponibilitate', labelKey: 'nav.availability', icon: 'event_available' },
+];
+
+export const NAV_ITEMS_ADMIN = [
+  { to: '/', key: 'acasa', labelKey: 'nav.home', icon: 'dashboard', end: true },
+  { to: '/admin/utilizatori', key: 'admin-users', labelKey: 'admin.tab.users', icon: 'group' },
+  { to: '/admin/discipline', key: 'admin-courses', labelKey: 'admin.tab.courses', icon: 'menu_book' },
+  { to: '/admin/orar', key: 'admin-orar', labelKey: 'admin.tab.orar', icon: 'calendar_view_week' },
+  { to: '/admin/generare', key: 'admin-generator', labelKey: 'admin.tab.generator', icon: 'auto_awesome' },
+  { to: '/admin/calendar', key: 'admin-calendar', labelKey: 'admin.tab.calendar', icon: 'calendar_month' },
+  { to: '/admin/evaluari', key: 'admin-evaluari', labelKey: 'admin.tab.evaluari', icon: 'reviews' },
+  { to: '/admin/linkuri', key: 'admin-links', labelKey: 'admin.tab.links', icon: 'link' },
+  { to: '/admin/admisi', key: 'admin-admisi', labelKey: 'admin.tab.admisi', icon: 'group_add' },
 ];
 
 export const NAV_ITEMS_OTHER = [
@@ -23,6 +36,7 @@ export const NAV_ITEMS_OTHER = [
 export function navItemsForRole(roleName) {
   if (roleName === 'student') return NAV_ITEMS_STUDENT;
   if (roleName === 'profesor') return NAV_ITEMS_PROFESSOR;
+  if (roleName === 'administrator') return NAV_ITEMS_ADMIN;
   return NAV_ITEMS_OTHER;
 }
 
@@ -30,6 +44,7 @@ export function navItemsForRole(roleName) {
 const ALL_ITEMS = [
   ...NAV_ITEMS_STUDENT,
   ...NAV_ITEMS_PROFESSOR,
+  ...NAV_ITEMS_ADMIN,
 ];
 
 export function breadcrumbForPath(pathname) {

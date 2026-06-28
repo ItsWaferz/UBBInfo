@@ -5,7 +5,7 @@
 > administration interact with timetables, grades, exams and evaluations — all in
 > one place.
 
-**🔗 Live demo:** https://itswaferz.github.io/UBBInfo/
+**🔗 Live demo (frontend):** https://itswaferz.github.io/UBBInfo/
 
 The interface is fully localized in **Romanian**, **English**, **Hungarian**, and **German** using a dynamic language switcher.
 
@@ -16,63 +16,105 @@ The interface is fully localized in **Romanian**, **English**, **Hungarian**, an
 I'm a Computer Science student at UBB, and the official tools we use (Academic
 Info, the timetable PDFs, the grade portal, the exam-registration site…) are all
 separate, dated, and a bit painful to use. **UBB Info** is my attempt at a single,
-clean portal that covers the things a student actually does during a semester:
+clean portal that covers the things a student actually does during a semester.
 
-- check my **timetable** (and know if it's an odd/even week 🙄),
-- see my **grades** and weighted averages,
-- **register for exams**,
-- **evaluate my professors**,
-- manage my **personal data**.
-
-It also has a **professor** side (grading, exam scheduling) and a full
-**admin** side (users, courses, timetable editor, academic calendar), because the
-whole thing runs on a real backend with proper roles and permissions.
+It started as a **direct-to-Supabase** React app and was then migrated to a
+**hybrid architecture**: the React frontend keeps using **Supabase only for Auth**,
+while all data access now goes through a dedicated **Java Spring Boot REST API**
+that talks to the same Supabase PostgreSQL database. See **[Architecture](#-architecture)** below.
 
 ---
 
 ## ✨ Features
 
-### 👨‍🎓 As a student (the main point of view)
+### 👨‍🎓 As a student
 
 | Page | What I can do |
 |------|----------------|
-| **Acasă** | Dashboard: welcome card, my institutional account (with copy-email + change password), useful links, my student ID card, and my current academic situation. |
-| **Identitatea Ta** | Edit my personal data — phone, personal email, IBAN, CNP, ID series, address. All optional. |
-| **Consultă Note** | All my grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Unresolved restanțe from previous years show up in the current semester. |
-| **Orar** | My **weekly timetable per semigroup**. It shows whether the current week is **pară/impară** (computed from the semester start date and the official holidays), a **week navigator** to jump to any week, and I can peek at **other semigroups'** schedules too. Responsive grid: 1 col (phone) → 2 (tablet) → 3 (laptop) → 5 (desktop). |
-| **Evaluare Profesori** | Rate every professor who teaches me, on 5 criteria (1–5 ⭐) plus a free-text comment. **Anonymous.** |
-| **Înscriere Examen** | For each subject, pick the **principal** or **secondary** exam date; the **restanță/mărire** date is shown too. My choice is saved. |
+| **Acasă** | Dashboard: welcome card, institutional account (copy-email + change password), useful links, student ID card, and current academic situation. |
+| **Identitatea Ta** | Edit personal data — phone, personal email, IBAN, CNP, ID series, address. All optional. |
+| **Consultă Note** | All grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Carried-over restanțe surface in the current semester. |
+| **Orar** | **Weekly timetable per semigroup**, with **odd/even week** logic (computed from the semester start + official holidays), a week navigator, and a peek at other semigroups. |
+| **Evaluare Profesori** | Rate every professor who teaches me, on 5 criteria (1–5 ⭐) + free-text comment. **Anonymous.** |
+| **Înscriere Examen** | Pick the **principal** or **secondary** exam date per subject; the restanță/mărire date is shown too. |
 
 ### 👨‍🏫 As a professor
 
 - **Catalog Note** — enter/edit grades for the students in my courses.
 - **Examene** — add/edit/delete exams (date, time, **building → room**, session type, kind).
+- **Disponibilitate** — mark the time windows when I can teach (available / preferred / unavailable). Feeds the timetable generator.
 
 ### 🛠️ As an administrator
 
-- **Live stats** (students, professors, courses, enrollments, grading progress).
-- **Users** — search & filter by role/specialization, edit any field, assign roles, **create new accounts** (incl. professors with academic rank, honorific titles, and the courses they teach).
+- **Panou** — live stats (students, professors, courses, enrollments, grading progress).
+- **Utilizatori** — search & filter by role/specialization, edit any profile field, **assign roles** (multi-role + primary), and **create new accounts**.
 - **Discipline** — full CRUD on courses.
-- **Orar** — edit the timetable **per semigroup** (building → room pickers); changes show up instantly in the student view.
-- **Calendar** — set the start date for the upcoming academic year and manage **holidays** (these drive the odd/even-week logic).
-- **Evaluări** — read the **anonymous** professor evaluations submitted by students.
+- **Orar** — edit the timetable **per semigroup** (building → room pickers).
+- **Generare orar** 🤖 — **automatic timetable generation** with a constraint solver (see below): define the demand (which course/type/group needs how many sessions, duration, parity), set room capacity/type, generate multiple drafts, preview and publish the best one.
+- **Calendar** — academic-year start date + **holidays** (drive the odd/even-week logic).
+- **Evaluări** — read the **anonymous** professor evaluations.
 - **Linkuri utile** — manage the dashboard quick links.
-- **Conturi admiși** — *(planned / "în construcție")* auto-generation of accounts for admitted candidates.
+- **Conturi admiși** — *(in progress)* auto-generation of accounts for admitted candidates.
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────┐   Supabase JS (Auth only)   ┌──────────────────┐
+│   React +   │ ──────────────────────────► │  Supabase Auth   │
+│    Vite     │   login / session / JWT      │  (GoTrue, ES256) │
+│             │                              └──────────────────┘
+│  src/api.js │   fetch + Bearer <JWT>        ┌──────────────────┐
+│             │ ──────────────────────────► │  Spring Boot API │
+└─────────────┘   http://localhost:8080/api  │  (Resource Srv)  │
+                                              │  JWKS validation │
+                                              │  RLS in Java     │
+                                              └────────┬─────────┘
+                                                       │ JDBC
+                                                       ▼
+                                              ┌──────────────────┐
+                                              │ Supabase Postgres│
+                                              └──────────────────┘
+```
+
+**Key points**
+- **Auth stays in Supabase.** The frontend logs in via supabase-js; the only Supabase
+  calls left in the app are auth (login/logout/session, password change, and account
+  creation via the `create-user` Edge Function).
+- **All data goes through the Spring Boot API.** [`src/api.js`](src/api.js) attaches the
+  current Supabase access token as `Authorization: Bearer <JWT>` to every request.
+- **JWT validation via JWKS.** Supabase signs user tokens with **ES256**; Spring Security
+  (OAuth2 Resource Server) validates them against the project's public JWKS — no shared secret.
+- **RLS re-implemented in Java.** The backend connects to Postgres as a privileged role and
+  therefore **bypasses Postgres RLS**, so every Supabase Row-Level-Security rule is enforced
+  in the service layer (`CurrentUserService`: `isAdmin()`, `teachesCourse()`, `canViewStudent()`).
+- **JSON is snake_case** (Jackson) to match the shape the frontend already consumed from Supabase.
+
+### 🤖 Timetable generation (Timefold solver)
+
+The admin "Generare orar" feature builds a full-faculty timetable with the
+[**Timefold Solver**](https://timefold.ai) (the OptaPlanner successor). It's a
+constraint-satisfaction problem, not an LLM guess:
+
+- **Hard constraints** (must hold): no professor/room/group clashes (parity- and
+  semigroup-aware), room type matches the activity (labs → lab rooms), room capacity ≥
+  students, professor eligible for the course (from `professor_courses`), professor available
+  in the slot, slot duration matches the activity (2h/3h).
+- **Soft constraints** (nice to have): respect professors' *preferred* time windows.
+
+The admin defines the demand (`scheduling_requirement`), the solver produces several
+**drafts** with a hard/soft score (`0 hard` = a valid timetable), and the admin previews
+and **publishes** one into the live `orar`.
 
 ---
 
 ## 📊 Academic data
 
-The database contains **real academic history** spanning 4 semesters:
-
-| Period | Groups | Courses | Status |
-|--------|--------|---------|--------|
-| 2024-2025 Sem 1 | 1311, 1312 | 8 courses (Prog. calc., Grafică, Fizică, Chimie, Analiză mat. 1, Algebră 1, Psihologie, Prog. C) | ✅ Graded |
-| 2024-2025 Sem 2 | 1311, 1312 | 7 courses (Grafică 2, POO, Metode avansate, Algebră 2, SDA, Electrotehnică, Analiză mat. 2) | ✅ Graded |
-| 2025-2026 Sem 1 | 1321, 1322 | 8 courses (Arhitectură, Paradigme, Teoria prob., Ec. dif., Disp. electr., BD 1, Germană, Engleză) | ✅ Graded |
-| 2025-2026 Sem 2 | 1321, 1322 | 7 courses (Germană 2, Prog. Web, Sist. operare, Proiect. alg., BD 2, El. digitală, Engleză 2) | 🔄 Current |
-
-**49 professor accounts** with real names extracted from official schedules, all linked to their respective courses with correct teaching types (CURS/SEMINAR/LABORATOR).
+The database contains **real academic history** spanning 4 semesters, **49 professor accounts**
+with names from official schedules (linked to their courses with the correct CURS/SEMINAR/LABORATOR
+types), 30 courses, and graded enrollments. See [`backend/SCHEMA.md`](backend/SCHEMA.md) for the
+full (reverse-engineered) schema.
 
 ---
 
@@ -84,52 +126,72 @@ The database contains **real academic history** spanning 4 semesters:
 | 👨‍🏫 Professor (any) | `prenume.nume@ubbcluj.ro` | `profesor123` |
 | 🛠️ Admin | `admin@ubbcluj.ro` | `admin123` |
 
-> Sessions use `sessionStorage` — they survive a page refresh but clear when you
-> close the tab.
+> Sessions use `sessionStorage` — they survive a refresh but clear when you close the tab.
 
 ---
 
 ## 🧰 Tech stack
 
-- **React 18** + **Vite**
-- **React Router v6** (HashRouter, for clean GitHub Pages hosting)
-- **Supabase** (PostgreSQL + Auth + Row-Level Security + an Edge Function)
-- Plain **CSS** design system (Material-style tokens), **Inter** + **Material Symbols**
-- Deployed on **GitHub Pages** via **GitHub Actions**
+**Frontend**
+- **React 18** + **Vite**, **React Router v6** (HashRouter for GitHub Pages)
+- **Supabase JS** (Auth only)
+- Plain **CSS** design system (Material-style tokens), Inter + Material Symbols
 
-Everything sensitive is protected by **Row-Level Security** on the database, so the
-public `anon` key in the client is safe to ship.
+**Backend** (`backend/`)
+- **Java 17** + **Spring Boot 3.4** (Web, Data JPA, Security / OAuth2 Resource Server)
+- **PostgreSQL** (the Supabase database, via the session pooler)
+- **Timefold Solver 1.33** (timetable generation)
+- **Maven**
 
 ---
 
 ## 🚀 Run it locally
 
-You'll need **Node.js 18+**.
+You'll need **Node.js 18+** and a **JDK 17+** (Maven is bundled via the project, or install it).
+
+### Convenience scripts (from the repo root)
 
 ```bash
-git clone https://github.com/ItsWaferz/UBBInfo.git
-cd UBBInfo
+./start.sh            # starts BOTH backend (:8080) and frontend (:5173); Ctrl+C stops both
+./start-backend.sh    # backend only
+./start-frontend.sh   # frontend only (runs npm install if needed)
+```
+
+### Manual
+
+```bash
+# Frontend
 npm install
-npm run dev      # http://localhost:5173
+npm run dev            # http://localhost:5173
+
+# Backend (in another terminal)
+cd backend
+./run.sh               # http://localhost:8080  (loads backend/.env.local)
 ```
 
-Other scripts:
+### Backend secrets (`backend/.env.local`, git-ignored)
+
+The backend needs the database password (and optionally the pooler host). Create
+`backend/.env.local`:
 
 ```bash
-npm run build    # production build into dist/
-npm run preview  # preview the production build
+export SUPABASE_DB_URL='jdbc:postgresql://<region>.pooler.supabase.com:5432/postgres?sslmode=require'
+export SUPABASE_DB_USER='postgres.<project-ref>'
+export SUPABASE_DB_PASSWORD='<your-db-password>'
 ```
 
-The Supabase project is already configured in `src/supabaseClient.js`, so it works
-out of the box against the live demo backend.
+The frontend points at `http://localhost:8080` by default; override with `VITE_API_URL`
+(e.g. when the backend is hosted elsewhere).
+
+> **Note on the hosted demo:** GitHub Pages serves the **frontend only**. For a fully
+> working hosted deployment you'd also need to host the Spring Boot backend and set
+> `VITE_API_URL` to its URL. Locally, everything works out of the box.
 
 ---
 
 ## 🗄️ Database setup (only if you wire up your own Supabase)
 
-The app talks to an existing Supabase backend. To rebuild that backend from
-scratch, run the SQL files in `supabase/` **in this order** (Supabase dashboard →
-SQL Editor):
+Run the SQL files in `supabase/` **in this order** (Supabase dashboard → SQL Editor):
 
 1. `orar.sql` — timetable table + base seed
 2. `grades_admin.sql` — professor grading + admin RLS + helper functions
@@ -137,53 +199,58 @@ SQL Editor):
 4. `v2_seed.sql` — buildings/rooms, calendar, semigroup timetables, exams
 5. `v2_fix.sql` — lets students see who teaches them (safe professor view)
 6. `v2_evaluari_anon.sql` — admins read evaluations anonymously
-7. `rebuild_database.sql` — full academic history: 30 courses, 49 professors, enrollments with grades
+7. `rebuild_database.sql` — full academic history: 30 courses, 49 professors, enrollments
 8. `update_orar.sql` — real timetable for 3 semigroups (1321/1, 1321/2, 1322)
 9. `fix_admin.sql` — reinstates the `admin@ubbcluj.ro` account if it was cleared
 10. `optional_courses.sql` — adds the `is_optional` flag and marks facultative courses
+11. `orar_generation.sql` — **timetable-generation schema** (room capacity/type, professor
+    availability, scheduling requirements, drafts)
 
-Then deploy the `supabase/functions/create-user/` **Edge Function** (Supabase
-dashboard → Edge Functions → name it `create-user` → paste the file → Deploy).
-Creating new login accounts needs the service-role key, which lives only inside
-that function and never reaches the browser.
+Then deploy `supabase/functions/create-user/` as an **Edge Function** named `create-user`
+(account creation needs the service-role key, which lives only inside that function).
 
----
-
-## 🌐 How it's deployed
-
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the app and
-publishes `dist/` to **GitHub Pages**. The site is served from a sub-path, so
-`vite.config.js` sets `base: '/UBBInfo/'` and the app uses `HashRouter` so deep
-links survive a refresh.
-
-To enable it on a fresh fork: **Settings → Pages → Build and deployment → Source:
-GitHub Actions** (the workflow also tries to enable it automatically).
+> RLS still exists in Postgres for any direct access, but the Spring Boot backend connects as
+> a privileged role and enforces the equivalent rules in Java.
 
 ---
 
 ## 📁 Project structure
 
 ```
-src/
-├── main.jsx                 # entry, providers, router
-├── App.jsx                  # routes + loading/auth gating
-├── supabaseClient.js        # Supabase client (sessionStorage)
-├── nav.js                   # role-aware sidebar nav + breadcrumb
-├── contexts/AuthContext.jsx # user / profile / roles / active role
-├── utils/                   # date+parity engine, room/format helpers, criteria
-├── components/              # shell, modals, RoomPicker, Toast, etc.
+src/                              # React frontend
+├── main.jsx, App.jsx             # entry, routes, auth gating
+├── api.js                        # REST client (attaches Supabase JWT)  ← all data access
+├── supabaseClient.js             # Supabase client (Auth only)
+├── nav.js                        # role-aware sidebar nav + breadcrumb
+├── contexts/AuthContext.jsx      # user / profile / roles (loads GET /api/me/profile)
+├── components/                   # shell, modals, RoomPicker, Toast, …
 └── pages/
-    ├── student/   Dashboard, Identity, Grades, Orar, Evaluare, InscriereExamen
-    ├── professor/ Dashboard, Catalog (grading), Examene
-    └── admin/     Dashboard + tabs (Overview, Users, Courses, Orar, Calendar,
-                   Evaluari, Links, ConturiAdmisi)
-supabase/                    # SQL migrations/seeds + create-user Edge Function
+    ├── student/    Dashboard, Identity, Grades, Orar, Evaluare, InscriereExamen
+    ├── professor/  Dashboard, Catalog, Examene, Availability
+    └── admin/      Dashboard (Panou) + nav pages: Users, Courses, OrarEditor,
+                    OrarGenerator, Calendar, Evaluari, Links, ConturiAdmisi
+
+backend/                          # Spring Boot REST API
+├── pom.xml, run.sh
+├── SCHEMA.md                     # reverse-engineered DB schema
+└── src/main/java/ro/ubbcluj/ubbinfo/
+    ├── config/SecurityConfig     # JWKS validation, CORS, stateless
+    ├── security/                 # Supabase JWT → authentication
+    ├── entity/                   # JPA entities (tables)
+    ├── repository/               # Spring Data repositories
+    ├── service/                  # business logic + RLS (CurrentUserService, …)
+    ├── solver/                   # Timefold domain + constraints (timetable generation)
+    ├── dto/                      # API response shapes (snake_case)
+    └── web/                      # REST controllers
+
+supabase/                         # SQL migrations/seeds + create-user Edge Function
+FEATURES_PROMPT.md                # implementation brief for upcoming larger features
 ```
 
 ---
 
 ## 📝 Notes & disclaimer
 
-This is a **student project**, not an official UBB product. Room data was adapted
-from public UBB room listings; professor names are from official public schedules.
-Built with ❤️ for a faculty I actually attend.
+This is a **student project**, not an official UBB product. Room data was adapted from public
+UBB room listings; professor names are from official public schedules. Built with ❤️ for a
+faculty I actually attend.

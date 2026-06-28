@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import Toast from '../../components/Toast';
 import Icon from '../../components/Icon';
@@ -54,24 +54,20 @@ function EvaluationCard({ professor, courses, existingByCourse, onSaved }) {
   const submit = async () => {
     if (!allRated) return;
     setSubmitting(true);
-    const { error } = await supabase
-      .from('professor_evaluations')
-      .upsert(
-        {
-          student_id: professor._studentId,
-          professor_id: professor.id,
-          course_id: courseId,
-          ratings,
-          comment: comment.trim() || null,
-        },
-        { onConflict: 'student_id,professor_id,course_id' }
-      );
-    setSubmitting(false);
-    if (error) {
-      console.error('Save evaluation failed:', error);
+    try {
+      await api.put('/api/evaluations', {
+        professor_id: professor.id,
+        course_id: courseId,
+        ratings,
+        comment: comment.trim() || null,
+      });
+    } catch (err) {
+      console.error('Save evaluation failed:', err);
+      setSubmitting(false);
       onSaved('error', 'Eroare la trimiterea evaluării.');
       return;
     }
+    setSubmitting(false);
     onSaved('success', 'Evaluare trimisă. Mulțumim!');
   };
 
@@ -166,65 +162,25 @@ export default function Evaluare() {
 
   const load = async () => {
     setLoading(true);
-    // 1. courses the student is enrolled in
-    const { data: enr } = await supabase
-      .from('enrollments')
-      .select('course_id')
-      .eq('student_id', user.id);
-    const courseIds = [...new Set((enr || []).map((e) => e.course_id))];
-    if (!courseIds.length) {
-      setProfessors([]);
+    try {
+      // Backend aggregates: professors teaching the student's courses + existing evals.
+      const data = await api.get('/api/evaluations/targets');
+
+      const list = (data.professors || [])
+        .map((p) => ({ ...p, _studentId: user.id }))
+        .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+
+      const existingMap = {};
+      for (const ev of data.existing || [])
+        existingMap[`${ev.professor_id}:${ev.course_id}`] = ev;
+
+      setProfessors(list);
+      setExisting(existingMap);
+    } catch (err) {
+      console.error('Load evaluations failed:', err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // 2. who teaches those courses
-    const { data: pc } = await supabase
-      .from('professor_courses')
-      .select('professor_id, course_id, type, courses(name)')
-      .in('course_id', courseIds);
-
-    const profIds = [...new Set((pc || []).map((p) => p.professor_id))];
-    // 3. professor identities (safe view — no student PII exposed)
-    const { data: profs } = profIds.length
-      ? await supabase
-          .from('professors_public')
-          .select('id, full_name, academic_rank, honorifics')
-          .in('id', profIds)
-      : { data: [] };
-    const profMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
-
-    // 4. existing evaluations
-    const { data: evals } = await supabase
-      .from('professor_evaluations')
-      .select('*')
-      .eq('student_id', user.id);
-    const existingMap = {};
-    for (const ev of evals || []) existingMap[`${ev.professor_id}:${ev.course_id}`] = ev;
-
-    // group courses per professor
-    const byProf = new Map();
-    for (const row of pc || []) {
-      if (!byProf.has(row.professor_id)) byProf.set(row.professor_id, []);
-      byProf.get(row.professor_id).push({
-        course_id: row.course_id,
-        name: row.courses?.name || '—',
-        type: row.type,
-      });
-    }
-
-    const list = [...byProf.entries()]
-      .filter(([pid]) => profMap[pid])
-      .map(([pid, courses]) => ({
-        ...profMap[pid],
-        _studentId: user.id,
-        courses,
-      }))
-      .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
-
-    setProfessors(list);
-    setExisting(existingMap);
-    setLoading(false);
   };
 
   useEffect(() => {

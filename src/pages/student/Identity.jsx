@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/Icon';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -26,19 +26,16 @@ export default function Identity() {
     if (!user) return;
     let active = true;
     (async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('phone, personal_email, iban, cnp, id_series, address')
-        .eq('id', user.id)
-        .single();
-      if (!active) return;
-      if (error) {
-        console.error('Load identity failed:', error);
-        return;
+      try {
+        const me = await api.get('/api/me/profile');
+        if (!active) return;
+        const data = me.profile || {};
+        const next = { ...EMPTY };
+        for (const f of FIELDS) next[f] = data[f] ?? '';
+        setForm(next);
+      } catch (err) {
+        if (active) console.error('Load identity failed:', err);
       }
-      const next = { ...EMPTY };
-      for (const f of FIELDS) next[f] = data?.[f] ?? '';
-      setForm(next);
     })();
     return () => {
       active = false;
@@ -60,18 +57,16 @@ export default function Identity() {
       payload[f] = v === '' ? null : v;
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(payload)
-      .eq('id', user.id);
-
-    setSaving(false);
-
-    if (error) {
-      console.error('Save identity failed:', error);
+    try {
+      await api.put('/api/me/profile', payload);
+    } catch (err) {
+      console.error('Save identity failed:', err);
+      setSaving(false);
       setStatus({ type: 'error', text: t('identity.error') });
       return;
     }
+
+    setSaving(false);
 
     // Keep global profile in sync
     setProfile((p) => (p ? { ...p, ...payload } : p));

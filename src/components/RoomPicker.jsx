@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { api } from '../api';
 import Icon from './Icon';
 
 // Cascading building -> room selector.
@@ -8,11 +8,11 @@ import Icon from './Icon';
 let _cache = null;
 async function loadRooms() {
   if (_cache) return _cache;
-  const [bRes, rRes] = await Promise.all([
-    supabase.from('buildings').select('id, code, name, sort_order').order('sort_order'),
-    supabase.from('rooms').select('id, building_id, code, note, location').order('code'),
+  const [buildings, rooms] = await Promise.all([
+    api.get('/api/buildings'),
+    api.get('/api/rooms'),
   ]);
-  _cache = { buildings: bRes.data || [], rooms: rRes.data || [] };
+  _cache = { buildings: buildings || [], rooms: rooms || [] };
   return _cache;
 }
 
