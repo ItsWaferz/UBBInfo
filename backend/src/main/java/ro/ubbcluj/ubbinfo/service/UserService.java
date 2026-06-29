@@ -74,6 +74,19 @@ public class UserService {
         if (fields.containsKey("id_series")) p.setIdSeries(blankToNull(fields.get("id_series")));
         if (fields.containsKey("address")) p.setAddress(blankToNull(fields.get("address")));
 
+        // Durable academic/identity fields used to pre-fill documents (feature #1)
+        apply(fields, "birth_place", p::setBirthPlace);
+        apply(fields, "birth_county", p::setBirthCounty);
+        apply(fields, "father_initial", p::setFatherInitial);
+        apply(fields, "domain", p::setDomain);
+        apply(fields, "study_program", p::setStudyProgram);
+        apply(fields, "study_line", p::setStudyLine);
+        apply(fields, "study_level", p::setStudyLevel);
+        apply(fields, "study_cycle", p::setStudyCycle);
+        apply(fields, "cod_unic", p::setCodUnic);
+        apply(fields, "bank", p::setBank);
+        if (fields.containsKey("birth_date")) p.setBirthDate(parseDate(fields.get("birth_date")));
+
         return ProfileDto.from(profileRepository.save(p));
     }
 
@@ -164,6 +177,19 @@ public class UserService {
         return roleRepository.findAllByOrderByNameAsc().stream()
                 .map(RoleDto::from)
                 .toList();
+    }
+
+    /** Parse an ISO date (yyyy-MM-dd); blank/invalid -> null. */
+    private static java.time.LocalDate parseDate(String v) {
+        String t = blankToNull(v);
+        if (t == null) {
+            return null;
+        }
+        try {
+            return java.time.LocalDate.parse(t);
+        } catch (java.time.format.DateTimeParseException e) {
+            return null;
+        }
     }
 
     private static String blankToNull(String v) {

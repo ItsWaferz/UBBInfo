@@ -5,6 +5,7 @@ export const NAV_ITEMS_STUDENT = [
   { to: '/identitate', key: 'identitate', labelKey: 'nav.identity', icon: 'badge' },
   { to: '/note', key: 'note', labelKey: 'nav.grades', icon: 'bar_chart' },
   { to: '/orar', key: 'orar', labelKey: 'nav.schedule', icon: 'calendar_month' },
+  { to: '/documente', key: 'documente', labelKey: 'nav.documents', icon: 'description' },
   { to: '/evaluare', key: 'evaluare', labelKey: 'nav.evaluare', icon: 'rate_review' },
   { to: '/examen', key: 'examen', labelKey: 'nav.examen', icon: 'event_available' },
   { to: '/taxe', key: 'taxe', labelKey: 'nav.taxe', icon: 'payments' },
@@ -13,6 +14,7 @@ export const NAV_ITEMS_STUDENT = [
 export const NAV_ITEMS_PROFESSOR = [
   { to: '/', key: 'acasa', labelKey: 'nav.home', icon: 'home', end: true },
   { to: '/catalog', key: 'catalog', labelKey: 'nav.catalog', icon: 'edit_note' },
+  { to: '/notare', key: 'notare', labelKey: 'nav.grading', icon: 'functions' },
   { to: '/examene', key: 'examene', labelKey: 'nav.examene', icon: 'event' },
   { to: '/disponibilitate', key: 'disponibilitate', labelKey: 'nav.availability', icon: 'event_available' },
 ];
@@ -22,6 +24,7 @@ export const NAV_ITEMS_ADMIN = [
   { to: '/admin/utilizatori', key: 'admin-users', labelKey: 'admin.tab.users', icon: 'group' },
   { to: '/admin/discipline', key: 'admin-courses', labelKey: 'admin.tab.courses', icon: 'menu_book' },
   { to: '/admin/orar', key: 'admin-orar', labelKey: 'admin.tab.orar', icon: 'calendar_view_week' },
+  { to: '/admin/sali', key: 'admin-rooms', labelKey: 'admin.tab.rooms', icon: 'apartment' },
   { to: '/admin/generare', key: 'admin-generator', labelKey: 'admin.tab.generator', icon: 'auto_awesome' },
   { to: '/admin/calendar', key: 'admin-calendar', labelKey: 'admin.tab.calendar', icon: 'calendar_month' },
   { to: '/admin/evaluari', key: 'admin-evaluari', labelKey: 'admin.tab.evaluari', icon: 'reviews' },

@@ -38,7 +38,13 @@ export default function Grades() {
       try {
         const data = await api.get('/api/enrollments/me');
         if (!active) return;
-        setEnrollments(data || []);
+        // Use the computed final grade (decimal) as the effective grade when present.
+        setEnrollments(
+          (data || []).map((e) => ({
+            ...e,
+            grade: e.final_grade != null ? e.final_grade : e.grade,
+          }))
+        );
       } catch (err) {
         if (active) console.error('Load grades failed:', err);
       }
@@ -177,6 +183,19 @@ export default function Grades() {
                         {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
                         {e.is_restanta && (
                           <span className="restanta-tag"> {t('status.restanta')}</span>
+                        )}
+                        {e.grade_breakdown?.components && (
+                          <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>
+                            {e.grade_breakdown.components
+                              .filter((c) => c.value != null)
+                              .map((c, i) => (
+                                <span key={i}>
+                                  {i > 0 ? ' · ' : ''}
+                                  {c.name} {c.value}
+                                  {c.weight ? ` (${c.weight}%${c.is_bonus ? ' bonus' : ''})` : ''}
+                                </span>
+                              ))}
+                          </div>
                         )}
                       </td>
                       <td>{e.courses?.credits}</td>

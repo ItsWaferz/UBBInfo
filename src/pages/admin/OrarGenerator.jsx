@@ -5,7 +5,6 @@ import Toast from '../../components/Toast';
 
 const TYPES = ['CURS', 'SEMINAR', 'LABORATOR'];
 const PARITIES = ['saptamanal', 'par', 'impar'];
-const ROOM_TYPES = ['', 'CURS', 'SEMINAR', 'LABORATOR', 'ORICE'];
 const DAY_LABELS = { 1: 'Luni', 2: 'Marți', 3: 'Miercuri', 4: 'Joi', 5: 'Vineri' };
 
 const BLANK_REQ = {
@@ -17,7 +16,6 @@ const hhmm = (t) => (t ? t.slice(0, 5) : '');
 export default function OrarGenerator() {
   const [courses, setCourses] = useState([]);
   const [requirements, setRequirements] = useState([]);
-  const [rooms, setRooms] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [reqForm, setReqForm] = useState(BLANK_REQ);
   const [draftCount, setDraftCount] = useState(3);
@@ -33,15 +31,13 @@ export default function OrarGenerator() {
 
   const loadAll = async () => {
     try {
-      const [c, r, rm, d] = await Promise.all([
+      const [c, r, d] = await Promise.all([
         api.get('/api/courses'),
         api.get('/api/scheduling-requirements'),
-        api.get('/api/rooms'),
         api.get('/api/orar/drafts'),
       ]);
       setCourses(c || []);
       setRequirements(r || []);
-      setRooms(rm || []);
       setDrafts(d || []);
     } catch (err) {
       console.error('Load generator data failed:', err);
@@ -86,23 +82,6 @@ export default function OrarGenerator() {
     } catch (err) {
       console.error(err);
       flash('error', 'Eroare la ștergere.');
-    }
-  };
-
-  // ----- rooms -----
-  const setRoomField = (id, field, value) =>
-    setRooms((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
-
-  const saveRoom = async (r) => {
-    try {
-      await api.put(`/api/rooms/${r.id}`, {
-        capacity: r.capacity === '' || r.capacity == null ? null : Number(r.capacity),
-        room_type: r.room_type || null,
-      });
-      flash('success', `Sala ${r.code} salvată.`);
-    } catch (err) {
-      console.error(err);
-      flash('error', 'Eroare la salvarea sălii.');
     }
   };
 
@@ -180,7 +159,9 @@ export default function OrarGenerator() {
           </div>
           <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
             Solver-ul ține cont de: conflicte profesor/sală/grupă, tip & capacitate sală,
-            eligibilitate & disponibilitate profesor, durată & paritate. Câteva secunde per draft.
+            eligibilitate & disponibilitate profesor, durată & paritate, <strong>timp de
+            deplasare între clădiri</strong> (min 2h dacă nu sunt în aceeași zonă) și
+            <strong> compactarea orarului</strong> (fără ferestre mari). Câteva secunde per draft.
           </p>
 
           {drafts.length > 0 && (
@@ -350,41 +331,6 @@ export default function OrarGenerator() {
             </table>
           </div>
         )}
-      </section>
-
-      {/* ---- Rooms ---- */}
-      <section className="card">
-        <div className="card-header">
-          <h2 className="card-title"><Icon name="meeting_room" /> Săli — capacitate & tip ({rooms.length})</h2>
-        </div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr><th>Sală</th><th>Capacitate</th><th>Tip</th><th></th></tr>
-            </thead>
-            <tbody>
-              {rooms.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.code}{r.note ? ` (${r.note})` : ''}</td>
-                  <td style={{ width: 120 }}>
-                    <input type="number" min="0" className="grade-input" style={{ width: 80 }}
-                      value={r.capacity ?? ''}
-                      onChange={(e) => setRoomField(r.id, 'capacity', e.target.value)} />
-                  </td>
-                  <td style={{ width: 160 }}>
-                    <select className="select-bare" value={r.room_type || ''}
-                      onChange={(e) => setRoomField(r.id, 'room_type', e.target.value)}>
-                      {ROOM_TYPES.map((t) => <option key={t} value={t}>{t || '—'}</option>)}
-                    </select>
-                  </td>
-                  <td>
-                    <button className="btn btn-outline btn-sm" onClick={() => saveRoom(r)}>Salvează</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </section>
 
       <Toast visible={!!toast} variant={toast?.variant || 'success'} message={toast?.message || ''} />

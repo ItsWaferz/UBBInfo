@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -77,6 +78,40 @@ public class Profile {
     @Column(name = "address")
     private String address;
 
+    // --- Durable academic/identity fields used to pre-fill documents (feature #1) ---
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "birth_place")
+    private String birthPlace;
+
+    @Column(name = "birth_county")
+    private String birthCounty;
+
+    @Column(name = "father_initial")
+    private String fatherInitial;
+
+    @Column(name = "domain")
+    private String domain;
+
+    @Column(name = "study_program")
+    private String studyProgram;
+
+    @Column(name = "study_line")
+    private String studyLine;
+
+    @Column(name = "study_level")
+    private String studyLevel;
+
+    @Column(name = "study_cycle")
+    private String studyCycle;
+
+    @Column(name = "cod_unic")
+    private String codUnic;
+
+    @Column(name = "bank")
+    private String bank;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -136,4 +171,37 @@ public class Profile {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public String getBirthPlace() { return birthPlace; }
+    public void setBirthPlace(String birthPlace) { this.birthPlace = birthPlace; }
+
+    public String getBirthCounty() { return birthCounty; }
+    public void setBirthCounty(String birthCounty) { this.birthCounty = birthCounty; }
+
+    public String getFatherInitial() { return fatherInitial; }
+    public void setFatherInitial(String fatherInitial) { this.fatherInitial = fatherInitial; }
+
+    public String getDomain() { return domain; }
+    public void setDomain(String domain) { this.domain = domain; }
+
+    public String getStudyProgram() { return studyProgram; }
+    public void setStudyProgram(String studyProgram) { this.studyProgram = studyProgram; }
+
+    public String getStudyLine() { return studyLine; }
+    public void setStudyLine(String studyLine) { this.studyLine = studyLine; }
+
+    public String getStudyLevel() { return studyLevel; }
+    public void setStudyLevel(String studyLevel) { this.studyLevel = studyLevel; }
+
+    public String getStudyCycle() { return studyCycle; }
+    public void setStudyCycle(String studyCycle) { this.studyCycle = studyCycle; }
+
+    public String getCodUnic() { return codUnic; }
+    public void setCodUnic(String codUnic) { this.codUnic = codUnic; }
+
+    public String getBank() { return bank; }
+    public void setBank(String bank) { this.bank = bank; }
 }

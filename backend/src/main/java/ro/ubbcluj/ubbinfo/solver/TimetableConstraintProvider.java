@@ -2,6 +2,7 @@ package ro.ubbcluj.ubbinfo.solver;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -23,7 +24,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 roomConflict(f),
                 professorConflict(f),
                 groupConflict(f),
+                travelBuffer(f),
                 preferredTime(f),
+                compactDay(f),
         };
     }
 
@@ -96,6 +99,22 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Conflict grupă");
     }
 
+    /**
+     * Travel time: two lessons of the same professor or the same (overlapping)
+     * group, on the same day, in buildings that are NOT close, need a >= 2h gap.
+     * (e.g. a class ending at 12:00 across town can't be followed by one at 12:00.)
+     */
+    private Constraint travelBuffer(ConstraintFactory f) {
+        return f.forEachUniquePair(Lesson.class,
+                        Joiners.equal(l -> l.getTimeslot().getDayOfWeek()))
+                .filter((a, b) -> sameMover(a, b)
+                        && parityOverlap(a, b)
+                        && farApart(a.getRoom(), b.getRoom())
+                        && gapMinutes(a, b) >= 0 && gapMinutes(a, b) < 120)
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Timp de deplasare între clădiri (min 2h)");
+    }
+
     // ---------- SOFT ----------
 
     private Constraint preferredTime(ConstraintFactory f) {
@@ -103,6 +122,23 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .filter(l -> l.getProfessor().preferredAt(l.getTimeslot()))
                 .reward(HardSoftScore.ONE_SOFT)
                 .asConstraint("Interval preferat de profesor");
+    }
+
+    /**
+     * Compact each group's day: penalize idle time (gaps) — prefer back-to-back
+     * classes over "2h in the morning, 2h in the evening". Idle = span - taught.
+     */
+    private Constraint compactDay(ConstraintFactory f) {
+        return f.forEach(Lesson.class)
+                .groupBy(
+                        l -> l.getGroupName() + "|" + l.getTimeslot().getDayOfWeek(),
+                        ConstraintCollectors.min((Lesson l) -> l.getTimeslot().getStartTime().toSecondOfDay()),
+                        ConstraintCollectors.max((Lesson l) -> l.getTimeslot().getEndTime().toSecondOfDay()),
+                        ConstraintCollectors.sum((Lesson l) -> l.getDurationHours() * 3600))
+                .filter((key, minStart, maxEnd, taughtSec) -> (maxEnd - minStart) - taughtSec > 0)
+                .penalize(HardSoftScore.ONE_SOFT,
+                        (key, minStart, maxEnd, taughtSec) -> ((maxEnd - minStart) - taughtSec) / 3600)
+                .asConstraint("Compactare orar grupă (fără ferestre)");
     }
 
     // ---------- helpers ----------
@@ -132,5 +168,34 @@ public class TimetableConstraintProvider implements ConstraintProvider {
             return false;
         }
         return a.equals(b) || a.startsWith(b + "/") || b.startsWith(a + "/");
+    }
+
+    /** Someone physically moves between these two lessons: same professor or same group. */
+    static boolean sameMover(Lesson a, Lesson b) {
+        boolean sameProf = a.getProfessor() != null && b.getProfessor() != null
+                && a.getProfessor().getId() != null
+                && a.getProfessor().getId().equals(b.getProfessor().getId());
+        return sameProf || groupsOverlap(a.getGroupName(), b.getGroupName());
+    }
+
+    /** True if the two rooms are in different, non-close buildings (zones differ). */
+    static boolean farApart(SolverRoom a, SolverRoom b) {
+        if (a == null || b == null || a.getBuildingId() == null || b.getBuildingId() == null) {
+            return false; // unknown location → don't impose a travel break
+        }
+        if (a.getBuildingId().equals(b.getBuildingId())) {
+            return false; // same building
+        }
+        String za = a.getZone();
+        String zb = b.getZone();
+        return !(za != null && !za.isBlank() && za.equals(zb)); // same zone = close
+    }
+
+    /** Gap in minutes between two non-overlapping lessons; negative if they overlap. */
+    static int gapMinutes(Lesson a, Lesson b) {
+        Lesson earlier = a.getTimeslot().getStartTime().isAfter(b.getTimeslot().getStartTime()) ? b : a;
+        Lesson later = (earlier == a) ? b : a;
+        return (later.getTimeslot().getStartTime().toSecondOfDay()
+                - earlier.getTimeslot().getEndTime().toSecondOfDay()) / 60;
     }
 }

@@ -31,6 +31,10 @@ public class Building {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
+    /** Proximity zone — buildings sharing a zone are "close" (no travel break). */
+    @Column(name = "zone")
+    private String zone;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -45,4 +49,7 @@ public class Building {
 
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+
+    public String getZone() { return zone; }
+    public void setZone(String zone) { this.zone = zone; }
 }

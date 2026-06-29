@@ -33,14 +33,16 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 |------|----------------|
 | **Acasă** | Dashboard: welcome card, institutional account (copy-email + change password), useful links, student ID card, and current academic situation. |
 | **Identitatea Ta** | Edit personal data — phone, personal email, IBAN, CNP, ID series, address. All optional. |
-| **Consultă Note** | All grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Carried-over restanțe surface in the current semester. |
+| **Consultă Note** | All grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Shows the **computed final grade** + per-component breakdown when a grading scheme exists. Carried-over restanțe surface in the current semester. |
 | **Orar** | **Weekly timetable per semigroup**, with **odd/even week** logic (computed from the semester start + official holidays), a week navigator, and a peek at other semigroups. |
+| **Documente** | **Self-service generation of official UBB documents** (adeverință de student, cerere bursă socială / Anexa 7, cerere bursă de performanță) — pre-filled from my profile + computed media, rendered to **PDF**, with a re-downloadable history. See [Document generation](#-document-generation-pdf). |
 | **Evaluare Profesori** | Rate every professor who teaches me, on 5 criteria (1–5 ⭐) + free-text comment. **Anonymous.** |
 | **Înscriere Examen** | Pick the **principal** or **secondary** exam date per subject; the restanță/mărire date is shown too. |
 
 ### 👨‍🏫 As a professor
 
 - **Catalog Note** — enter/edit grades for the students in my courses.
+- **Notare** — define the **grading scheme** for my course (weighted components, bonuses, pass rules), pull partial grades from a **Google Sheet** link or enter them manually, and **compute & save** each student's final grade. See [Grading schemes](#-grading-schemes).
 - **Examene** — add/edit/delete exams (date, time, **building → room**, session type, kind).
 - **Disponibilitate** — mark the time windows when I can teach (available / preferred / unavailable). Feeds the timetable generator.
 
@@ -50,11 +52,12 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 - **Utilizatori** — search & filter by role/specialization, edit any profile field, **assign roles** (multi-role + primary), and **create new accounts**.
 - **Discipline** — full CRUD on courses.
 - **Orar** — edit the timetable **per semigroup** (building → room pickers).
-- **Generare orar** 🤖 — **automatic timetable generation** with a constraint solver (see below): define the demand (which course/type/group needs how many sessions, duration, parity), set room capacity/type, generate multiple drafts, preview and publish the best one.
+- **Săli & clădiri** — full CRUD on **buildings and rooms** (capacity, type, and travel **zone** used by the timetable generator's travel-time constraint).
+- **Generare orar** 🤖 — **automatic timetable generation** with a constraint solver (see below): define the demand (which course/type/group needs how many sessions, duration, parity), generate multiple drafts, preview and publish the best one.
 - **Calendar** — academic-year start date + **holidays** (drive the odd/even-week logic).
 - **Evaluări** — read the **anonymous** professor evaluations.
 - **Linkuri utile** — manage the dashboard quick links.
-- **Conturi admiși** — *(in progress)* auto-generation of accounts for admitted candidates.
+- **Conturi admiși** — **bulk account creation** for admitted candidates from a **CSV/XLSX** upload: institutional email generation with collision handling, default password rule, account + profile + student role. See [Admitted-students import](#-admitted-students-import).
 
 ---
 
@@ -105,7 +108,50 @@ constraint-satisfaction problem, not an LLM guess:
 
 The admin defines the demand (`scheduling_requirement`), the solver produces several
 **drafts** with a hard/soft score (`0 hard` = a valid timetable), and the admin previews
-and **publishes** one into the live `orar`.
+and **publishes** one into the live `orar`. Two extra constraints keep schedules humane:
+a **travel-time** hard rule (a 2h gap between back-to-back classes in far-apart building
+*zones*) and a **compactness** soft rule (avoid big gaps like "08–10 then 18–20").
+
+### 📊 Grading schemes
+
+Professors define, per course, how the **final grade** is computed:
+
+- **Components** with a percentage **weight**, optional **bonuses**, and per-criterion
+  **minimum thresholds**. Each component's value comes either from a linked **Google Sheet**
+  (averaging chosen columns) or is **entered manually** in an in-app per-student grid.
+- **Pass rules**: an overall threshold, or per-criterion minimums.
+- A scheme-level **round-up** toggle (round ≥ .50 up vs. keep the exact decimal).
+
+The backend reads the sheet via its CSV export, matches rows to students (by matricol / email /
+name), computes `final = Σ(value×weight)/Σweight (+ bonuses)`, clamps to `[0,10]`, writes it to
+`enrollments.final_grade` + a JSON breakdown, and the student sees the final grade **plus the
+component breakdown** on their Grades page.
+
+### 📄 Document generation (PDF)
+
+Students generate official UBB documents themselves, pre-filled from their data:
+
+- **3 types**: adeverință de student, cerere bursă socială (Anexa 7), cerere bursă de performanță.
+- **Faithful PDFs** rendered server-side from XHTML templates via **OpenHTMLtoPDF**, with the
+  bundled **Liberation Serif** font so Romanian diacritics (ș, ț, ă, â, î) render correctly.
+- **Auto pre-fill** from existing profile/dashboard data (faculty, specialization, study year,
+  matricol) + **media/credits computed** from `enrollments`; academic fields like *domain* and
+  *study line* are **derived** (e.g. the line from the specialization parenthetical), and every
+  field stays editable before generating.
+- The adeverință is generated **pre-filled but unsigned** (registration number + signature area
+  left for the secretariat). Every issue is recorded in `issued_documents` for **re-download**.
+
+### 👥 Admitted-students import
+
+Admins upload a **CSV/XLSX** of admitted candidates; the backend creates each account:
+
+- **Institutional email** `prenume1.nume@stud.ubbcluj.ro` with collision escalation (add the
+  second given name → rotate names → swap the family-name position → finally append numbers).
+- **Default password** = last 6 digits of the CNP + a fixed suffix.
+- Creates the **auth account + profile + student role**; invalid/duplicate rows are **skipped**
+  and reported. Account creation uses the Supabase Admin API (service-role key, **backend-only**).
+  A **preview** mode validates the file without creating anything. *(Microsoft Exchange / Graph
+  provisioning is stubbed behind a flag for when the faculty grants access.)*
 
 ---
 
@@ -141,6 +187,8 @@ full (reverse-engineered) schema.
 - **Java 17** + **Spring Boot 3.4** (Web, Data JPA, Security / OAuth2 Resource Server)
 - **PostgreSQL** (the Supabase database, via the session pooler)
 - **Timefold Solver 1.33** (timetable generation)
+- **OpenHTMLtoPDF 1.0.10** + bundled **Liberation Serif** (document → PDF)
+- **Apache POI** + **commons-csv** (XLSX/CSV parsing for the admitted-students import)
 - **Maven**
 
 ---
@@ -205,6 +253,9 @@ Run the SQL files in `supabase/` **in this order** (Supabase dashboard → SQL E
 10. `optional_courses.sql` — adds the `is_optional` flag and marks facultative courses
 11. `orar_generation.sql` — **timetable-generation schema** (room capacity/type, professor
     availability, scheduling requirements, drafts)
+12. `building_zones.sql` — adds the **travel zone** to buildings (generator travel-time constraint)
+13. `grading_schemes.sql` — **grading schemes** (components, manual grades) + `enrollments.final_grade`/`grade_breakdown`
+14. `documents.sql` — **student documents**: durable profile fields (birth data, study line, …) + `issued_documents`
 
 Then deploy `supabase/functions/create-user/` as an **Edge Function** named `create-user`
 (account creation needs the service-role key, which lives only inside that function).
@@ -225,26 +276,31 @@ src/                              # React frontend
 ├── contexts/AuthContext.jsx      # user / profile / roles (loads GET /api/me/profile)
 ├── components/                   # shell, modals, RoomPicker, Toast, …
 └── pages/
-    ├── student/    Dashboard, Identity, Grades, Orar, Evaluare, InscriereExamen
-    ├── professor/  Dashboard, Catalog, Examene, Availability
+    ├── student/    Dashboard, Identity, Grades, Orar, Documente, Evaluare, InscriereExamen
+    ├── professor/  Dashboard, Catalog, Grading, Examene, Availability
     └── admin/      Dashboard (Panou) + nav pages: Users, Courses, OrarEditor,
-                    OrarGenerator, Calendar, Evaluari, Links, ConturiAdmisi
+                    BuildingsRooms, OrarGenerator, Calendar, Evaluari, Links, ConturiAdmisi
 
 backend/                          # Spring Boot REST API
 ├── pom.xml, run.sh
 ├── SCHEMA.md                     # reverse-engineered DB schema
-└── src/main/java/ro/ubbcluj/ubbinfo/
-    ├── config/SecurityConfig     # JWKS validation, CORS, stateless
-    ├── security/                 # Supabase JWT → authentication
-    ├── entity/                   # JPA entities (tables)
-    ├── repository/               # Spring Data repositories
-    ├── service/                  # business logic + RLS (CurrentUserService, …)
-    ├── solver/                   # Timefold domain + constraints (timetable generation)
-    ├── dto/                      # API response shapes (snake_case)
-    └── web/                      # REST controllers
+└── src/main/
+    ├── resources/fonts/          # bundled Liberation Serif (PDF diacritics)
+    └── java/ro/ubbcluj/ubbinfo/
+        ├── config/SecurityConfig # JWKS validation, CORS, stateless
+        ├── security/             # Supabase JWT → authentication
+        ├── entity/               # JPA entities (tables)
+        ├── repository/           # Spring Data repositories
+        ├── service/              # business logic + RLS (CurrentUserService),
+        │                         #   GradingService, DocumentService/Catalog/PdfRenderer,
+        │                         #   AdmisiImportService, GenerationService, …
+        ├── solver/               # Timefold domain + constraints (timetable generation)
+        ├── dto/                  # API response shapes (snake_case)
+        └── web/                  # REST controllers
 
+samples/                          # example import file (admisi_exemplu.csv)
 supabase/                         # SQL migrations/seeds + create-user Edge Function
-FEATURES_PROMPT.md                # implementation brief for upcoming larger features
+FEATURES_PROMPT.md                # implementation brief for the larger features
 ```
 
 ---

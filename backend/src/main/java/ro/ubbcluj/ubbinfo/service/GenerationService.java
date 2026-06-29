@@ -17,6 +17,7 @@ import ro.ubbcluj.ubbinfo.entity.TimetableDraft;
 import ro.ubbcluj.ubbinfo.entity.TimetableDraftLesson;
 import ro.ubbcluj.ubbinfo.repository.ProfessorAvailabilityRepository;
 import ro.ubbcluj.ubbinfo.repository.ProfessorCourseRepository;
+import ro.ubbcluj.ubbinfo.repository.BuildingRepository;
 import ro.ubbcluj.ubbinfo.repository.OrarRepository;
 import ro.ubbcluj.ubbinfo.repository.ProfileRepository;
 import ro.ubbcluj.ubbinfo.repository.RoomRepository;
@@ -56,6 +57,7 @@ public class GenerationService {
     private final ProfessorAvailabilityRepository availabilityRepository;
     private final ProfileRepository profileRepository;
     private final RoomRepository roomRepository;
+    private final BuildingRepository buildingRepository;
     private final TimetableDraftRepository draftRepository;
     private final TimetableDraftLessonRepository draftLessonRepository;
     private final OrarRepository orarRepository;
@@ -69,6 +71,7 @@ public class GenerationService {
                              ProfessorAvailabilityRepository availabilityRepository,
                              ProfileRepository profileRepository,
                              RoomRepository roomRepository,
+                             BuildingRepository buildingRepository,
                              TimetableDraftRepository draftRepository,
                              TimetableDraftLessonRepository draftLessonRepository,
                              OrarRepository orarRepository,
@@ -78,6 +81,7 @@ public class GenerationService {
         this.availabilityRepository = availabilityRepository;
         this.profileRepository = profileRepository;
         this.roomRepository = roomRepository;
+        this.buildingRepository = buildingRepository;
         this.draftRepository = draftRepository;
         this.draftLessonRepository = draftLessonRepository;
         this.orarRepository = orarRepository;
@@ -98,8 +102,12 @@ public class GenerationService {
 
         // --- problem facts ---
         List<Timeslot> timeslots = buildTimeslots();
+        Map<UUID, String> zoneByBuilding = buildingRepository.findAll().stream()
+                .filter(b -> b.getZone() != null)
+                .collect(Collectors.toMap(b -> b.getId(), b -> b.getZone(), (a, b) -> a));
         List<SolverRoom> rooms = roomRepository.findAll().stream()
-                .map(r -> new SolverRoom(r.getId(), r.getCode(), r.getCapacity(), r.getRoomType()))
+                .map(r -> new SolverRoom(r.getId(), r.getCode(), r.getCapacity(), r.getRoomType(),
+                        r.getBuildingId(), r.getBuildingId() == null ? null : zoneByBuilding.get(r.getBuildingId())))
                 .toList();
         if (rooms.isEmpty()) {
             throw new IllegalArgumentException("Nu există săli definite.");

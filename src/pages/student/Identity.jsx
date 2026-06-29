@@ -4,16 +4,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/Icon';
 import { useLanguage } from '../../i18n/LanguageContext';
 
-const FIELDS = ['phone', 'personal_email', 'iban', 'cnp', 'id_series', 'address'];
+const FIELDS = [
+  'phone', 'personal_email', 'iban', 'bank',
+  'cnp', 'id_series', 'address',
+  'birth_date', 'birth_place', 'birth_county', 'father_initial',
+];
 
-const EMPTY = {
-  phone: '',
-  personal_email: '',
-  iban: '',
-  cnp: '',
-  id_series: '',
-  address: '',
-};
+const EMPTY = FIELDS.reduce((acc, f) => ({ ...acc, [f]: '' }), {});
 
 export default function Identity() {
   const { user, profile, setProfile } = useAuth();
@@ -128,7 +125,7 @@ export default function Identity() {
               {t('identity.financial')}
             </h2>
           </div>
-          <div className="card-body">
+          <div className="card-body form-grid-2">
             <label className="field">
               <span className="field-label">{t('identity.iban')}</span>
               <div className="input-wrap">
@@ -145,8 +142,79 @@ export default function Identity() {
                 {t('identity.ibanHint')}
               </span>
             </label>
+            <label className="field">
+              <span className="field-label">Banca</span>
+              <div className="input-wrap">
+                <Icon name="account_balance" className="input-icon" />
+                <input
+                  type="text"
+                  value={form.bank}
+                  onChange={update('bank')}
+                  placeholder="ex. Banca Transilvania"
+                />
+              </div>
+            </label>
           </div>
         </section>
+
+        {/* Birth data — used to pre-fill documents */}
+        <section className="card">
+          <div className="card-header">
+            <h2 className="card-title">
+              <Icon name="cake" />
+              Date de naștere
+            </h2>
+          </div>
+          <div className="card-body form-grid-2">
+            <label className="field">
+              <span className="field-label">Data nașterii</span>
+              <div className="input-wrap">
+                <Icon name="calendar_month" className="input-icon" />
+                <input type="date" value={form.birth_date} onChange={update('birth_date')} />
+              </div>
+            </label>
+            <label className="field">
+              <span className="field-label">Inițiala tatălui</span>
+              <div className="input-wrap">
+                <Icon name="person" className="input-icon" />
+                <input
+                  type="text"
+                  value={form.father_initial}
+                  onChange={update('father_initial')}
+                  placeholder="ex. A.-B."
+                />
+              </div>
+            </label>
+            <label className="field">
+              <span className="field-label">Localitatea nașterii</span>
+              <div className="input-wrap">
+                <Icon name="location_city" className="input-icon" />
+                <input
+                  type="text"
+                  value={form.birth_place}
+                  onChange={update('birth_place')}
+                  placeholder="ex. Cluj-Napoca"
+                />
+              </div>
+            </label>
+            <label className="field">
+              <span className="field-label">Județul</span>
+              <div className="input-wrap">
+                <Icon name="map" className="input-icon" />
+                <input
+                  type="text"
+                  value={form.birth_county}
+                  onChange={update('birth_county')}
+                  placeholder="ex. Cluj"
+                />
+              </div>
+            </label>
+          </div>
+        </section>
+
+        {/* Academic data (faculty, specialization, study year, group) comes from the
+            student record managed by the secretariat — it pre-fills documents
+            automatically, so it is not edited here. */}
 
         {/* 3. Identity documents */}
         <section className="card">

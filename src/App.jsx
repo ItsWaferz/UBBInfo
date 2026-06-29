@@ -7,16 +7,19 @@ import HomeRouter from './components/HomeRouter';
 import Identity from './pages/student/Identity';
 import Grades from './pages/student/Grades';
 import Orar from './pages/student/Orar';
+import Documente from './pages/student/Documente';
 import Evaluare from './pages/student/Evaluare';
 import InscriereExamen from './pages/student/InscriereExamen';
 import Catalog from './pages/professor/Catalog';
 import Examene from './pages/professor/Examene';
 import Availability from './pages/professor/Availability';
+import Grading from './pages/professor/Grading';
 import PlataTaxe from './pages/mockups/PlataTaxe';
 import Users from './pages/admin/Users';
 import Courses from './pages/admin/Courses';
 import OrarEditor from './pages/admin/OrarEditor';
 import OrarGenerator from './pages/admin/OrarGenerator';
+import BuildingsRooms from './pages/admin/BuildingsRooms';
 import Calendar from './pages/admin/Calendar';
 import Evaluari from './pages/admin/Evaluari';
 import Links from './pages/admin/Links';
@@ -53,7 +56,9 @@ export default function App() {
         <Route path="identitate" element={<Identity />} />
         <Route path="note" element={<Grades />} />
         <Route path="orar" element={<Orar />} />
+        <Route path="documente" element={<Documente />} />
         <Route path="catalog" element={<Catalog />} />
+        <Route path="notare" element={<Grading />} />
         <Route path="examene" element={<Examene />} />
         <Route path="disponibilitate" element={<Availability />} />
         <Route path="evaluare" element={<Evaluare />} />
@@ -64,6 +69,7 @@ export default function App() {
         <Route path="admin/utilizatori" element={<div className="page"><Users /></div>} />
         <Route path="admin/discipline" element={<div className="page"><Courses /></div>} />
         <Route path="admin/orar" element={<div className="page"><OrarEditor /></div>} />
+        <Route path="admin/sali" element={<div className="page"><BuildingsRooms /></div>} />
         <Route path="admin/generare" element={<div className="page"><OrarGenerator /></div>} />
         <Route path="admin/calendar" element={<div className="page"><Calendar /></div>} />
         <Route path="admin/evaluari" element={<div className="page"><Evaluari /></div>} />

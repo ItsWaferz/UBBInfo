@@ -9,7 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -48,6 +51,15 @@ public class Enrollment {
     @Column(name = "is_restanta")
     private Boolean isRestanta;
 
+    /** Computed final grade (decimal) from the grading scheme. */
+    @Column(name = "final_grade")
+    private Double finalGrade;
+
+    /** Snapshot of the component breakdown shown to the student (jsonb). */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "grade_breakdown", columnDefinition = "jsonb")
+    private Map<String, Object> gradeBreakdown;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", insertable = false, updatable = false)
     private Course course;
@@ -80,6 +92,12 @@ public class Enrollment {
 
     public Boolean getIsRestanta() { return isRestanta; }
     public void setIsRestanta(Boolean isRestanta) { this.isRestanta = isRestanta; }
+
+    public Double getFinalGrade() { return finalGrade; }
+    public void setFinalGrade(Double finalGrade) { this.finalGrade = finalGrade; }
+
+    public Map<String, Object> getGradeBreakdown() { return gradeBreakdown; }
+    public void setGradeBreakdown(Map<String, Object> gradeBreakdown) { this.gradeBreakdown = gradeBreakdown; }
 
     public Course getCourse() { return course; }
     public void setCourse(Course course) { this.course = course; }

@@ -2,11 +2,13 @@ package ro.ubbcluj.ubbinfo.dto;
 
 import ro.ubbcluj.ubbinfo.entity.Enrollment;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * Enrollment as the frontend consumes it: scalar fields + the nested course
- * (the Supabase shape was {@code select('*, courses(*)')}).
+ * (the Supabase shape was {@code select('*, courses(*)')}), plus the computed
+ * final grade + breakdown from the grading scheme.
  */
 public record EnrollmentDto(
         UUID id,
@@ -16,6 +18,8 @@ public record EnrollmentDto(
         String academicYear,
         Integer semester,
         Integer grade,
+        Double finalGrade,
+        Map<String, Object> gradeBreakdown,
         Boolean isRestanta,
         // Named "courses" (plural) to match the Supabase embedded-relation shape
         // the frontend already reads as e.courses.*
@@ -30,6 +34,8 @@ public record EnrollmentDto(
                 e.getAcademicYear(),
                 e.getSemester(),
                 e.getGrade(),
+                e.getFinalGrade(),
+                e.getGradeBreakdown(),
                 e.getIsRestanta(),
                 CourseDto.from(e.getCourse())
         );
