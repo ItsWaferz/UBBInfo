@@ -15,7 +15,9 @@ import {
   UserCog, Database, MonitorDot, PersonStanding, Newspaper,
   CalendarClock, Layers, ClipboardList, PanelLeft, BarChart,
   Umbrella, Zap, MessageCircle, Quote, LineChart,
-  Upload, Presentation, UserCheck, ClipboardCheck, HelpCircle
+  Upload, Presentation, UserCheck, ClipboardCheck, HelpCircle,
+  ArrowLeft, Sparkles, Cake, Calculator, ListChecks, Sigma,
+  Network, Building2, Map as MapIcon, HandHeart
 } from 'lucide-react';
 
 /** Map every icon name string used in the app (nav, DB, etc.) to a Lucide component */
@@ -143,6 +145,23 @@ const ICON_MAP = {
   how_to_reg: UserCheck,
   grading: ClipboardCheck,
   help: HelpCircle,
+  // Documents, grading, generator, identity (features #1/#2/#3/#4)
+  arrow_back: ArrowLeft,
+  picture_as_pdf: FileText,
+  volunteer_activism: HandHeart,
+  cake: Cake,
+  location_city: Building2,
+  map: MapIcon,
+  functions: Sigma,
+  calculate: Calculator,
+  checklist: ListChecks,
+  task_alt: CheckCircle,
+  sync: RefreshCw,
+  preview: Eye,
+  auto_awesome: Sparkles,
+  hub: Network,
+  category: Layers,
+  stairs: Layers,
 };
 
 /**

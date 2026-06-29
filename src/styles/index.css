@@ -2891,3 +2891,78 @@ td .badge-optional {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--outline-variant);
 }
+
+/* ── Layout polish & mobile scalability for feature pages (#1/#2/#4) ── */
+
+/* Headers and action rows must wrap instead of overflowing on small screens. */
+.card-header { flex-wrap: wrap; }
+.form-actions,
+.row-actions { flex-wrap: wrap; }
+
+/* Document type cards never exceed the viewport on narrow phones. */
+.doc-type-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+@media (max-width: 680px) {
+  /* Slightly smaller headings free up space on phones. */
+  .page-title { font-size: 19px; }
+  .page-subtitle { font-size: 13px; }
+
+  /* Action button groups in a card header drop to a full-width row and
+     share the space evenly, so two buttons never overflow. */
+  .card-header .row-actions,
+  .card-header .form-actions { width: 100%; }
+  .card-header .row-actions .btn,
+  .card-header .form-actions .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* Stacked, edge-to-edge document cards. */
+  .doc-type-card { padding: 14px; gap: 12px; }
+  .doc-type-icon { width: 40px; height: 40px; }
+  .doc-type-icon .icon { font-size: 22px; }
+  .doc-type-body h3 { font-size: 14px; }
+  .doc-type-body p { font-size: 12px; }
+
+  /* Sheet-column checkboxes in a single readable column. */
+  .course-multiselect { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  /* Full-width primary actions on very small screens. */
+  .identity-footer .btn,
+  .form-actions > .btn-primary { width: 100%; justify-content: center; }
+  .identity-footer { flex-wrap: wrap; gap: 8px; }
+}
+
+/* Bare inputs placed directly inside a .field (no .input-wrap wrapper) — used by
+   the Documente forms — get the same boxed styling as wrapped inputs, so they
+   align consistently with the rest of the app. */
+.field > input,
+.field > select,
+.field > textarea {
+  min-height: 44px;
+  width: 100%;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  padding: 11px 12px;
+  font: inherit;
+  color: var(--on-surface);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field > textarea { resize: vertical; min-height: 64px; }
+.field > input:focus,
+.field > select:focus,
+.field > textarea:focus {
+  border-color: var(--primary-container);
+  box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.15);
+  background: var(--surface-container-lowest);
+}
+
+@media (max-width: 680px) {
+  /* 16px prevents iOS from zooming when focusing an input. */
+  .field > input,
+  .field > select,
+  .field > textarea { font-size: 16px; }
+}
