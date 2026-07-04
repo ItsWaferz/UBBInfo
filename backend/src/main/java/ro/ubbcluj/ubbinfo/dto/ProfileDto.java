@@ -37,7 +37,9 @@ public record ProfileDto(
         String studyLevel,
         String studyCycle,
         String codUnic,
-        String bank
+        String bank,
+        Boolean isSocialCase,
+        Boolean isSpecialCase
 ) {
     public static ProfileDto from(Profile p) {
         if (p == null) {
@@ -51,6 +53,7 @@ public record ProfileDto(
                 p.getCnp(), p.getIdSeries(), p.getAddress(),
                 p.getBirthDate(), p.getBirthPlace(), p.getBirthCounty(), p.getFatherInitial(),
                 p.getDomain(), p.getStudyProgram(), p.getStudyLine(), p.getStudyLevel(),
-                p.getStudyCycle(), p.getCodUnic(), p.getBank());
+                p.getStudyCycle(), p.getCodUnic(), p.getBank(),
+                p.getIsSocialCase(), p.getIsSpecialCase());
     }
 }

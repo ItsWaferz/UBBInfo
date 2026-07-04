@@ -21,11 +21,17 @@ public record EnrollmentDto(
         Double finalGrade,
         Map<String, Object> gradeBreakdown,
         Boolean isRestanta,
+        /** Server-computed: unresolved restanță carried from a past semester. */
+        Boolean carriedRestanta,
         // Named "courses" (plural) to match the Supabase embedded-relation shape
         // the frontend already reads as e.courses.*
         CourseDto courses
 ) {
     public static EnrollmentDto from(Enrollment e) {
+        return from(e, false);
+    }
+
+    public static EnrollmentDto from(Enrollment e, boolean carriedRestanta) {
         return new EnrollmentDto(
                 e.getId(),
                 e.getStudentId(),
@@ -37,6 +43,7 @@ public record EnrollmentDto(
                 e.getFinalGrade(),
                 e.getGradeBreakdown(),
                 e.getIsRestanta(),
+                carriedRestanta,
                 CourseDto.from(e.getCourse())
         );
     }

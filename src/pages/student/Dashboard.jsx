@@ -5,10 +5,9 @@ import { formatRomanianDate, firstNameOf } from '../../utils/format';
 import PasswordModal from '../../components/PasswordModal';
 import Toast from '../../components/Toast';
 import Icon from '../../components/Icon';
+import FacilitiesCard from './FacilitiesCard';
+import { getCurrentPeriod, FALLBACK_PERIOD } from '../../utils/academicPeriod';
 import { useLanguage } from '../../i18n/LanguageContext';
-
-const ACADEMIC_YEAR = '2025-2026';
-const CURRENT_SEMESTER = 2;
 
 export default function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -22,30 +21,25 @@ export default function StudentDashboard() {
 
   const fetchData = async () => {
     try {
-      const [links, enrollments] = await Promise.all([
+      const [links, enrollments, period] = await Promise.all([
         api.get('/api/links?active=true'),
         api.get('/api/enrollments/me'),
+        getCurrentPeriod().catch(() => FALLBACK_PERIOD),
       ]);
 
       setLinks(links || []);
 
-      // Current-semester courses
+      // Current-semester courses (period comes from semester_config via the API)
       setCurrentCourses(
         (enrollments || []).filter(
           (e) =>
-            e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER
+            e.academic_year === period.academic_year &&
+            e.semester === period.semester
         )
       );
 
-      // Past restanțe: exclude current semester, only grade < 5 OR null
-      const past = (enrollments || []).filter((e) => {
-        if (!e.is_restanta) return false;
-        const isCurrent =
-          e.academic_year === ACADEMIC_YEAR && e.semester === CURRENT_SEMESTER;
-        const failingOrUngraded = e.grade === null || e.grade < 5;
-        return !isCurrent && failingOrUngraded;
-      });
-      setRestante(past);
+      // Carried restanțe — computed server-side (same rule as Grades/Taxe).
+      setRestante((enrollments || []).filter((e) => e.carried_restanta));
     } catch (err) {
       console.error('Load dashboard failed:', err);
     }
@@ -200,6 +194,9 @@ export default function StudentDashboard() {
           </div>
         </div>
       </section>
+
+      {/* C2. Student facilities (burse / tabere / camin) */}
+      <FacilitiesCard />
 
       {/* D. Academic table */}
       <section className="card">

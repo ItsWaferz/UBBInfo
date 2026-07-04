@@ -24,18 +24,34 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final CurrentUserService currentUser;
+    private final AcademicPeriodService periodService;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository, CurrentUserService currentUser) {
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             CurrentUserService currentUser,
+                             AcademicPeriodService periodService) {
         this.enrollmentRepository = enrollmentRepository;
         this.currentUser = currentUser;
+        this.periodService = periodService;
     }
 
-    /** The caller's own enrollments (Grades page / Student dashboard). */
+    /**
+     * The caller's own enrollments (Grades page / Student dashboard), each
+     * flagged with the server-computed carried-restanță state so every page
+     * consumes the same rule instead of re-deriving it.
+     */
     @Transactional(readOnly = true)
     public List<EnrollmentDto> myEnrollments() {
         UUID me = currentUser.requireUserId();
-        return enrollmentRepository.findByStudentIdOrderByAcademicYearAscSemesterAsc(me)
-                .stream().map(EnrollmentDto::from).toList();
+        List<Enrollment> all =
+                enrollmentRepository.findByStudentIdOrderByAcademicYearAscSemesterAsc(me);
+        AcademicPeriodService.Period p = periodService.current();
+        java.util.Set<UUID> carriedIds = EnrollmentRules
+                .carriedRestante(all, p.academicYear(), p.semester())
+                .values().stream().map(Enrollment::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        return all.stream()
+                .map(e -> EnrollmentDto.from(e, carriedIds.contains(e.getId())))
+                .toList();
     }
 
     /** Enrollments for a course — only the professor teaching it, or an admin. */
@@ -57,6 +73,11 @@ public class EnrollmentService {
             throw new AccessDeniedException("Not allowed to grade this enrollment");
         }
         e.setGrade(grade);
+        // A manually-entered grade supersedes any previously computed one —
+        // otherwise the stale final_grade keeps winning everywhere the app
+        // prefers it (grades page, media, restanțe, taxe).
+        e.setFinalGrade(null);
+        e.setGradeBreakdown(null);
         if (isRestanta != null) {
             e.setIsRestanta(isRestanta);
         }

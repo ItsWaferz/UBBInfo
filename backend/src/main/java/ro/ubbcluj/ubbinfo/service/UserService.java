@@ -113,6 +113,8 @@ public class UserService {
         apply(fields, "phone", p::setPhone);
         apply(fields, "personal_email", p::setPersonalEmail);
         apply(fields, "address", p::setAddress);
+        if (fields.containsKey("is_social_case")) p.setIsSocialCase(parseBool(fields.get("is_social_case")));
+        if (fields.containsKey("is_special_case")) p.setIsSpecialCase(parseBool(fields.get("is_special_case")));
 
         return ProfileDto.from(profileRepository.save(p));
     }
@@ -157,18 +159,50 @@ public class UserService {
     /** All users with their role assignments (admin Users page). */
     @Transactional(readOnly = true)
     public List<AdminUserDto> listUsers() {
+        return listUsers(null, null);
+    }
+
+    /**
+     * Users with role assignments, optionally filtered server-side: {@code q}
+     * matches name/matricol/email, {@code flagged} keeps only social/special
+     * cases. Filtered queries are capped so pages that need a handful of rows
+     * (Facilități case manager) don't ship the whole user table.
+     */
+    @Transactional(readOnly = true)
+    public List<AdminUserDto> listUsers(String q, Boolean flagged) {
         currentUser.requireAdmin();
 
         Map<UUID, List<UserRole>> rolesByUser = userRoleRepository.findAll().stream()
                 .collect(Collectors.groupingBy(UserRole::getUserId));
 
-        return profileRepository.findAll().stream()
+        String needle = q == null ? null : q.trim().toLowerCase();
+        boolean filtered = (needle != null && !needle.isEmpty()) || Boolean.TRUE.equals(flagged);
+
+        java.util.stream.Stream<Profile> stream = profileRepository.findAll().stream();
+        if (Boolean.TRUE.equals(flagged)) {
+            stream = stream.filter(p -> Boolean.TRUE.equals(p.getIsSocialCase())
+                    || Boolean.TRUE.equals(p.getIsSpecialCase()));
+        }
+        if (needle != null && !needle.isEmpty()) {
+            stream = stream.filter(p ->
+                    containsIgnoreCase(p.getFullName(), needle)
+                            || containsIgnoreCase(p.getStudentId(), needle)
+                            || containsIgnoreCase(p.getEmail(), needle));
+        }
+        if (filtered) {
+            stream = stream.limit(50);
+        }
+        return stream
                 .map(p -> new AdminUserDto(
                         ProfileDto.from(p),
                         rolesByUser.getOrDefault(p.getId(), List.of()).stream()
                                 .map(ur -> new AdminUserDto.RoleRef(ur.getRoleId(), ur.getIsPrimary()))
                                 .toList()))
                 .toList();
+    }
+
+    private static boolean containsIgnoreCase(String haystack, String lowerNeedle) {
+        return haystack != null && haystack.toLowerCase().contains(lowerNeedle);
     }
 
     /** The role catalog (id, name, label, icon, badge_class, home_page). */
@@ -192,11 +226,15 @@ public class UserService {
         }
     }
 
-    private static String blankToNull(String v) {
+    /** Parse a boolean from "true"/"false" (or null). */
+    private static Boolean parseBool(String v) {
         if (v == null) {
             return null;
         }
-        String t = v.trim();
-        return t.isEmpty() ? null : t;
+        return Boolean.valueOf(v.trim());
+    }
+
+    private static String blankToNull(String v) {
+        return ro.ubbcluj.ubbinfo.util.Strings.blankToNull(v);
     }
 }

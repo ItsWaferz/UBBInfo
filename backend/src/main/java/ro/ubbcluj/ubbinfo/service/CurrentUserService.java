@@ -53,7 +53,26 @@ public class CurrentUserService {
 
     @Transactional(readOnly = true)
     public Set<String> roles() {
-        return new HashSet<>(userRoleRepository.findRoleNamesByUserId(requireUserId()));
+        UUID uid = requireUserId();
+        // Endpoints often ask isAdmin() + isProfessor()/teachesCourse() in the same
+        // request; without a per-request cache each check is a remote round-trip.
+        var attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        String key = "ubbinfo.roles." + uid;
+        if (attrs != null) {
+            Object cached = attrs.getAttribute(key,
+                    org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
+            if (cached instanceof Set<?> s) {
+                @SuppressWarnings("unchecked")
+                Set<String> roles = (Set<String>) s;
+                return roles;
+            }
+        }
+        Set<String> roles = new HashSet<>(userRoleRepository.findRoleNamesByUserId(uid));
+        if (attrs != null) {
+            attrs.setAttribute(key, roles,
+                    org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
+        }
+        return roles;
     }
 
     public boolean isAdmin() {

@@ -40,9 +40,11 @@ export async function apiFetch(path, { method = 'GET', body, headers, signal } =
     throw err;
   }
 
-  // 204 No Content
+  // No Content, or a 200 with an empty body (void endpoints) — return null
+  // instead of throwing on res.json() of an empty string.
   if (res.status === 204) return null;
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 export const api = {

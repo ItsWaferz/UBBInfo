@@ -27,9 +27,12 @@ import java.util.UUID;
 public class CalendarController {
 
     private final CalendarService calendarService;
+    private final ro.ubbcluj.ubbinfo.service.AcademicPeriodService periodService;
 
-    public CalendarController(CalendarService calendarService) {
+    public CalendarController(CalendarService calendarService,
+                              ro.ubbcluj.ubbinfo.service.AcademicPeriodService periodService) {
         this.calendarService = calendarService;
+        this.periodService = periodService;
     }
 
     // ---------- semester_config ----------
@@ -37,6 +40,13 @@ public class CalendarController {
     @GetMapping("/semester-config")
     public List<SemesterConfig> semesterConfig() {
         return calendarService.semesters();
+    }
+
+    /** The CURRENT academic period (year + semester), derived from semester_config. */
+    @GetMapping("/calendar/current")
+    public java.util.Map<String, Object> currentPeriod() {
+        var p = periodService.current();
+        return java.util.Map.of("academic_year", p.academicYear(), "semester", p.semester());
     }
 
     @PostMapping("/semester-config")

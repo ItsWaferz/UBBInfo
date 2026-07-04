@@ -2,10 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { weightedAverage, sumCredits } from '../../utils/format';
+import { getCurrentPeriod, FALLBACK_PERIOD } from '../../utils/academicPeriod';
 import { useLanguage } from '../../i18n/LanguageContext';
-
-const CURRENT_YEAR = '2025-2026';
-const CURRENT_SEMESTER = 2;
 
 function fmtAvg(value) {
   return value === null ? '—' : value.toFixed(2);
@@ -29,7 +27,22 @@ export default function Grades() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [enrollments, setEnrollments] = useState([]);
-  const [activeYear, setActiveYear] = useState(CURRENT_YEAR);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState(FALLBACK_PERIOD);
+  const [activeYear, setActiveYear] = useState(FALLBACK_PERIOD.academic_year);
+  const currentYear = period.academic_year;
+  const currentSemester = period.semester;
+
+  useEffect(() => {
+    let active = true;
+    getCurrentPeriod().then((p) => {
+      if (active && p) {
+        setPeriod(p);
+        setActiveYear((y) => (y === FALLBACK_PERIOD.academic_year ? p.academic_year : y));
+      }
+    });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -47,6 +60,8 @@ export default function Grades() {
         );
       } catch (err) {
         if (active) console.error('Load grades failed:', err);
+      } finally {
+        if (active) setLoading(false);
       }
     })();
     return () => {
@@ -62,24 +77,24 @@ export default function Grades() {
   // Ensure the active tab exists once data loads
   useEffect(() => {
     if (years.length && !years.includes(activeYear)) {
-      setActiveYear(years.includes(CURRENT_YEAR) ? CURRENT_YEAR : years[years.length - 1]);
+      setActiveYear(years.includes(currentYear) ? currentYear : years[years.length - 1]);
     }
-  }, [years, activeYear]);
+  }, [years, activeYear, currentYear]);
 
   // Stat cards
   const semesterAvg = useMemo(
     () =>
       weightedAverage(
         enrollments.filter(
-          (e) => e.academic_year === CURRENT_YEAR && e.semester === CURRENT_SEMESTER
+          (e) => e.academic_year === currentYear && e.semester === currentSemester
         )
       ),
-    [enrollments]
+    [enrollments, currentYear, currentSemester]
   );
   const yearAvg = useMemo(
     () =>
-      weightedAverage(enrollments.filter((e) => e.academic_year === CURRENT_YEAR)),
-    [enrollments]
+      weightedAverage(enrollments.filter((e) => e.academic_year === currentYear)),
+    [enrollments, currentYear]
   );
   const generalAvg = useMemo(() => weightedAverage(enrollments), [enrollments]);
 
@@ -94,17 +109,16 @@ export default function Grades() {
     return Array.from(bySemester.entries()).sort((a, b) => a[0] - b[0]);
   }, [enrollments, activeYear]);
 
-  // Unresolved restanțe carried over from earlier semesters — these are
-  // surfaced inside the current semester (an 2, sem 2), not their original one.
+  // Unresolved restanțe carried over from earlier semesters — the rule itself
+  // is computed SERVER-SIDE (carried_restanta on each enrollment), so this page
+  // never disagrees with tuition or the professor catalog. Current-year rows
+  // already render in their own semester card, so they're not listed again.
   const carriedRestante = useMemo(
     () =>
       enrollments.filter(
-        (e) =>
-          e.is_restanta &&
-          (e.grade === null || e.grade < 5) &&
-          !(e.academic_year === CURRENT_YEAR && e.semester === CURRENT_SEMESTER)
+        (e) => e.carried_restanta && e.academic_year !== currentYear
       ),
-    [enrollments]
+    [enrollments, currentYear]
   );
 
   return (
@@ -150,9 +164,21 @@ export default function Grades() {
       {semesters.map(([semester, courses]) => {
         const avg = weightedAverage(courses);
         const credits = sumCredits(courses);
-        const isCurrent =
-          activeYear === CURRENT_YEAR && semester === CURRENT_SEMESTER;
-        const carried = isCurrent ? carriedRestante : [];
+        // Surface each carried restanță in the current year's semester that
+        // matches its ORIGINAL semester (a sem-1 restanță shows under sem 1,
+        // as if it were a course you have to retake this year in that semester).
+        // Restanțe whose semester has no card this year fall back to the last
+        // card so they never silently disappear.
+        const semNums = semesters.map(([s]) => s);
+        const isLastCard = semester === semNums[semNums.length - 1];
+        const carried =
+          activeYear === currentYear
+            ? carriedRestante.filter(
+                (e) =>
+                  e.semester === semester ||
+                  (isLastCard && !semNums.includes(e.semester))
+              )
+            : [];
         return (
           <section className="card" key={semester}>
             <div className="card-header semester-header">
@@ -227,16 +253,25 @@ export default function Grades() {
         );
       })}
 
-      {semesters.length === 0 && (
+      {/* While loading show a spinner, not the "no grades" empty state —
+          it used to flash for half a second on every visit. */}
+      {loading && (
+        <section className="card">
+          <div className="card-body" style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
+            <span className="spinner-page" />
+          </div>
+        </section>
+      )}
+      {!loading && semesters.length === 0 && (
         <section className="card">
           <div className="card-body muted center">
             {t('grades.noGrades')}
           </div>
         </section>
       )}
-      {semesters.length > 0 && activeYear === CURRENT_YEAR && (() => {
+      {semesters.length > 0 && activeYear === currentYear && (() => {
         // Find courses for the current semester in the active year
-        const currentSem = semesters.find(([sem]) => sem === 2) || semesters[semesters.length - 1];
+        const currentSem = semesters.find(([sem]) => sem === currentSemester) || semesters[semesters.length - 1];
         if (!currentSem) return null;
         // Exclude optional courses from the calculator
         const calcCourses = currentSem[1].filter(e => !e.courses?.is_optional);

@@ -45,3 +45,8 @@ export function sumCredits(enrollments) {
     return acc + (e.courses?.credits ?? 0);
   }, 0);
 }
+
+/** Money formatter for tuition/fees pages: 1250 -> "1.250 lei". */
+export function lei(n) {
+  return `${Number(n ?? 0).toLocaleString('ro-RO')} lei`;
+}

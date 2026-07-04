@@ -267,7 +267,7 @@ export default function Users() {
                                         <td>{u.group_name || '—'}</td>
                                         <td>
                                           {u.financing ? (
-                                            <span className={`badge ${u.financing === 'BUGET' ? 'badge-lab' : 'badge-seminar'}`}>
+                                            <span className={`badge ${u.financing?.toLowerCase() === 'buget' ? 'badge-lab' : 'badge-seminar'}`}>
                                               {u.financing}
                                             </span>
                                           ) : '—'}

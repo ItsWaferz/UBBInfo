@@ -49,6 +49,43 @@ public class SupabaseAdminClient {
         return UUID.fromString(resp.get("id").toString());
     }
 
+    /**
+     * Map of lowercased email -> auth user id for every existing auth user.
+     * Used to adopt users that were created but whose profile insert failed
+     * (so a re-run of the import heals them instead of erroring on "email exists").
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, UUID> allUserIdsByEmail() {
+        Map<String, UUID> out = new java.util.HashMap<>();
+        int page = 1;
+        while (true) {
+            final int p = page;
+            Map<String, Object> resp = client.get()
+                    .uri(b -> b.path("/auth/v1/admin/users").queryParam("page", p).queryParam("per_page", 200).build())
+                    .header("apikey", serviceKey)
+                    .header("Authorization", "Bearer " + serviceKey)
+                    .retrieve()
+                    .body(Map.class);
+            if (resp == null) {
+                break;
+            }
+            Object usersObj = resp.get("users");
+            if (!(usersObj instanceof java.util.List<?> users) || users.isEmpty()) {
+                break;
+            }
+            for (Object u : users) {
+                if (u instanceof Map<?, ?> m && m.get("id") != null && m.get("email") != null) {
+                    out.put(m.get("email").toString().toLowerCase(), UUID.fromString(m.get("id").toString()));
+                }
+            }
+            if (users.size() < 200) {
+                break;
+            }
+            page++;
+        }
+        return out;
+    }
+
     /** Delete an auth user (used for test cleanup). */
     public void deleteUser(UUID id) {
         client.delete()

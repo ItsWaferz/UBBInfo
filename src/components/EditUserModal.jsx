@@ -145,7 +145,7 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
           </div>
           <div className="form-grid-2">
             {field('group_name', 'Grupa')}
-            {field('financing', 'Finanțare', { select: ['', 'BUGET', 'TAXĂ'] })}
+            {field('financing', 'Finanțare', { select: ['', 'buget', 'taxă'] })}
           </div>
           <div className="form-grid-2">
             {field('academic_rank', 'Grad didactic', {

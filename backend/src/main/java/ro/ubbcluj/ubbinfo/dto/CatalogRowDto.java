@@ -12,6 +12,7 @@ public record CatalogRowDto(
         UUID id,
         UUID studentId,
         String studentName,
+        String matricol,
         String groupName,
         String academicYear,
         Integer semester,
@@ -19,11 +20,18 @@ public record CatalogRowDto(
         Boolean isRestanta
 ) {
     public static CatalogRowDto from(Enrollment e) {
+        return from(e, Boolean.TRUE.equals(e.getIsRestanta()));
+    }
+
+    /** With an explicitly-computed restanță flag (reliable failing-grade detection). */
+    public static CatalogRowDto from(Enrollment e, boolean restanta) {
         String name = e.getStudent() != null ? e.getStudent().getFullName() : null;
+        String matricol = e.getStudent() != null ? e.getStudent().getStudentId() : null;
         return new CatalogRowDto(
                 e.getId(), e.getStudentId(),
                 name == null ? "(necunoscut)" : name,
+                matricol,
                 e.getGroupName(), e.getAcademicYear(), e.getSemester(),
-                e.getGrade(), e.getIsRestanta());
+                e.getGrade(), restanta);
     }
 }

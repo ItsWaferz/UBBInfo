@@ -76,7 +76,7 @@ export default function Catalog() {
         (catalog || []).map((e) => ({
           enrollmentId: e.id,
           studentName: e.student_name || '(necunoscut)',
-          studentId: '',
+          studentId: e.matricol || '',
           group: e.group_name,
           year: e.academic_year,
           semester: e.semester,
@@ -242,7 +242,11 @@ export default function Catalog() {
                     <tr key={r.enrollmentId}>
                       <td>
                         {r.studentName}
-                        {r.isRestanta && <span className="restanta-tag"> (restanță)</span>}
+                        {r.isRestanta && (
+                          <span className="restanta-tag">
+                            {' '}(restanță{r.year ? ` — ${r.year} sem ${r.semester}` : ''})
+                          </span>
+                        )}
                       </td>
                       <td className="mono">{r.studentId || '—'}</td>
                       <td>{r.group || '—'}</td>

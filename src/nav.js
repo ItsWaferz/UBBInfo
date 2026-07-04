@@ -30,6 +30,8 @@ export const NAV_ITEMS_ADMIN = [
   { to: '/admin/evaluari', key: 'admin-evaluari', labelKey: 'admin.tab.evaluari', icon: 'reviews' },
   { to: '/admin/linkuri', key: 'admin-links', labelKey: 'admin.tab.links', icon: 'link' },
   { to: '/admin/admisi', key: 'admin-admisi', labelKey: 'admin.tab.admisi', icon: 'group_add' },
+  { to: '/admin/facilitati', key: 'admin-facilitati', labelKey: 'admin.tab.facilities', icon: 'volunteer_activism' },
+  { to: '/admin/taxe', key: 'admin-taxe', labelKey: 'admin.tab.taxe', icon: 'payments' },
 ];
 
 export const NAV_ITEMS_OTHER = [

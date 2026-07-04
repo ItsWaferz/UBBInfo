@@ -215,11 +215,7 @@ public class DocumentCatalog {
           .decl { font-size: 11pt; text-align: justify; margin-top: 8px; }
           .small { font-size: 9pt; color: #333; }
         </style></head><body>
-        <div class="antet">
-          <div class="u">UNIVERSITATEA BABEŞ-BOLYAI<br/>BABEŞ-BOLYAI TUDOMÁNYEGYETEM<br/>BABEŞ-BOLYAI UNIVERSITÄT<br/>BABEŞ-BOLYAI UNIVERSITY</div>
-          <div class="motto">TRADITIO ET EXCELLENTIA</div>
-        </div>
-        """;
+        """ + ro.ubbcluj.ubbinfo.util.PdfHtml.ANTET;
 
     private static final String HTML_TAIL = "</body></html>";
 
@@ -402,13 +398,6 @@ public class DocumentCatalog {
     }
 
     private static String esc(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("\n", "<br/>");
+        return ro.ubbcluj.ubbinfo.util.PdfHtml.esc(s);
     }
 }

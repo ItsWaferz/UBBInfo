@@ -17,7 +17,6 @@ import ro.ubbcluj.ubbinfo.service.UserService;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -41,10 +40,12 @@ public class UserController {
         return userService.updateMyIdentity(fields);
     }
 
-    /** GET /api/users — admin Users page (profiles + role assignments). */
+    /** GET /api/users — admin Users page; ?q= / ?flagged= filter server-side. */
     @GetMapping("/users")
-    public List<AdminUserDto> users() {
-        return userService.listUsers();
+    public List<AdminUserDto> users(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String q,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean flagged) {
+        return userService.listUsers(q, flagged);
     }
 
     /** PUT /api/users/{id} — admin updates a user's profile fields. */
@@ -53,15 +54,14 @@ public class UserController {
         return userService.adminUpdateProfile(id, fields);
     }
 
+    /** Body for role assignment — typed so malformed ids 400 instead of 500. */
+    public record SetRolesRequest(List<UUID> roleIds, UUID primaryRoleId) {}
+
     /** PUT /api/users/{id}/roles — admin sets role membership + primary role. */
     @PutMapping("/users/{id}/roles")
-    @SuppressWarnings("unchecked")
-    public void setUserRoles(@PathVariable UUID id, @RequestBody Map<String, Object> body) {
-        List<String> roleIds = (List<String>) body.getOrDefault("role_ids", List.of());
-        Set<UUID> roleIdSet = roleIds.stream().map(UUID::fromString).collect(Collectors.toSet());
-        Object primary = body.get("primary_role_id");
-        UUID primaryId = primary == null ? null : UUID.fromString(primary.toString());
-        userService.setUserRoles(id, roleIdSet, primaryId);
+    public void setUserRoles(@PathVariable UUID id, @RequestBody SetRolesRequest body) {
+        Set<UUID> roleIdSet = body.roleIds() == null ? Set.of() : Set.copyOf(body.roleIds());
+        userService.setUserRoles(id, roleIdSet, body.primaryRoleId());
     }
 
     /** GET /api/roles — role catalog. */

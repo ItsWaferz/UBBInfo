@@ -150,6 +150,17 @@ public class GradingService {
     @Transactional
     public void setManualGrade(UUID courseId, UUID componentId, UUID studentId, Double value) {
         requireCanGrade(courseId);
+        // The component must belong to the CALLER's scheme for THIS course —
+        // otherwise a professor could write grades into another professor's
+        // scheme by passing a foreign componentId with their own courseId.
+        UUID me = currentUser.requireUserId();
+        GradingScheme myScheme = schemeRepository.findByCourseIdAndProfessorId(courseId, me)
+                .orElseThrow(() -> new EntityNotFoundException("Schema de notare nu e definită."));
+        GradingComponent comp = componentRepository.findById(componentId)
+                .orElseThrow(() -> new EntityNotFoundException("Componenta nu există."));
+        if (!myScheme.getId().equals(comp.getSchemeId())) {
+            throw new AccessDeniedException("Componenta nu aparține schemei tale pentru această disciplină.");
+        }
         ManualGrade m = manualGradeRepository.findByComponentIdAndStudentId(componentId, studentId)
                 .orElseGet(ManualGrade::new);
         m.setComponentId(componentId);
@@ -195,11 +206,21 @@ public class GradingService {
             manualMap.put(m.getComponentId() + "|" + m.getStudentId(), m.getValue());
         }
 
-        List<Enrollment> enrollments = enrollmentRepository.findByCourseIdWithStudent(courseId);
+        // One row per student: grade only their LATEST enrollment for this course.
+        // A student who failed in a past year and re-enrolled has multiple rows;
+        // writing to all of them would rewrite the historical fail (and silently
+        // resolve the carried restanță), so historical rows are never touched.
+        Map<UUID, Enrollment> latestByStudent = new LinkedHashMap<>();
+        for (Enrollment e : enrollmentRepository.findByCourseIdWithStudent(courseId)) {
+            Enrollment prev = latestByStudent.get(e.getStudentId());
+            if (prev == null || isLater(e, prev)) {
+                latestByStudent.put(e.getStudentId(), e);
+            }
+        }
         List<ComputeRow> rows = new ArrayList<>();
         java.util.Set<String> matchedKeys = new java.util.HashSet<>();
 
-        for (Enrollment e : enrollments) {
+        for (Enrollment e : latestByStudent.values()) {
             Profile p = e.getStudent();
             String name = p != null ? p.getFullName() : "—";
             String key = norm(matchValue(scheme.getMatchField(), p));
@@ -241,12 +262,15 @@ public class GradingService {
             double finalStored = Boolean.TRUE.equals(scheme.getRoundUp())
                     ? Math.round(finalRaw) : round2(finalRaw);
 
+            // Pass is judged on the STORED grade (post-rounding): a 4.6 that
+            // rounds up to a stored 5 must not be reported as failed while every
+            // other consumer (grades page, media, restanțe, taxe) treats 5 as passed.
             boolean passed;
             double threshold = scheme.getPassThreshold() == null ? 5.0 : scheme.getPassThreshold();
             if ("per_criterion".equals(scheme.getPassMode())) {
-                passed = perCriterionOk && finalRaw >= threshold;
+                passed = perCriterionOk && finalStored >= threshold;
             } else {
-                passed = finalRaw >= threshold;
+                passed = finalStored >= threshold;
             }
 
             String note = !anyValue ? "Fără note"
@@ -256,9 +280,10 @@ public class GradingService {
                     values, round2(base), round2(bonus), round2(finalRaw), finalStored, passed, note));
 
             if (save && anyValue) {
+                // Managed entity — dirty checking flushes the (batched) update at
+                // commit; no per-row save() round-trip.
                 e.setFinalGrade(finalStored);
                 e.setGradeBreakdown(buildBreakdown(scheme, components, values, base, bonus, finalRaw, finalStored, passed));
-                enrollmentRepository.save(e);
             }
         }
 
@@ -267,6 +292,22 @@ public class GradingService {
     }
 
     // ---------- helpers ----------
+
+    /** True when a is a later enrollment than b (academic year, then semester). */
+    private static boolean isLater(Enrollment a, Enrollment b) {
+        // Years are "YYYY-YYYY" strings, so lexicographic order is chronological.
+        int byYear = nullSafe(a.getAcademicYear()).compareTo(nullSafe(b.getAcademicYear()));
+        if (byYear != 0) {
+            return byYear > 0;
+        }
+        int sa = a.getSemester() == null ? 0 : a.getSemester();
+        int sb = b.getSemester() == null ? 0 : b.getSemester();
+        return sa > sb;
+    }
+
+    private static String nullSafe(String s) {
+        return s == null ? "" : s;
+    }
 
     private Map<String, Object> buildBreakdown(GradingScheme scheme, List<GradingComponent> components,
                                                Map<String, Double> values, double base, double bonus,

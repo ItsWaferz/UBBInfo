@@ -114,13 +114,6 @@ const translations = {
   'password.repeatPlaceholder': { ro: 'Repetă parola nouă', en: 'Repeat new password', hu: 'Ismételd meg az új jelszót', de: 'Neues Passwort wiederholen' },
 
   // ── Mockup pages ───────────────────────────────────
-  'mockup.construction': { ro: 'Pagină în construcție — disponibilă în curând', en: 'Page under construction — coming soon', hu: 'Az oldal fejlesztés alatt — hamarosan elérhető', de: 'Seite im Aufbau — bald verfügbar' },
-  'mockup.taxe.title': { ro: 'Plata Taxe', en: 'Fee Payment', hu: 'Tandíjfizetés', de: 'Gebührenzahlung' },
-  'mockup.taxe.desc': { ro: 'Gestionează taxele de școlarizare și restanțele, efectuează plăți online în siguranță și consultă istoricul tranzacțiilor.', en: 'Manage tuition fees and retakes, make secure online payments, and view transaction history.', hu: 'Tandíj és pótvizsga díjak kezelése, biztonságos online fizetés, tranzakciós előzmények megtekintése.', de: 'Verwalten Sie Studiengebühren und Nachprüfungen, führen Sie sichere Online-Zahlungen durch und sehen Sie die Transaktionshistorie ein.' },
-  'mockup.taxe.f1': { ro: 'Taxe școlarizare', en: 'Tuition fees', hu: 'Tandíjak', de: 'Studiengebühren' },
-  'mockup.taxe.f2': { ro: 'Restanțe', en: 'Retake fees', hu: 'Pótvizsga díjak', de: 'Nachprüfungsgebühren' },
-  'mockup.taxe.f3': { ro: 'Plată online', en: 'Online payment', hu: 'Online fizetés', de: 'Online-Zahlung' },
-  'mockup.taxe.f4': { ro: 'Istoric plăți', en: 'Payment history', hu: 'Fizetési előzmények', de: 'Zahlungsverlauf' },
 
   // ── Topbar / search ────────────────────────────────
   'topbar.search': { ro: 'Caută...', en: 'Search...', hu: 'Keresés...', de: 'Suchen...' },
@@ -137,6 +130,8 @@ const translations = {
   'admin.tab.evaluari': { ro: 'Evaluări', en: 'Evaluations', hu: 'Értékelések', de: 'Bewertungen' },
   'admin.tab.links': { ro: 'Linkuri utile', en: 'Useful links', hu: 'Hasznos linkek', de: 'Nützliche Links' },
   'admin.tab.admisi': { ro: 'Conturi admiși', en: 'Admitted accounts', hu: 'Felvett fiókok', de: 'Zugelassene Konten' },
+  'admin.tab.facilities': { ro: 'Facilități', en: 'Facilities', hu: 'Juttatások', de: 'Leistungen' },
+  'admin.tab.taxe': { ro: 'Taxe', en: 'Tuition', hu: 'Tandíj', de: 'Gebühren' },
 
   // ── Admin Links ────────────────────────────────────
   'admin.links.addTitle': { ro: 'Adaugă link', en: 'Add link', hu: 'Link hozzáadása', de: 'Link hinzufügen' },

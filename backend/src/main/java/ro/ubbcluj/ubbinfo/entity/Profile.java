@@ -112,6 +112,14 @@ public class Profile {
     @Column(name = "bank")
     private String bank;
 
+    // --- Admin-set flags for facility reservations (feature #5) ---
+    // Default to false so newly-created profiles satisfy the NOT NULL columns.
+    @Column(name = "is_social_case")
+    private Boolean isSocialCase = false;
+
+    @Column(name = "is_special_case")
+    private Boolean isSpecialCase = false;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -204,4 +212,10 @@ public class Profile {
 
     public String getBank() { return bank; }
     public void setBank(String bank) { this.bank = bank; }
+
+    public Boolean getIsSocialCase() { return isSocialCase; }
+    public void setIsSocialCase(Boolean isSocialCase) { this.isSocialCase = isSocialCase; }
+
+    public Boolean getIsSpecialCase() { return isSpecialCase; }
+    public void setIsSpecialCase(Boolean isSpecialCase) { this.isSpecialCase = isSpecialCase; }
 }

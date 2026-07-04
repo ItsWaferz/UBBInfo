@@ -16,5 +16,9 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     /** Existing CNPs — for de-dup during import. */
     @Query("select p.cnp from Profile p where p.cnp is not null")
     List<String> findAllCnps();
+
+    /** Existing matricoles (student ids) — for de-dup during import without CNP. */
+    @Query("select p.studentId from Profile p where p.studentId is not null")
+    List<String> findAllStudentIds();
 }
 

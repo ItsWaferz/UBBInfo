@@ -8,11 +8,11 @@ import {
   ShieldCheck, LayoutDashboard, Users, BookOpen, CalendarRange,
   MessageSquare, UserPlus, User, ArrowRight, FileEdit, Calendar,
   X, AlertTriangle, TrendingUp, Hourglass, Globe, Eye, EyeOff,
-  Plus, CircleDot, Circle, Clock, Building, DoorOpen, BookMarked,
+  Plus, CircleDot, Circle, Clock, Building, DoorOpen,
   Receipt, History, Award, FileText, Send, ChevronLeft,
   MoreVertical, Filter, RefreshCw, Loader2, ExternalLink, Flag,
   Languages, Hash, ListOrdered, ToggleLeft, ToggleRight, Minus,
-  UserCog, Database, MonitorDot, PersonStanding, Newspaper,
+  UserCog, Database, MonitorDot, Newspaper,
   CalendarClock, Layers, ClipboardList, PanelLeft, BarChart,
   Umbrella, Zap, MessageCircle, Quote, LineChart,
   Upload, Presentation, UserCheck, ClipboardCheck, HelpCircle,
@@ -173,6 +173,11 @@ const ICON_MAP = {
 export default function Icon({ name, size = 20, className = '', strokeWidth = 2, ...rest }) {
   const Component = ICON_MAP[name];
   if (!Component) {
+    // Loud in dev — every unmapped name used to silently ship as a "?" glyph
+    // and get fixed in bulk one commit later.
+    if (import.meta.env.DEV) {
+      console.error(`[Icon] unmapped icon name "${name}" — add it to ICON_MAP in src/components/Icon.jsx`);
+    }
     // Fallback – render the name as tiny text so we can spot unmapped icons easily
     return (
       <span

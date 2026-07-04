@@ -6,6 +6,7 @@ import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/Icon';
 import Toast from '../../components/Toast';
+import { useToast } from '../../hooks/useToast';
 
 const MATCH_FIELDS = [
   { v: 'student_id', label: 'Nr. matricol' },
@@ -25,13 +26,11 @@ export default function Grading() {
   const [scheme, setScheme] = useState(BLANK_SCHEME);
   const [headers, setHeaders] = useState([]);
   const [students, setStudents] = useState([]);
-  const [manual, setManual] = useState({}); // `${componentIndex}:${studentId}` -> value (by name, since ids only after save)
   const [manualByComp, setManualByComp] = useState({}); // componentId|studentId -> value
   const [computeRows, setComputeRows] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState(null);
 
-  const flash = (v, m) => { setToast({ variant: v, message: m }); setTimeout(() => setToast(null), 3500); };
+  const { toast, flash } = useToast(3500);
 
   useEffect(() => {
     if (!user) return;

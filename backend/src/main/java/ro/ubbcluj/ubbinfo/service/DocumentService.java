@@ -32,29 +32,28 @@ import java.util.UUID;
 @Service
 public class DocumentService {
 
-    /** Current academic context (matches the frontend Grades constants). */
-    private static final String CURRENT_YEAR = "2025-2026";
-    private static final int CURRENT_SEMESTER = 2;
-
     private final ProfileRepository profileRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final IssuedDocumentRepository issuedDocumentRepository;
     private final CurrentUserService currentUser;
     private final DocumentCatalog catalog;
     private final PdfRenderer pdfRenderer;
+    private final AcademicPeriodService periodService;
 
     public DocumentService(ProfileRepository profileRepository,
                            EnrollmentRepository enrollmentRepository,
                            IssuedDocumentRepository issuedDocumentRepository,
                            CurrentUserService currentUser,
                            DocumentCatalog catalog,
-                           PdfRenderer pdfRenderer) {
+                           PdfRenderer pdfRenderer,
+                           AcademicPeriodService periodService) {
         this.profileRepository = profileRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.issuedDocumentRepository = issuedDocumentRepository;
         this.currentUser = currentUser;
         this.catalog = catalog;
         this.pdfRenderer = pdfRenderer;
+        this.periodService = periodService;
     }
 
     public List<DocTypeInfo> types() {
@@ -70,10 +69,12 @@ public class DocumentService {
 
         List<Enrollment> enrollments = enrollmentRepository
                 .findByStudentIdOrderByAcademicYearAscSemesterAsc(me);
-        String media = computeMedia(enrollments);
+        String media = formatMedia(AcademicAverageService.media(enrollments));
         String credits = computeCredits(enrollments);
 
-        List<DocField> fields = catalog.fields(type, p, media, credits, CURRENT_YEAR, CURRENT_SEMESTER);
+        AcademicPeriodService.Period period = periodService.current();
+        List<DocField> fields = catalog.fields(type, p, media, credits,
+                period.academicYear(), period.semester());
         return new PrefillResult(type, catalog.titleFor(type), fields);
     }
 
@@ -94,7 +95,7 @@ public class DocumentService {
         doc.setType(type);
         doc.setTitle(title);
         doc.setRegNumber(null); // allocated by the secretariat
-        doc.setAcademicYear(blankToNull(fields.get("academic_year")));
+        doc.setAcademicYear(ro.ubbcluj.ubbinfo.util.Strings.blankToNull(fields.get("academic_year")));
         doc.setSemester(parseSemester(fields.get("semester")));
         doc.setPayload(new LinkedHashMap<>(fields));
         doc.setCreatedAt(OffsetDateTime.now());
@@ -133,32 +134,16 @@ public class DocumentService {
     // Computations
     // ---------------------------------------------------------------------
 
-    /** Credit-weighted average over graded, non-optional enrollments (2 decimals). */
-    private static String computeMedia(List<Enrollment> enrollments) {
-        double sumGC = 0;
-        double sumC = 0;
-        for (Enrollment e : enrollments) {
-            if (isOptional(e)) {
-                continue;
-            }
-            Double g = effectiveGrade(e);
-            int c = credits(e);
-            if (g != null && c > 0) {
-                sumGC += g * c;
-                sumC += c;
-            }
-        }
-        if (sumC == 0) {
-            return "";
-        }
-        return String.format(java.util.Locale.US, "%.2f", sumGC / sumC);
+    /** Shared media rule ({@link AcademicAverageService}), formatted for the form. */
+    private static String formatMedia(Double media) {
+        return media == null ? "" : String.format(java.util.Locale.US, "%.2f", media);
     }
 
     /** Total credits of passed (grade >= 5) enrollments. */
     private static String computeCredits(List<Enrollment> enrollments) {
         int total = 0;
         for (Enrollment e : enrollments) {
-            Double g = effectiveGrade(e);
+            Double g = EnrollmentRules.effectiveGrade(e);
             if (g != null && g >= 5) {
                 total += credits(e);
             }
@@ -166,21 +151,9 @@ public class DocumentService {
         return total == 0 ? "" : String.valueOf(total);
     }
 
-    private static Double effectiveGrade(Enrollment e) {
-        if (e.getFinalGrade() != null) {
-            return e.getFinalGrade();
-        }
-        return e.getGrade() == null ? null : e.getGrade().doubleValue();
-    }
-
     private static int credits(Enrollment e) {
         Course c = e.getCourse();
         return (c == null || c.getCredits() == null) ? 0 : c.getCredits();
-    }
-
-    private static boolean isOptional(Enrollment e) {
-        Course c = e.getCourse();
-        return c != null && Boolean.TRUE.equals(c.getIsOptional());
     }
 
     // ---------------------------------------------------------------------
@@ -214,11 +187,4 @@ public class DocumentService {
         }
     }
 
-    private static String blankToNull(String v) {
-        if (v == null) {
-            return null;
-        }
-        String t = v.trim();
-        return t.isEmpty() ? null : t;
-    }
 }

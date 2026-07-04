@@ -4,6 +4,7 @@ import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { formatRomanianDate } from '../../utils/format';
+import { getCurrentPeriod, FALLBACK_PERIOD } from '../../utils/academicPeriod';
 import Icon from '../../components/Icon';
 
 // Only links that actually go somewhere are listed.
@@ -23,6 +24,13 @@ export default function ProfessorDashboard() {
   const { t } = useLanguage();
   const [courses, setCourses] = useState([]);
   const [exams, setExams] = useState([]);
+  const [period, setPeriod] = useState(FALLBACK_PERIOD);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentPeriod().then((p) => { if (active && p) setPeriod(p); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -51,7 +59,7 @@ export default function ProfessorDashboard() {
         <Icon name="person" className="welcome-bg-icon" />
         <h1 className="welcome-title">{t('prof.welcome', { name: profile?.full_name })}</h1>
         <p className="welcome-subtitle">
-          Anul universitar 2025-2026 · {formatRomanianDate()}
+          Anul universitar {period.academic_year} · {formatRomanianDate()}
         </p>
       </section>
 

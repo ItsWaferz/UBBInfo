@@ -31,7 +31,7 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 
 | Page | What I can do |
 |------|----------------|
-| **Acasă** | Dashboard: welcome card, institutional account (copy-email + change password), useful links, student ID card, and current academic situation. |
+| **Acasă** | Dashboard: welcome card, institutional account (copy-email + change password), useful links, student ID card, current academic situation, and a **facilities** card to apply for scholarships / camps / dorms and see the result. |
 | **Identitatea Ta** | Edit personal data — phone, personal email, IBAN, CNP, ID series, address. All optional. |
 | **Consultă Note** | All grades, grouped by year & semester, with **weighted averages** (`Σ(grade×credits)/Σcredits`). Shows the **computed final grade** + per-component breakdown when a grading scheme exists. Carried-over restanțe surface in the current semester. |
 | **Orar** | **Weekly timetable per semigroup**, with **odd/even week** logic (computed from the semester start + official holidays), a week navigator, and a peek at other semigroups. |
@@ -58,6 +58,7 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 - **Evaluări** — read the **anonymous** professor evaluations.
 - **Linkuri utile** — manage the dashboard quick links.
 - **Conturi admiși** — **bulk account creation** for admitted candidates from a **CSV/XLSX** upload: institutional email generation with collision handling, default password rule, account + profile + student role. See [Admitted-students import](#-admitted-students-import).
+- **Facilități** — manage **burse / tabere / cămin**: dorm capacities, per-facility capacity & reserved %, social/special-case flags; **generate ranked lists** (top X by media) with reserved quotas, export a **PDF**, and **publish results** to all applicants. See [Student facilities](#-student-facilities).
 
 ---
 
@@ -152,6 +153,24 @@ Admins upload a **CSV/XLSX** of admitted candidates; the backend creates each ac
   and reported. Account creation uses the Supabase Admin API (service-role key, **backend-only**).
   A **preview** mode validates the file without creating anything. *(Microsoft Exchange / Graph
   provisioning is stubbed behind a flag for when the faculty grants access.)*
+
+### 🏠 Student facilities
+
+Three facilities students apply to from their dashboard — **burse** (socială / merit), **tabere**,
+**cămin** (5 dorms):
+
+- **Apply & track**: a card on the dashboard lets a student apply (for cămin, ordering dorm
+  preferences) and shows the status — *în așteptare* → *admis* (with the allocated dorm / type) or
+  *neadmis*.
+- **Ranked allocation**: the admin sets **X** (how many to admit); the system ranks applicants by
+  **media** (computed from `enrollments`) and allocates. **Cămin** assigns specific dorms honoring
+  each student's preference order + per-dorm capacity, with **10%** of spots reserved for social
+  cases; **tabere** reserve **20%** for special cases (reserved slots are filled first, regardless
+  of the general cutoff); **burse** are two independent lists by media.
+- **PDF + publish**: the admin previews the list, exports a **PDF** (code + result, ranked), and
+  **publishes** — which writes every applicant's status so it shows up on their dashboard.
+- Everything tunable lives in the DB: dorm names/capacities, per-facility capacity & reserved
+  percentage, and the admin-set social/special-case flags.
 
 ---
 
@@ -256,6 +275,7 @@ Run the SQL files in `supabase/` **in this order** (Supabase dashboard → SQL E
 12. `building_zones.sql` — adds the **travel zone** to buildings (generator travel-time constraint)
 13. `grading_schemes.sql` — **grading schemes** (components, manual grades) + `enrollments.final_grade`/`grade_breakdown`
 14. `documents.sql` — **student documents**: durable profile fields (birth data, study line, …) + `issued_documents`
+15. `facilities.sql` — **student facilities**: social/special flags, `dorms`, `facility_settings`, `facility_applications`, `facility_publications`
 
 Then deploy `supabase/functions/create-user/` as an **Edge Function** named `create-user`
 (account creation needs the service-role key, which lives only inside that function).
@@ -276,10 +296,12 @@ src/                              # React frontend
 ├── contexts/AuthContext.jsx      # user / profile / roles (loads GET /api/me/profile)
 ├── components/                   # shell, modals, RoomPicker, Toast, …
 └── pages/
-    ├── student/    Dashboard, Identity, Grades, Orar, Documente, Evaluare, InscriereExamen
+    ├── student/    Dashboard (+ FacilitiesCard), Identity, Grades, Orar, Documente,
+    │               Evaluare, InscriereExamen
     ├── professor/  Dashboard, Catalog, Grading, Examene, Availability
     └── admin/      Dashboard (Panou) + nav pages: Users, Courses, OrarEditor,
-                    BuildingsRooms, OrarGenerator, Calendar, Evaluari, Links, ConturiAdmisi
+                    BuildingsRooms, OrarGenerator, Calendar, Evaluari, Links,
+                    ConturiAdmisi, Facilitati
 
 backend/                          # Spring Boot REST API
 ├── pom.xml, run.sh

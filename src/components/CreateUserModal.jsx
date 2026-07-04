@@ -21,7 +21,7 @@ const BLANK = {
   specialization: '',
   study_year: '',
   group_name: '',
-  financing: 'BUGET',
+  financing: 'buget',
   academic_rank: 'Lector',
   honorifics: '',
 };
@@ -221,8 +221,8 @@ export default function CreateUserModal({ open, onClose, onCreated }) {
                   <span className="field-label">Finanțare</span>
                   <div className="input-wrap">
                     <select className="select-bare" value={form.financing} onChange={set('financing')}>
-                      <option value="BUGET">BUGET</option>
-                      <option value="TAXĂ">TAXĂ</option>
+                      <option value="buget">buget</option>
+                      <option value="taxă">taxă</option>
                     </select>
                   </div>
                 </label>

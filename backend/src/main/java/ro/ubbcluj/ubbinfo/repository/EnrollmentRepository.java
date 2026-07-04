@@ -10,8 +10,19 @@ import java.util.UUID;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
-    /** A student's full academic history, ordered like the Grades page expects. */
-    List<Enrollment> findByStudentIdOrderByAcademicYearAscSemesterAsc(UUID studentId);
+    /**
+     * A student's full academic history, ordered like the Grades page expects.
+     * The course is fetch-joined: every consumer (EnrollmentDto, media, restanțe,
+     * documents, tuition) reads it, and lazy-loading it one query per enrollment
+     * against the remote DB made the Grades page take seconds to load.
+     */
+    @Query("""
+            select e from Enrollment e
+            left join fetch e.course c
+            where e.studentId = :studentId
+            order by e.academicYear asc, e.semester asc
+            """)
+    List<Enrollment> findByStudentIdOrderByAcademicYearAscSemesterAsc(@Param("studentId") UUID studentId);
 
     /** Enrollments for a single course (professor catalog / grading). */
     List<Enrollment> findByCourseId(UUID courseId);
@@ -30,6 +41,14 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
     List<UUID> findCourseIdsByStudentId(@Param("studentId") UUID studentId);
 
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
+
+    /** All enrollments with their course fetched — for tuition/restanță computation. */
+    @Query("select e from Enrollment e left join fetch e.course c")
+    List<Enrollment> findAllWithCourse();
+
+    /** Enrollments of a set of students, course fetched (batch media computation). */
+    @Query("select e from Enrollment e left join fetch e.course c where e.studentId in :studentIds")
+    List<Enrollment> findByStudentIdInWithCourse(@Param("studentIds") java.util.Collection<UUID> studentIds);
 
     /** Number of enrollments that already have a grade (admin overview). */
     long countByGradeIsNotNull();

@@ -14,7 +14,7 @@ import Catalog from './pages/professor/Catalog';
 import Examene from './pages/professor/Examene';
 import Availability from './pages/professor/Availability';
 import Grading from './pages/professor/Grading';
-import PlataTaxe from './pages/mockups/PlataTaxe';
+import PlataTaxe from './pages/student/PlataTaxe';
 import Users from './pages/admin/Users';
 import Courses from './pages/admin/Courses';
 import OrarEditor from './pages/admin/OrarEditor';
@@ -24,6 +24,8 @@ import Calendar from './pages/admin/Calendar';
 import Evaluari from './pages/admin/Evaluari';
 import Links from './pages/admin/Links';
 import ConturiAdmisi from './pages/admin/ConturiAdmisi';
+import Facilitati from './pages/admin/Facilitati';
+import Taxe from './pages/admin/Taxe';
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuth();
@@ -75,6 +77,8 @@ export default function App() {
         <Route path="admin/evaluari" element={<div className="page"><Evaluari /></div>} />
         <Route path="admin/linkuri" element={<div className="page"><Links /></div>} />
         <Route path="admin/admisi" element={<div className="page"><ConturiAdmisi /></div>} />
+        <Route path="admin/facilitati" element={<div className="page"><Facilitati /></div>} />
+        <Route path="admin/taxe" element={<div className="page"><Taxe /></div>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

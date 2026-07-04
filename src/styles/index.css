@@ -169,6 +169,17 @@ a {
   border-top-color: var(--primary);
 }
 
+/* Spinner shown on a light surface (page/card loading states) — the default
+   .spinner is white-on-white outside primary buttons. */
+.spinner-page {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--outline-variant);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -2966,3 +2977,87 @@ td .badge-optional {
   .field > select,
   .field > textarea { font-size: 16px; }
 }
+
+/* ── Student facilities (feature #5) ───────────────────── */
+.facility-list { display: flex; flex-direction: column; }
+.facility-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+.facility-row:last-child { border-bottom: none; }
+.facility-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.facility-icon {
+  width: 40px; height: 40px; flex: 0 0 auto;
+  display: grid; place-items: center; border-radius: 10px;
+  background: var(--primary-container, rgba(0, 64, 122, .1)); color: var(--primary);
+}
+.facility-name { font-weight: 600; margin-bottom: 4px; }
+.facility-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.facility-camin-form { flex: 1 1 100%; margin-top: 6px; }
+.facility-dorm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+.facility-dorm {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 12px; border: 1px solid var(--outline-variant); border-radius: var(--radius);
+}
+.facility-dorm input { width: 60px; text-align: center; }
+
+/* Admin facility tabs */
+.facility-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.facility-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border: 1px solid var(--outline-variant);
+  border-radius: 999px; background: var(--surface); cursor: pointer;
+  font-size: 14px; color: var(--on-surface);
+}
+.facility-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.facility-tab-count {
+  font-size: 12px; padding: 1px 7px; border-radius: 999px;
+  background: rgba(0,0,0,.08);
+}
+.facility-tab.active .facility-tab-count { background: rgba(255,255,255,.25); }
+.facility-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+.facility-controls .muted { flex: 1 1 200px; }
+.row-muted td { opacity: .55; }
+
+/* ── Tuition & fees (feature #6) ───────────────────────── */
+.fee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+}
+.fee-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  background: var(--surface-container-low);
+}
+.fee-card.paid { background: rgba(46, 125, 50, .07); border-color: rgba(46, 125, 50, .3); }
+.fee-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.fee-label { font-weight: 600; }
+.fee-amount { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--primary); white-space: nowrap; }
+.fee-card .badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; }
+
+.advance-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--primary);
+  background: var(--primary-container, rgba(0, 64, 122, .06));
+}
+.advance-main { display: flex; align-items: center; gap: 12px; min-width: 0; }

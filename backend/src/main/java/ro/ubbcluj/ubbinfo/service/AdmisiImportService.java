@@ -47,6 +47,19 @@ public class AdmisiImportService {
 
     private static final String PASSWORD_SUFFIX = "Stud#nt";
 
+    /** Accepted header aliases for the matricol column (single source for parse + persist). */
+    private static final String[] MATRICOL_ALIASES =
+            {"matricol", "nr matricol", "numar matricol", "student id", "cod unic", "cod"};
+
+    /** De-dup key format for a matricol (used by existingKeys AND Parsed.dedupKeys). */
+    private static String matricolKey(String matricol) {
+        return "MAT:" + matricol.trim().toUpperCase(Locale.ROOT);
+    }
+
+    /** Password used when a row has no CNP (e.g. lists keyed only by matricol). */
+    @org.springframework.beans.factory.annotation.Value("${app.admisi.default-password:Student2026!}")
+    private String defaultPassword;
+
     private final ProfileRepository profileRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -78,7 +91,7 @@ public class AdmisiImportService {
         List<Map<String, String>> rows = parse(file);
 
         Set<String> takenEmails = new HashSet<>(profileRepository.findAllEmailsLower());
-        Set<String> usedCnps = new HashSet<>(profileRepository.findAllCnps());
+        Set<String> usedKeys = existingKeys();
 
         List<PreviewRow> out = new ArrayList<>();
         int ok = 0, dup = 0, invalid = 0;
@@ -87,22 +100,22 @@ public class AdmisiImportService {
             int rowNo = i + 2; // +1 header, +1 to 1-based
             if (!p.valid()) {
                 invalid++;
-                out.add(new PreviewRow(rowNo, p.fullName(), p.cnp(), p.groupName(),
+                out.add(new PreviewRow(rowNo, p.fullName(), p.identifier(), p.groupName(),
                         p.specialization(), null, "INVALID", p.error()));
                 continue;
             }
-            if (usedCnps.contains(p.cnpDigits())) {
+            if (p.dedupKeys().stream().anyMatch(usedKeys::contains)) {
                 dup++;
-                out.add(new PreviewRow(rowNo, p.fullName(), p.cnp(), p.groupName(),
-                        p.specialization(), null, "DUPLICATE", "CNP deja existent"));
+                out.add(new PreviewRow(rowNo, p.fullName(), p.identifier(), p.groupName(),
+                        p.specialization(), null, "DUPLICATE", "CNP/matricol deja existent"));
                 continue;
             }
             String email = InstitutionalEmailGenerator.generate(p.family(), p.given(),
                     e -> takenEmails.contains(e.toLowerCase(Locale.ROOT)));
             takenEmails.add(email.toLowerCase(Locale.ROOT));
-            usedCnps.add(p.cnpDigits());
+            usedKeys.addAll(p.dedupKeys());
             ok++;
-            out.add(new PreviewRow(rowNo, p.fullName(), p.cnp(), p.groupName(),
+            out.add(new PreviewRow(rowNo, p.fullName(), p.identifier(), p.groupName(),
                     p.specialization(), email, "OK", null));
         }
         return new PreviewResult(rows.size(), ok, dup, invalid, adminClient.isConfigured(), out);
@@ -123,7 +136,8 @@ public class AdmisiImportService {
                 .orElseThrow(() -> new IllegalStateException("Rolul 'student' lipsește."));
 
         Set<String> takenEmails = new HashSet<>(profileRepository.findAllEmailsLower());
-        Set<String> usedCnps = new HashSet<>(profileRepository.findAllCnps());
+        Set<String> usedKeys = existingKeys();
+        Map<String, UUID> authByEmail = null; // lazily loaded on the first conflict
 
         List<ImportRow> out = new ArrayList<>();
         int created = 0, skipped = 0, errors = 0;
@@ -137,24 +151,40 @@ public class AdmisiImportService {
                 out.add(new ImportRow(rowNo, p.fullName(), null, null, "SKIPPED", p.error()));
                 continue;
             }
-            if (usedCnps.contains(p.cnpDigits())) {
+            if (p.dedupKeys().stream().anyMatch(usedKeys::contains)) {
                 skipped++;
-                out.add(new ImportRow(rowNo, p.fullName(), null, null, "SKIPPED", "CNP deja existent"));
+                out.add(new ImportRow(rowNo, p.fullName(), null, null, "SKIPPED", "CNP/matricol deja existent"));
                 continue;
             }
 
             String email = InstitutionalEmailGenerator.generate(p.family(), p.given(),
                     e -> takenEmails.contains(e.toLowerCase(Locale.ROOT)));
-            String password = p.cnpDigits().substring(p.cnpDigits().length() - 6) + PASSWORD_SUFFIX;
+            String password = p.hasCnp()
+                    ? p.cnpDigits().substring(p.cnpDigits().length() - 6) + PASSWORD_SUFFIX
+                    : defaultPassword;
 
             try {
-                UUID uid = adminClient.createUser(email, password);
-                tx.executeWithoutResult(s -> persistAccount(uid, email, p, raw, studentRole));
+                UUID uid;
+                try {
+                    uid = adminClient.createUser(email, password);
+                } catch (Exception createEx) {
+                    // The auth user may already exist from a previous run whose
+                    // profile insert failed — adopt it instead of erroring.
+                    if (authByEmail == null) {
+                        authByEmail = adminClient.allUserIdsByEmail();
+                    }
+                    uid = authByEmail.get(email.toLowerCase(Locale.ROOT));
+                    if (uid == null) {
+                        throw createEx;
+                    }
+                }
+                final UUID accountId = uid;
+                tx.executeWithoutResult(s -> persistAccount(accountId, email, p, raw, studentRole));
                 provisioner.provision(new ExternalAccountProvisioner.ProvisionRequest(
-                        email, p.fullName(), p.cnpDigits()));
+                        email, p.fullName(), p.hasCnp() ? p.cnpDigits() : p.matricol()));
 
                 takenEmails.add(email.toLowerCase(Locale.ROOT));
-                usedCnps.add(p.cnpDigits());
+                usedKeys.addAll(p.dedupKeys());
                 created++;
                 out.add(new ImportRow(rowNo, p.fullName(), email, password, "CREATED", null));
             } catch (Exception ex) {
@@ -174,8 +204,10 @@ public class AdmisiImportService {
         profile.setShortName(derived[0]);
         profile.setInitials(derived[1]);
         profile.setEmail(email);
-        profile.setCnp(p.cnpDigits());
-        profile.setStudentId(blankToNull(get(raw, "matricol", "nr matricol", "numar matricol", "student id")));
+        if (p.hasCnp()) {
+            profile.setCnp(p.cnpDigits());
+        }
+        profile.setStudentId(blankToNull(p.matricol()));
         profile.setFaculty(blankToNull(get(raw, "facultate", "faculty")));
         profile.setSpecialization(blankToNull(p.specialization()));
         profile.setStudyYear(blankToNull(get(raw, "an", "an studiu", "study year")));
@@ -194,6 +226,17 @@ public class AdmisiImportService {
             ur.setIsPrimary(true);
             userRoleRepository.save(ur);
         }
+    }
+
+    /** Existing de-dup keys: every stored CNP and every stored matricol. */
+    private Set<String> existingKeys() {
+        Set<String> keys = new HashSet<>(profileRepository.findAllCnps());
+        for (String m : profileRepository.findAllStudentIds()) {
+            if (m != null && !m.isBlank()) {
+                keys.add(matricolKey(m));
+            }
+        }
+        return keys;
     }
 
     // ---------- parsing ----------
@@ -285,27 +328,51 @@ public class AdmisiImportService {
         String family = get(raw, "nume", "nume familie", "familie", "family", "last name");
         String given = get(raw, "prenume", "prenumele", "given", "first name");
         String cnp = get(raw, "cnp", "c n p");
+        String matricol = get(raw, MATRICOL_ALIASES);
         String group = get(raw, "grupa", "group", "grupa studenti");
         String spec = get(raw, "specializare", "specialization");
 
         String fullName = (family + " " + given).trim().replaceAll("\\s+", " ");
         String cnpDigits = cnp == null ? "" : cnp.replaceAll("\\D", "");
+        boolean hasCnp = cnpDigits.length() >= 6;
 
         String error = null;
         if (family.isBlank() || given.isBlank()) {
             error = "Lipsește numele sau prenumele";
-        } else if (cnpDigits.length() < 6) {
-            error = "CNP invalid (minim 6 cifre)";
+        } else if (!hasCnp && (matricol == null || matricol.isBlank())) {
+            error = "Lipsește CNP sau matricol";
         }
         List<String> givenTokens = Arrays.stream(given.trim().split("\\s+"))
                 .filter(s -> !s.isBlank()).toList();
-        return new Parsed(family.trim(), givenTokens, fullName, cnp, cnpDigits, group, spec, error);
+        return new Parsed(family.trim(), givenTokens, fullName, cnp, cnpDigits, matricol.trim(), group, spec, error);
     }
 
     private record Parsed(String family, List<String> given, String fullName, String cnp,
-                          String cnpDigits, String groupName, String specialization, String error) {
+                          String cnpDigits, String matricol, String groupName, String specialization, String error) {
         boolean valid() {
             return error == null;
+        }
+        boolean hasCnp() {
+            return cnpDigits != null && cnpDigits.length() >= 6;
+        }
+        /**
+         * All de-dup keys this row occupies: the CNP AND the matricol when both
+         * are present. Checking only one lets a CNP-bearing row slip past an
+         * existing matricol (duplicate student_id profiles).
+         */
+        List<String> dedupKeys() {
+            List<String> keys = new ArrayList<>();
+            if (hasCnp()) {
+                keys.add(cnpDigits);
+            }
+            if (matricol != null && !matricol.isBlank()) {
+                keys.add(matricolKey(matricol));
+            }
+            return keys;
+        }
+        /** Identifier shown in preview/report (CNP or matricol). */
+        String identifier() {
+            return hasCnp() ? cnp : matricol;
         }
     }
 
@@ -334,7 +401,7 @@ public class AdmisiImportService {
     }
 
     private static String blankToNull(String v) {
-        return v == null || v.isBlank() ? null : v.trim();
+        return ro.ubbcluj.ubbinfo.util.Strings.blankToNull(v);
     }
 
     private static String[] deriveNames(String fullName) {
