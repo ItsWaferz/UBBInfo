@@ -1,5 +1,6 @@
 package ro.ubbcluj.ubbinfo.service;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.ubbcluj.ubbinfo.entity.ProfessorAvailability;
@@ -38,6 +39,11 @@ public class AvailabilityService {
     @Transactional
     public List<ProfessorAvailability> replaceMyWindows(List<ProfessorAvailability> windows) {
         UUID me = currentUser.requireUserId();
+        // Availability windows are a professor-only concept (the solver reads
+        // them for teaching staff); block non-professors from creating rows.
+        if (!currentUser.isProfessor()) {
+            throw new AccessDeniedException("Doar profesorii pot seta disponibilitatea.");
+        }
         repository.deleteByProfessorId(me);
         for (ProfessorAvailability w : windows) {
             w.setId(null);

@@ -41,3 +41,6 @@ create table if not exists public.issued_documents (
 );
 create index if not exists issued_documents_student_idx
   on public.issued_documents (student_id, created_at desc);
+
+-- Deny-all through PostgREST: only the backend (table owner via JDBC) touches this.
+alter table public.issued_documents enable row level security;

@@ -80,3 +80,9 @@ create table if not exists public.facility_publications (
   accepted_count int,
   created_at     timestamptz not null default now()
 );
+
+-- Deny-all through PostgREST: only the backend (table owner via JDBC) touches these.
+alter table public.dorms enable row level security;
+alter table public.facility_settings enable row level security;
+alter table public.facility_applications enable row level security;
+alter table public.facility_publications enable row level security;

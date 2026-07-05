@@ -55,16 +55,15 @@ export default function PasswordModal({ open, onClose, onSuccess }) {
             name: profile?.full_name || user.email,
           });
           await navigator.credentials.store(cred);
-        } catch (credErr) {
-          console.warn('PasswordCredential store failed:', credErr);
+        } catch {
+          // Password-manager save prompt is best-effort; ignore failures.
         }
       }
 
       reset();
       onClose();
       onSuccess?.();
-    } catch (err) {
-      console.error('Password change failed:', err);
+    } catch {
       setError(t('password.error') || 'Nu am putut schimba parola. Încearcă din nou.');
       setSubmitting(false);
     }

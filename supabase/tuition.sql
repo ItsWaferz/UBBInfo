@@ -21,3 +21,6 @@ create table if not exists public.tuition_payments (
 );
 create index if not exists tuition_payments_student_idx
   on public.tuition_payments (student_id);
+
+-- Deny-all through PostgREST: only the backend (table owner via JDBC) touches this.
+alter table public.tuition_payments enable row level security;

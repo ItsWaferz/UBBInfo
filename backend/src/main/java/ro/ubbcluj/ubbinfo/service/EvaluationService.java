@@ -93,6 +93,13 @@ public class EvaluationService {
         if (!enrollmentRepository.existsByStudentIdAndCourseId(me, courseId)) {
             throw new AccessDeniedException("Not enrolled in this course");
         }
+        // The evaluated professor must actually teach this course — otherwise a
+        // student could attribute ratings/comments to any user UUID, polluting
+        // the admin evaluations report. Same relation targets() uses to build
+        // the legitimate list.
+        if (!professorCourseRepository.existsByProfessorIdAndCourseId(professorId, courseId)) {
+            throw new AccessDeniedException("This professor does not teach this course");
+        }
         ProfessorEvaluation ev = evaluationRepository
                 .findByStudentIdAndProfessorIdAndCourseId(me, professorId, courseId)
                 .orElseGet(ProfessorEvaluation::new);

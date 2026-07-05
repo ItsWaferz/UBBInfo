@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import App from './App.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { LanguageProvider } from './i18n/LanguageContext.jsx';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import './styles/index.css';
@@ -10,12 +11,14 @@ import './styles/index.css';
 // GitHub Pages, which has no server-side route rewriting.
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HashRouter>
-      <LanguageProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </LanguageProvider>
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <LanguageProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LanguageProvider>
+      </HashRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

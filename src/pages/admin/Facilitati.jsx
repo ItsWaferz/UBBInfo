@@ -114,7 +114,7 @@ export default function Facilitati() {
   const showReserved = selected === 'camin' || selected === 'tabara';
 
   return (
-    <div className="page" style={{ display: 'grid', gap: 20 }}>
+    <div className="page">
       <section className="header-card">
         <h1 className="page-title">Facilități studențești</h1>
         <p className="page-subtitle">
@@ -171,7 +171,7 @@ export default function Facilitati() {
                     <th style={{ width: 50 }}>Nr.</th>
                     <th>Cod academic</th>
                     <th>Nume</th>
-                    <th style={{ width: 70 }}>Media</th>
+                    <th className="td-num" style={{ width: 70 }}>Media</th>
                     <th>Rezultat</th>
                     {showReserved && <th style={{ width: 80 }}>Rezervat</th>}
                     <th style={{ width: 90 }}>Status</th>
@@ -183,7 +183,7 @@ export default function Facilitati() {
                       <td>{r.rank ?? '—'}</td>
                       <td className="mono">{r.code || '—'}</td>
                       <td>{r.name}</td>
-                      <td className="mono">{r.media ?? '—'}</td>
+                      <td className="mono td-num">{r.media ?? '—'}</td>
                       <td>{r.result || '—'}</td>
                       {showReserved && <td>{r.reserved ? <span className="badge badge-optional">rezervat</span> : ''}</td>}
                       <td>

@@ -8,3 +8,8 @@ dist-ssr
 !.vscode/extensions.json
 .claude/
 supabase/.idea/
+
+# Ship Safe security scan artifacts (local only)
+.ship-safe/
+ship-safe-report.html
+ship-safe-*.md

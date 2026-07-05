@@ -1177,6 +1177,13 @@ td .badge-optional {
   font-size: 14px;
 }
 
+/* Numeric columns: right-aligned with tabular digits so amounts line up. */
+.data-table th.td-num,
+.data-table td.td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .status-inprogress {
   color: var(--on-surface-variant);
   font-weight: 600;
@@ -2881,9 +2888,10 @@ td .badge-optional {
   height: 46px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  background: var(--primary-container, rgba(0, 64, 122, .1));
-  color: var(--primary);
+  border-radius: var(--radius-lg);
+  /* Light tint tile + navy icon, same palette as .stat-icon-blue. */
+  background: #d9e7ff;
+  color: var(--primary-container);
 }
 .doc-type-icon .icon { font-size: 26px; }
 .doc-type-body { flex: 1 1 auto; }
@@ -2993,8 +3001,9 @@ td .badge-optional {
 .facility-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .facility-icon {
   width: 40px; height: 40px; flex: 0 0 auto;
-  display: grid; place-items: center; border-radius: 10px;
-  background: var(--primary-container, rgba(0, 64, 122, .1)); color: var(--primary);
+  display: grid; place-items: center; border-radius: var(--radius-lg);
+  /* Light tint tile + navy icon, same palette as .stat-icon-blue. */
+  background: #d9e7ff; color: var(--primary-container);
 }
 .facility-name { font-weight: 600; margin-bottom: 4px; }
 .facility-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -3009,6 +3018,28 @@ td .badge-optional {
   padding: 8px 12px; border: 1px solid var(--outline-variant); border-radius: var(--radius);
 }
 .facility-dorm input { width: 60px; text-align: center; }
+
+/* Small numeric input used inline in table rows (grade simulator). Matches
+   the design-system input look at a compact size. */
+.grade-sim-input {
+  width: 64px;
+  height: 32px;
+  padding: 2px 8px;
+  text-align: center;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  color: var(--on-surface);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.grade-sim-input:focus {
+  border-color: var(--primary-container);
+  box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.15);
+  background: var(--surface-container-lowest);
+}
 
 /* Admin facility tabs */
 .facility-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -3058,6 +3089,7 @@ td .badge-optional {
   gap: 14px;
   padding: 16px 20px;
   border: 1px solid var(--primary);
-  background: var(--primary-container, rgba(0, 64, 122, .06));
+  /* Light highlight so the default (dark) text stays readable. */
+  background: #eef4fb;
 }
 .advance-main { display: flex; align-items: center; gap: 12px; min-width: 0; }

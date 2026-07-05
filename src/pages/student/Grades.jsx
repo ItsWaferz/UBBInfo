@@ -350,16 +350,7 @@ function GradeCalculator({ courses, semester, t }) {
                 <td>
                   <input
                     type="number"
-                    className="form-control"
-                    style={{ 
-                      padding: '2px 4px', 
-                      width: '60px', 
-                      height: '28px',
-                      background: 'transparent', 
-                      border: '1px solid var(--outline-variant)', 
-                      borderRadius: 'var(--radius)',
-                      color: 'var(--on-surface)'
-                    }}
+                    className="grade-sim-input"
                     min="1"
                     max="10"
                     step="1"

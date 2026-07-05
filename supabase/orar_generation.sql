@@ -73,3 +73,9 @@ create index if not exists draft_lesson_draft_idx on public.timetable_draft_less
 -- ============================================================
 -- DONE.
 -- ============================================================
+
+-- Deny-all through PostgREST: only the backend (table owner via JDBC) touches these.
+alter table public.professor_availability enable row level security;
+alter table public.scheduling_requirement enable row level security;
+alter table public.timetable_draft enable row level security;
+alter table public.timetable_draft_lesson enable row level security;

@@ -29,7 +29,7 @@ export default function Taxe() {
   }, [data, q, filter]);
 
   return (
-    <div className="page" style={{ display: 'grid', gap: 20 }}>
+    <div className="page">
       <section className="header-card">
         <h1 className="page-title">Statistică taxe</h1>
         <p className="page-subtitle">Cine ce taxe are de plătit (școlarizare + restanțe) și cât a plătit până acum.</p>
@@ -62,10 +62,10 @@ export default function Taxe() {
                 <th>Nume</th>
                 <th>Matricol</th>
                 <th>Finanțare</th>
-                <th style={{ width: 120 }}>Școlarizare</th>
-                <th style={{ width: 110 }}>Restanțe</th>
-                <th style={{ width: 110 }}>Plătit</th>
-                <th style={{ width: 110 }}>Rămas</th>
+                <th className="td-num" style={{ width: 120 }}>Școlarizare</th>
+                <th className="td-num" style={{ width: 110 }}>Restanțe</th>
+                <th className="td-num" style={{ width: 110 }}>Plătit</th>
+                <th className="td-num" style={{ width: 110 }}>Rămas</th>
               </tr>
             </thead>
             <tbody>
@@ -76,10 +76,10 @@ export default function Taxe() {
                   <td>
                     <span className={`badge ${r.fee_paying ? 'badge-optional' : ''}`}>{r.financing}</span>
                   </td>
-                  <td>{r.fee_paying ? `${r.installments_paid}/${r.installments_total}` : '—'}</td>
-                  <td>{r.restante_total > 0 ? `${r.restante_paid}/${r.restante_total}` : '—'}</td>
-                  <td className="mono">{lei(r.total_paid)}</td>
-                  <td className="mono">
+                  <td className="td-num">{r.fee_paying ? `${r.installments_paid}/${r.installments_total}` : '—'}</td>
+                  <td className="td-num">{r.restante_total > 0 ? `${r.restante_paid}/${r.restante_total}` : '—'}</td>
+                  <td className="mono td-num">{lei(r.total_paid)}</td>
+                  <td className="mono td-num">
                     {Number(r.outstanding) > 0
                       ? <span className="text-danger">{lei(r.outstanding)}</span>
                       : <span className="badge status-pass">achitat</span>}

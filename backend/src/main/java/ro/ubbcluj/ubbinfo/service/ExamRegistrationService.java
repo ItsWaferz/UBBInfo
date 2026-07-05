@@ -3,9 +3,11 @@ package ro.ubbcluj.ubbinfo.service;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ro.ubbcluj.ubbinfo.entity.Exam;
 import ro.ubbcluj.ubbinfo.entity.ExamRegistration;
 import ro.ubbcluj.ubbinfo.repository.EnrollmentRepository;
 import ro.ubbcluj.ubbinfo.repository.ExamRegistrationRepository;
+import ro.ubbcluj.ubbinfo.repository.ExamRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,13 +22,16 @@ public class ExamRegistrationService {
 
     private final ExamRegistrationRepository registrationRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final ExamRepository examRepository;
     private final CurrentUserService currentUser;
 
     public ExamRegistrationService(ExamRegistrationRepository registrationRepository,
                                    EnrollmentRepository enrollmentRepository,
+                                   ExamRepository examRepository,
                                    CurrentUserService currentUser) {
         this.registrationRepository = registrationRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.examRepository = examRepository;
         this.currentUser = currentUser;
     }
 
@@ -42,6 +47,13 @@ public class ExamRegistrationService {
         // A student may only register for courses they're enrolled in.
         if (!enrollmentRepository.existsByStudentIdAndCourseId(me, courseId)) {
             throw new AccessDeniedException("Not enrolled in this course");
+        }
+        // The chosen exam must exist and belong to this course — otherwise a
+        // student could point their slot at an unrelated (or non-existent) exam.
+        Exam exam = examRepository.findById(examId)
+                .orElseThrow(() -> new AccessDeniedException("Exam not found"));
+        if (!courseId.equals(exam.getCourseId())) {
+            throw new AccessDeniedException("Exam does not belong to this course");
         }
         ExamRegistration reg = registrationRepository
                 .findByStudentIdAndCourseId(me, courseId)

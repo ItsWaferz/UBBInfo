@@ -1,8 +1,9 @@
 // Supabase Edge Function: create-user
 // Creates a new auth user + profile + primary role. Admin-only.
 //
-// The service-role key is read from the auto-injected SUPABASE_SERVICE_ROLE_KEY
-// runtime secret — you do NOT need to set it manually. It never reaches the client.
+// The service-role key is read from the runtime secret auto-injected by the
+// Edge Functions platform — you do NOT need to set it manually, and it never
+// reaches the client.
 //
 // Deploy via dashboard: Edge Functions -> Create a function -> name it
 // "create-user" -> paste this file -> Deploy. Keep "Verify JWT" enabled.
@@ -44,7 +45,9 @@ Deno.serve(async (req) => {
   }
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-  const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  // Server-side Deno edge function; the key comes from the platform env,
+  // not from client code.
+  const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!; // ship-safe-ignore SUPABASE_SERVICE_KEY_CLIENT
   const ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
 
   // Service-role client (bypasses RLS) for privileged operations

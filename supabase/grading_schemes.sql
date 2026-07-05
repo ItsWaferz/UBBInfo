@@ -51,3 +51,8 @@ alter table public.enrollments add column if not exists grade_breakdown jsonb;
 -- ============================================================
 -- DONE.
 -- ============================================================
+
+-- Deny-all through PostgREST: only the backend (table owner via JDBC) touches these.
+alter table public.grading_scheme enable row level security;
+alter table public.grading_component enable row level security;
+alter table public.manual_grade enable row level security;

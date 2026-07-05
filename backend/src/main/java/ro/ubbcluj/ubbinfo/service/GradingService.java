@@ -161,6 +161,11 @@ public class GradingService {
         if (!myScheme.getId().equals(comp.getSchemeId())) {
             throw new AccessDeniedException("Componenta nu aparține schemei tale pentru această disciplină.");
         }
+        // The student must be enrolled in this course — otherwise a professor
+        // could persist stray manual_grade rows keyed to arbitrary UUIDs.
+        if (!enrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
+            throw new AccessDeniedException("Studentul nu este înscris la această disciplină.");
+        }
         ManualGrade m = manualGradeRepository.findByComponentIdAndStudentId(componentId, studentId)
                 .orElseGet(ManualGrade::new);
         m.setComponentId(componentId);

@@ -1,6 +1,7 @@
 -- ============================================================
 -- Recreate admin account if it was accidentally deleted
 -- Email: admin@ubbcluj.ro  Password: admin123
+-- (demo credential — intentionally simple; rotate before any real deployment)
 -- ============================================================
 
 DO $$

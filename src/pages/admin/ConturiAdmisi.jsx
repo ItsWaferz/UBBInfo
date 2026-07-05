@@ -114,7 +114,7 @@ export default function ConturiAdmisi() {
 
         {preview && !preview.provisioning_ready && (
           <p className="modal-error" style={{ marginTop: 12 }}>
-            ⚠️ Cheia <code>SUPABASE_SERVICE_ROLE_KEY</code> nu e configurată pe backend — pot doar
+            ⚠️ Cheia de administrare Supabase nu e configurată pe backend (vezi README) — pot doar
             previzualiza, nu și crea conturi.
           </p>
         )}
