@@ -33,6 +33,21 @@ public final class EnrollmentRules {
     }
 
     /**
+     * True when the enrollment is strictly before the given (current) period —
+     * an earlier academic year, or the same year but an earlier semester. Rows
+     * that can't be placed (null year/semester) count as not-past. Used so a
+     * carried restanță is only ever taken from a semester that has actually
+     * happened, never the current or a future one.
+     */
+    private static boolean isPast(Enrollment e, String year, int semester) {
+        if (e.getAcademicYear() == null || e.getSemester() == null) {
+            return false;
+        }
+        int cmp = e.getAcademicYear().compareTo(year);
+        return cmp != 0 ? cmp < 0 : e.getSemester() < semester;
+    }
+
+    /**
      * A student's unresolved carried restanțe, one per course: a failing grade
      * (&lt; 5) — or an ungraded {@code is_restanta} row — from a PAST semester
      * that the student has NOT passed in any other enrollment. The is_restanta
@@ -51,7 +66,7 @@ public final class EnrollmentRules {
         Map<UUID, Enrollment> out = new LinkedHashMap<>();
         for (Enrollment e : enrollments) {
             if (e.getCourseId() == null
-                    || isCurrent(e, currentYear, currentSemester)
+                    || !isPast(e, currentYear, currentSemester)
                     || passed.contains(e.getCourseId())) {
                 continue;
             }

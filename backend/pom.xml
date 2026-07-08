@@ -113,6 +113,17 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <!-- Mockito's inline mock maker needs ByteBuddy's experimental flag to
+                     instrument concrete classes on newer JDKs (25 here), and the JVM's
+                     dynamic-agent flag to attach quietly. Without these, mocking any
+                     non-interface type fails with "Mockito cannot mock this class". -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dnet.bytebuddy.experimental=true -XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

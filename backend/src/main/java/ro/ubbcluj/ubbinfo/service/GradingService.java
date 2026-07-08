@@ -247,14 +247,22 @@ public class GradingService {
                     v = sheetRow == null ? null : averageColumns(sheetRow, c.getSheetColumns());
                 }
                 values.put(c.getName(), v == null ? null : round2(v));
-                if (v != null) {
-                    anyValue = true;
-                    double w = c.getWeight() == null ? 0 : c.getWeight();
-                    if (Boolean.TRUE.equals(c.getIsBonus())) {
+                double w = c.getWeight() == null ? 0 : c.getWeight();
+                if (Boolean.TRUE.equals(c.getIsBonus())) {
+                    // Bonus is optional: a missing bonus simply adds nothing.
+                    if (v != null) {
+                        anyValue = true;
                         bonus += v * w / 100.0;
-                    } else {
-                        weightedSum += v * w;
-                        weightTotal += w;
+                    }
+                } else {
+                    // A mandatory component always counts its full weight; a missing
+                    // value contributes 0 (a student can't pass by skipping part of
+                    // the course). Only a student with NO values at all is treated as
+                    // ungraded below (anyValue == false -> "Fără note", not saved).
+                    weightTotal += w;
+                    weightedSum += (v == null ? 0.0 : v) * w;
+                    if (v != null) {
+                        anyValue = true;
                     }
                 }
                 if (c.getMinThreshold() != null && (v == null || v < c.getMinThreshold())) {
