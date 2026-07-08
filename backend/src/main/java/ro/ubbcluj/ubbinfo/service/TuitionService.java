@@ -101,10 +101,15 @@ public class TuitionService {
         BigDecimal outstanding = BigDecimal.ZERO;
         BigDecimal totalPaid = BigDecimal.ZERO;
         for (Charge c : concat(installments, restante)) {
-            totalDue = totalDue.add(c.amount());
             if (c.paid()) {
-                totalPaid = totalPaid.add(paid.get(c.key()).getAmount());
+                // Count what was ACTUALLY charged (advance-discounted amounts are
+                // less than nominal), so totalDue always reconciles with
+                // totalPaid + outstanding instead of showing a phantom balance.
+                BigDecimal actual = paid.get(c.key()).getAmount();
+                totalPaid = totalPaid.add(actual);
+                totalDue = totalDue.add(actual);
             } else {
+                totalDue = totalDue.add(c.amount());
                 outstanding = outstanding.add(c.amount());
             }
         }
