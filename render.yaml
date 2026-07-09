@@ -1,0 +1,26 @@
+# Render Blueprint — backend (Spring Boot) as a Docker web service.
+# In Render: New → Blueprint → pick this repo/branch. It reads this file and
+# provisions the service; every push to the connected branch auto-redeploys.
+#
+# The frontend is NOT here — deploy it on Vercel/Cloudflare Pages (static).
+services:
+  - type: web
+    name: ubbinfo-api
+    runtime: docker
+    rootDir: backend            # build context + Dockerfile live here
+    region: frankfurt           # close to the Supabase eu-central project
+    plan: free                  # 512 MB, sleeps after ~15 min idle (cold start)
+    healthCheckPath: /actuator/health
+    autoDeploy: true            # redeploy on every push to the connected branch
+    envVars:
+      # Secrets — set the values in the Render dashboard (never committed).
+      - key: SUPABASE_DB_PASSWORD
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Frontend origin(s) allowed by CORS — update to the Vercel URL after step 4.
+      - key: APP_CORS_ORIGINS
+        value: http://localhost:5173
+      # Let the JVM size its heap to the container's 512 MB.
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=75.0
