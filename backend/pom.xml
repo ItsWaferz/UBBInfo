@@ -105,6 +105,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- ConstraintVerifier for unit-testing the timetable constraints. -->
+        <dependency>
+            <groupId>ai.timefold.solver</groupId>
+            <artifactId>timefold-solver-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
