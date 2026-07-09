@@ -1,0 +1,10 @@
+# Keep the build context small and never ship secrets or local build output.
+target/
+.env
+.env.local
+*.env.local
+.git/
+.gitignore
+.idea/
+*.iml
+*.log
