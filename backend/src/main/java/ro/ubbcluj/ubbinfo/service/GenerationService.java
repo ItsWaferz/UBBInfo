@@ -7,7 +7,9 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ro.ubbcluj.ubbinfo.entity.Orar;
 import ro.ubbcluj.ubbinfo.entity.Profile;
 import ro.ubbcluj.ubbinfo.entity.ProfessorAvailability;
@@ -62,6 +64,8 @@ public class GenerationService {
     private final TimetableDraftLessonRepository draftLessonRepository;
     private final OrarRepository orarRepository;
     private final CurrentUserService currentUser;
+    private final TransactionTemplate readTx;
+    private final TransactionTemplate writeTx;
 
     @Value("${app.orar.solve-seconds:8}")
     private int solveSeconds;
@@ -75,7 +79,8 @@ public class GenerationService {
                              TimetableDraftRepository draftRepository,
                              TimetableDraftLessonRepository draftLessonRepository,
                              OrarRepository orarRepository,
-                             CurrentUserService currentUser) {
+                             CurrentUserService currentUser,
+                             PlatformTransactionManager txManager) {
         this.requirementRepository = requirementRepository;
         this.professorCourseRepository = professorCourseRepository;
         this.availabilityRepository = availabilityRepository;
@@ -86,12 +91,53 @@ public class GenerationService {
         this.draftLessonRepository = draftLessonRepository;
         this.orarRepository = orarRepository;
         this.currentUser = currentUser;
+        this.readTx = new TransactionTemplate(txManager);
+        this.readTx.setReadOnly(true);
+        this.writeTx = new TransactionTemplate(txManager);
     }
 
-    @Transactional
     public List<TimetableDraft> generate(int draftCount) {
         currentUser.requireAdmin();
 
+        // Load every problem fact up front in a short read-only transaction, so no
+        // DB connection is held during the long solver runs below.
+        ProblemFacts facts = readTx.execute(status -> loadFacts());
+
+        // --- solve once per draft (no DB transaction held during solve), varying the seed ---
+        List<TimetableDraft> results = new ArrayList<>();
+        for (int d = 0; d < Math.max(1, draftCount); d++) {
+            SolverConfig config = new SolverConfig()
+                    .withSolutionClass(TimetableSolution.class)
+                    .withEntityClasses(Lesson.class)
+                    .withConstraintProviderClass(TimetableConstraintProvider.class)
+                    .withTerminationConfig(new TerminationConfig()
+                            .withSpentLimit(Duration.ofSeconds(solveSeconds)));
+            config.setRandomSeed((long) (d + 1));
+
+            TimetableSolution problem = new TimetableSolution(
+                    facts.timeslots(), facts.rooms(), facts.professors(),
+                    buildLessons(facts.requirements(), facts.allPc()));
+
+            Solver<TimetableSolution> solver = SolverFactory.<TimetableSolution>create(config).buildSolver();
+            TimetableSolution solved = solver.solve(problem);
+
+            // Persist each draft in its own short transaction.
+            final int index = d + 1;
+            results.add(writeTx.execute(status -> persistDraft(index, solved, facts.profById())));
+        }
+        return results;
+    }
+
+    /** Problem facts read from the DB once, then used to solve without a connection. */
+    private record ProblemFacts(List<SchedulingRequirement> requirements,
+                                List<ProfessorCourse> allPc,
+                                List<Timeslot> timeslots,
+                                List<SolverRoom> rooms,
+                                List<SolverProfessor> professors,
+                                Map<UUID, SolverProfessor> profById) {}
+
+    /** Reads requirements, eligibility, rooms and professor availability into facts. */
+    private ProblemFacts loadFacts() {
         List<SchedulingRequirement> requirements = requirementRepository.findAllWithCourse();
         if (requirements.isEmpty()) {
             throw new IllegalArgumentException("Nu există cerințe de orar definite.");
@@ -140,29 +186,10 @@ public class GenerationService {
                                         a.getDayOfWeek(), a.getStartTime(), a.getEndTime(), a.getPreference()))
                                 .toList()))
                 .toList();
-        Map<UUID, SolverProfessor> profByName = professors.stream()
+        Map<UUID, SolverProfessor> profById = professors.stream()
                 .collect(Collectors.toMap(SolverProfessor::getId, p -> p));
 
-        // --- solve once per draft, varying the seed ---
-        List<TimetableDraft> results = new ArrayList<>();
-        for (int d = 0; d < Math.max(1, draftCount); d++) {
-            SolverConfig config = new SolverConfig()
-                    .withSolutionClass(TimetableSolution.class)
-                    .withEntityClasses(Lesson.class)
-                    .withConstraintProviderClass(TimetableConstraintProvider.class)
-                    .withTerminationConfig(new TerminationConfig()
-                            .withSpentLimit(Duration.ofSeconds(solveSeconds)));
-            config.setRandomSeed((long) (d + 1));
-
-            TimetableSolution problem = new TimetableSolution(
-                    timeslots, rooms, professors, buildLessons(requirements, allPc));
-
-            Solver<TimetableSolution> solver = SolverFactory.<TimetableSolution>create(config).buildSolver();
-            TimetableSolution solved = solver.solve(problem);
-
-            results.add(persistDraft(d + 1, solved, profByName));
-        }
-        return results;
+        return new ProblemFacts(requirements, allPc, timeslots, rooms, professors, profById);
     }
 
     /** Create one Lesson per session required. */

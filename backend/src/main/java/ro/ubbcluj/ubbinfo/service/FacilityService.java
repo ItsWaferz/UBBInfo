@@ -248,10 +248,12 @@ public class FacilityService {
 
     public record GeneratedPdf(String filename, byte[] pdf) {}
 
-    @Transactional(readOnly = true)
     public GeneratedPdf pdf(String facility, int x) {
         currentUser.requireAdmin();
         requireValidFacility(facility);
+        // Allocation data is read here (findByFacility* join-fetch student/course,
+        // so no lazy loading escapes); the slow PDF render then runs with NO
+        // database connection held.
         List<Alloc> allocs = allocate(facility, x);
         String label = labelOf(facility);
         List<Alloc> accepted = allocs.stream().filter(a -> a.accepted).toList();

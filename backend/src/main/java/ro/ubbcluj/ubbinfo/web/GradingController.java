@@ -1,5 +1,7 @@
 package ro.ubbcluj.ubbinfo.web;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +18,6 @@ import ro.ubbcluj.ubbinfo.dto.GradingDtos.SheetColumnsDto;
 import ro.ubbcluj.ubbinfo.service.GradingService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Grading schemes (professor, feature #2). */
@@ -51,13 +52,16 @@ public class GradingController {
         return gradingService.manualGrades(courseId);
     }
 
+    /** Body for a manual grade — typed + validated so a missing id 400s instead of NPE-ing. */
+    public record ManualGradeRequest(
+            @NotNull UUID component_id,
+            @NotNull UUID student_id,
+            Double value) {}
+
     @PutMapping("/{courseId}/manual")
-    public ResponseEntity<Void> setManualGrade(@PathVariable UUID courseId, @RequestBody Map<String, Object> body) {
-        UUID componentId = UUID.fromString(body.get("component_id").toString());
-        UUID studentId = UUID.fromString(body.get("student_id").toString());
-        Object v = body.get("value");
-        Double value = (v == null || v.toString().isBlank()) ? null : Double.valueOf(v.toString());
-        gradingService.setManualGrade(courseId, componentId, studentId, value);
+    public ResponseEntity<Void> setManualGrade(@PathVariable UUID courseId,
+                                               @Valid @RequestBody ManualGradeRequest body) {
+        gradingService.setManualGrade(courseId, body.component_id(), body.student_id(), body.value());
         return ResponseEntity.noContent().build();
     }
 

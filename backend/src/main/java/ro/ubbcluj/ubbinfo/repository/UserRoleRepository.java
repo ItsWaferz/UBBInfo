@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ro.ubbcluj.ubbinfo.entity.UserRole;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,9 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
     List<String> findRoleNamesByUserId(@Param("userId") UUID userId);
 
     List<UserRole> findByUserId(UUID userId);
+
+    /** Role assignments for a page of users — avoids loading every UserRole. */
+    List<UserRole> findByUserIdIn(Collection<UUID> userIds);
 
     /** [roleName, distinctUserCount] per role — for the admin overview. */
     @Query("select r.name, count(distinct ur.userId) from UserRole ur join ur.role r group by r.name")

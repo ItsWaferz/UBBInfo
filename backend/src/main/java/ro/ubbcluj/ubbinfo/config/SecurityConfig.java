@@ -29,15 +29,14 @@ import java.util.List;
 /**
  * Spring Security as an OAuth2 Resource Server validating Supabase JWTs.
  *
- * <p>Supabase signs access tokens with <b>HS256</b> using the project's legacy
- * "JWT Secret". The secret is used as the <i>raw UTF-8 bytes</i> of the string
- * (GoTrue does {@code []byte(secret)}) — it must NOT be base64-decoded, even
- * though the value may look like base64.</p>
+ * <p>Supabase signs access tokens with <b>ES256</b> (asymmetric). We verify the
+ * signature against the project's public <b>JWKS</b> ({@code supabase.jwks-uri}) —
+ * no shared secret is held by the API. This intentionally supersedes the older
+ * HS256/"JWT Secret" scheme.</p>
  *
- * <p>We validate signature + timestamps + that {@code aud == "authenticated"}
- * (the stable audience Supabase puts on user tokens). Issuer is intentionally
- * not hard-pinned, since the {@code iss} of Supabase user tokens
- * ({@code .../auth/v1}) differs from the API keys' {@code iss} and can vary.</p>
+ * <p>On top of the signature we validate timestamps, the issuer
+ * ({@code supabase.jwt-issuer}), and that {@code aud == "authenticated"} (the
+ * stable audience Supabase puts on user tokens).</p>
  */
 @Configuration
 @EnableMethodSecurity

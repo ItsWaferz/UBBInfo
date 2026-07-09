@@ -1,6 +1,10 @@
 package ro.ubbcluj.ubbinfo.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.ubbcluj.ubbinfo.dto.AdminUserDto;
@@ -163,46 +167,41 @@ public class UserService {
     }
 
     /**
-     * Users with role assignments, optionally filtered server-side: {@code q}
-     * matches name/matricol/email, {@code flagged} keeps only social/special
-     * cases. Filtered queries are capped so pages that need a handful of rows
-     * (Facilități case manager) don't ship the whole user table.
+     * Bounded, array-shaped view for the existing endpoints: {@code q} matches
+     * name/matricol/email, {@code flagged} keeps only social/special cases.
+     * Filtered autocompletes need only a handful of rows; the full table is
+     * capped so a growing user base can never ship an unbounded payload. For
+     * true paging use {@link #listUsers(String, Boolean, Pageable)}.
      */
     @Transactional(readOnly = true)
     public List<AdminUserDto> listUsers(String q, Boolean flagged) {
-        currentUser.requireAdmin();
-
-        Map<UUID, List<UserRole>> rolesByUser = userRoleRepository.findAll().stream()
-                .collect(Collectors.groupingBy(UserRole::getUserId));
-
-        String needle = q == null ? null : q.trim().toLowerCase();
-        boolean filtered = (needle != null && !needle.isEmpty()) || Boolean.TRUE.equals(flagged);
-
-        java.util.stream.Stream<Profile> stream = profileRepository.findAll().stream();
-        if (Boolean.TRUE.equals(flagged)) {
-            stream = stream.filter(p -> Boolean.TRUE.equals(p.getIsSocialCase())
-                    || Boolean.TRUE.equals(p.getIsSpecialCase()));
-        }
-        if (needle != null && !needle.isEmpty()) {
-            stream = stream.filter(p ->
-                    containsIgnoreCase(p.getFullName(), needle)
-                            || containsIgnoreCase(p.getStudentId(), needle)
-                            || containsIgnoreCase(p.getEmail(), needle));
-        }
-        if (filtered) {
-            stream = stream.limit(50);
-        }
-        return stream
-                .map(p -> new AdminUserDto(
-                        ProfileDto.from(p),
-                        rolesByUser.getOrDefault(p.getId(), List.of()).stream()
-                                .map(ur -> new AdminUserDto.RoleRef(ur.getRoleId(), ur.getIsPrimary()))
-                                .toList()))
-                .toList();
+        boolean filtered = (q != null && !q.trim().isEmpty()) || Boolean.TRUE.equals(flagged);
+        Pageable pageable = PageRequest.of(0, filtered ? 50 : 2000,
+                Sort.by(Sort.Order.asc("fullName").ignoreCase()));
+        return listUsers(q, flagged, pageable).getContent();
     }
 
-    private static boolean containsIgnoreCase(String haystack, String lowerNeedle) {
-        return haystack != null && haystack.toLowerCase().contains(lowerNeedle);
+    /**
+     * Users with role assignments, filtered + sorted + paged in the database.
+     * Roles are fetched only for the users on the returned page, so both memory
+     * and bandwidth stay O(page size) regardless of how many users exist.
+     */
+    @Transactional(readOnly = true)
+    public Page<AdminUserDto> listUsers(String q, Boolean flagged, Pageable pageable) {
+        currentUser.requireAdmin();
+        String needle = (q == null || q.trim().isEmpty()) ? null : "%" + q.trim().toLowerCase() + "%";
+        Page<Profile> page = profileRepository.findForAdmin(needle, Boolean.TRUE.equals(flagged), pageable);
+
+        List<UUID> ids = page.getContent().stream().map(Profile::getId).toList();
+        Map<UUID, List<UserRole>> rolesByUser = ids.isEmpty() ? Map.of()
+                : userRoleRepository.findByUserIdIn(ids).stream()
+                        .collect(Collectors.groupingBy(UserRole::getUserId));
+
+        return page.map(p -> new AdminUserDto(
+                ProfileDto.from(p),
+                rolesByUser.getOrDefault(p.getId(), List.of()).stream()
+                        .map(ur -> new AdminUserDto.RoleRef(ur.getRoleId(), ur.getIsPrimary()))
+                        .toList()));
     }
 
     /** The role catalog (id, name, label, icon, badge_class, home_page). */

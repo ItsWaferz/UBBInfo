@@ -69,7 +69,10 @@ class GradingServiceComputeTest {
         enrollRepo = mock(EnrollmentRepository.class);
         sheetReader = new FakeSheetReader();
         currentUser = mock(CurrentUserService.class);
-        svc = new GradingService(schemeRepo, compRepo, manualRepo, enrollRepo, sheetReader, currentUser);
+        // A mock transaction manager makes TransactionTemplate.execute() run the
+        // callback synchronously (getTransaction -> null, commit -> no-op).
+        svc = new GradingService(schemeRepo, compRepo, manualRepo, enrollRepo, sheetReader, currentUser,
+                mock(org.springframework.transaction.PlatformTransactionManager.class));
         when(currentUser.isAdmin()).thenReturn(true);
         when(currentUser.requireUserId()).thenReturn(prof);
     }

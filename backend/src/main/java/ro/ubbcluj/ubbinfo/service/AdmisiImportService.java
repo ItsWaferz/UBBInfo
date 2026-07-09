@@ -230,7 +230,14 @@ public class AdmisiImportService {
 
     /** Existing de-dup keys: every stored CNP and every stored matricol. */
     private Set<String> existingKeys() {
-        Set<String> keys = new HashSet<>(profileRepository.findAllCnps());
+        // Stored CNPs may be formatted (spaces/dashes); strip to digits so they
+        // match the digit-only keys the parser produces, otherwise a formatted
+        // value would slip past de-duplication and re-import the student.
+        Set<String> keys = profileRepository.findAllCnps().stream()
+                .filter(java.util.Objects::nonNull)
+                .map(c -> c.replaceAll("\\D", ""))
+                .filter(c -> !c.isBlank())
+                .collect(java.util.stream.Collectors.toCollection(HashSet::new));
         for (String m : profileRepository.findAllStudentIds()) {
             if (m != null && !m.isBlank()) {
                 keys.add(matricolKey(m));

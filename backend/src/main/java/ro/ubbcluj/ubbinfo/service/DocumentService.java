@@ -82,14 +82,16 @@ public class DocumentService {
     public record Generated(UUID id, String filename, byte[] pdf) {}
 
     /** Render the document from the submitted field values and store the audit row. */
-    @Transactional
     public Generated generate(String type, Map<String, String> fields) {
         UUID me = currentUser.requireUserId();
         // Validate the type is known (throws otherwise).
         String title = catalog.titleFor(type);
 
+        // Render outside any DB transaction — a slow, non-DB step that would
+        // otherwise hold a pooled connection for its whole duration.
         byte[] pdf = pdfRenderer.render(catalog.buildHtml(type, fields));
 
+        // Only the audit-row write touches the DB; Spring Data save() is atomic.
         IssuedDocument doc = new IssuedDocument();
         doc.setStudentId(me);
         doc.setType(type);

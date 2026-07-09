@@ -1,6 +1,9 @@
 package ro.ubbcluj.ubbinfo.web;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 /** Timetable generation + draft management (admin). */
 @RestController
+@Validated
 @RequestMapping("/api/orar")
 public class OrarGenerationController {
 
@@ -26,9 +30,10 @@ public class OrarGenerationController {
         this.generationService = generationService;
     }
 
-    /** POST /api/orar/generate?drafts=3 — run the solver and produce drafts. */
+    /** POST /api/orar/generate?drafts=3 — run the solver and produce drafts (1..5). */
     @PostMapping("/generate")
-    public List<TimetableDraft> generate(@RequestParam(name = "drafts", defaultValue = "3") int drafts) {
+    public List<TimetableDraft> generate(
+            @RequestParam(name = "drafts", defaultValue = "3") @Min(1) @Max(5) int drafts) {
         return generationService.generate(drafts);
     }
 

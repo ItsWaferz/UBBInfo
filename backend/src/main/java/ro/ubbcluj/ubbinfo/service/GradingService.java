@@ -3,7 +3,9 @@ package ro.ubbcluj.ubbinfo.service;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ro.ubbcluj.ubbinfo.dto.GradingDtos.ComponentDto;
 import ro.ubbcluj.ubbinfo.dto.GradingDtos.ComputeResult;
 import ro.ubbcluj.ubbinfo.dto.GradingDtos.ComputeRow;
@@ -42,19 +44,22 @@ public class GradingService {
     private final EnrollmentRepository enrollmentRepository;
     private final GoogleSheetReader sheetReader;
     private final CurrentUserService currentUser;
+    private final TransactionTemplate tx;
 
     public GradingService(GradingSchemeRepository schemeRepository,
                           GradingComponentRepository componentRepository,
                           ManualGradeRepository manualGradeRepository,
                           EnrollmentRepository enrollmentRepository,
                           GoogleSheetReader sheetReader,
-                          CurrentUserService currentUser) {
+                          CurrentUserService currentUser,
+                          PlatformTransactionManager txManager) {
         this.schemeRepository = schemeRepository;
         this.componentRepository = componentRepository;
         this.manualGradeRepository = manualGradeRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.sheetReader = sheetReader;
         this.currentUser = currentUser;
+        this.tx = new TransactionTemplate(txManager);
     }
 
     private void requireCanGrade(UUID courseId) {
@@ -176,7 +181,6 @@ public class GradingService {
 
     // ---------- compute ----------
 
-    @Transactional
     public ComputeResult compute(UUID courseId, boolean save) {
         requireCanGrade(courseId);
         UUID me = currentUser.requireUserId();
@@ -186,11 +190,23 @@ public class GradingService {
         if (components.isEmpty()) {
             throw new IllegalArgumentException("Schema nu are componente.");
         }
-
         boolean hasDocument = components.stream().anyMatch(c -> "document".equals(c.getSource()));
 
-        // sheet index: normalized identifier -> row
-        Map<String, Map<String, String>> sheetIndex = new HashMap<>();
+        // Read the Google Sheet BEFORE opening a transaction — a slow HTTP call
+        // that must not tie up a pooled DB connection while it waits.
+        SheetIndex sheet = loadSheetIndex(scheme, hasDocument);
+
+        // Compute + persist inside a transaction: the enrollment mutations below
+        // rely on JPA dirty checking being flushed at commit.
+        return tx.execute(status ->
+                computeAndSave(courseId, save, scheme, components, hasDocument, sheet));
+    }
+
+    /** Normalized identifier -> sheet row, plus all keys (for the unmatched report). */
+    private record SheetIndex(Map<String, Map<String, String>> byKey, List<String> allKeys) {}
+
+    private SheetIndex loadSheetIndex(GradingScheme scheme, boolean hasDocument) {
+        Map<String, Map<String, String>> byKey = new HashMap<>();
         List<String> allKeys = new ArrayList<>();
         if (hasDocument && scheme.getSheetUrl() != null && !scheme.getSheetUrl().isBlank()
                 && scheme.getMatchColumn() != null) {
@@ -198,11 +214,19 @@ public class GradingService {
             for (Map<String, String> row : data.rows()) {
                 String key = norm(row.get(scheme.getMatchColumn()));
                 if (!key.isEmpty()) {
-                    sheetIndex.put(key, row);
+                    byKey.put(key, row);
                     allKeys.add(key);
                 }
             }
         }
+        return new SheetIndex(byKey, allKeys);
+    }
+
+    private ComputeResult computeAndSave(UUID courseId, boolean save, GradingScheme scheme,
+                                         List<GradingComponent> components, boolean hasDocument,
+                                         SheetIndex sheet) {
+        Map<String, Map<String, String>> sheetIndex = sheet.byKey();
+        List<String> allKeys = sheet.allKeys();
 
         // manual grades: componentId|studentId -> value
         List<UUID> compIds = components.stream().map(GradingComponent::getId).toList();

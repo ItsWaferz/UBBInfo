@@ -87,8 +87,7 @@ public class RoomController {
         if (body.containsKey("address")) b.setAddress(str(body.get("address")));
         if (body.containsKey("zone")) b.setZone(str(body.get("zone")));
         if (body.containsKey("sort_order")) {
-            Object v = body.get("sort_order");
-            b.setSortOrder(v == null ? null : ((Number) v).intValue());
+            b.setSortOrder(toInt(body.get("sort_order")));
         }
     }
 
@@ -140,8 +139,7 @@ public class RoomController {
         if (body.containsKey("location")) r.setLocation(str(body.get("location")));
         if (body.containsKey("room_type")) r.setRoomType(str(body.get("room_type")));
         if (body.containsKey("capacity")) {
-            Object v = body.get("capacity");
-            r.setCapacity(v == null ? null : ((Number) v).intValue());
+            r.setCapacity(toInt(body.get("capacity")));
         }
     }
 
@@ -151,5 +149,28 @@ public class RoomController {
         }
         String s = o.toString().trim();
         return s.isEmpty() ? null : s;
+    }
+
+    /**
+     * Coerce a JSON value to an Integer: accepts numbers and numeric strings,
+     * treats blank as null, and rejects anything else with a 400 (via the global
+     * IllegalArgumentException handler) instead of a 500 ClassCastException.
+     */
+    private static Integer toInt(Object v) {
+        if (v == null) {
+            return null;
+        }
+        if (v instanceof Number n) {
+            return n.intValue();
+        }
+        String s = v.toString().trim();
+        if (s.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Valoare numerică invalidă: " + s);
+        }
     }
 }
