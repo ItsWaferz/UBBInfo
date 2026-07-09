@@ -250,9 +250,53 @@ export SUPABASE_DB_PASSWORD='<your-db-password>'
 The frontend points at `http://localhost:8080` by default; override with `VITE_API_URL`
 (e.g. when the backend is hosted elsewhere).
 
-> **Note on the hosted demo:** GitHub Pages serves the **frontend only**. For a fully
-> working hosted deployment you'd also need to host the Spring Boot backend and set
-> `VITE_API_URL` to its URL. Locally, everything works out of the box.
+---
+
+## 🌐 Deployment (hosted, free)
+
+The database + auth are already hosted on **Supabase** (free tier), so only two pieces
+are deployed:
+
+| Piece | Host | How |
+|-------|------|-----|
+| **Backend** (Spring Boot + Timefold) | **Render** (Docker web service) or **Google Cloud Run** | git-push auto-deploy |
+| **Frontend** (React/Vite, static) | **Vercel** or Cloudflare Pages | git-push auto-deploy |
+| **DB + Auth** | **Supabase** | already hosted |
+
+The repo ships everything needed:
+
+- [`backend/Dockerfile`](backend/Dockerfile) — multi-stage build (Maven JDK 17 → JRE 17),
+  bundles Liberation fonts for PDFs, sizes the JVM to the container memory.
+- [`render.yaml`](render.yaml) — a **Render Blueprint**: connect the repo once and the
+  `ubbinfo-api` web service is provisioned; every push redeploys. Health check on
+  `/actuator/health`.
+- [`DEPLOY.md`](DEPLOY.md) — **step-by-step guide** for Render + Vercel + closing the CORS loop.
+
+**Env vars in production**
+
+- Backend: `SUPABASE_DB_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` (secrets),
+  `APP_CORS_ORIGINS` = the frontend URL. (`ORAR_SOLVE_SECONDS` optional, default `8`.)
+- Frontend: `VITE_API_URL` = the backend URL (no trailing slash).
+
+> On a free backend tier the service sleeps after ~15 min idle, so the first request
+> after a pause has a ~30–60 s cold start while the JVM boots. Normal for free hosting.
+
+---
+
+## 🧪 Tests
+
+The backend has a **JUnit 5 + Mockito** suite covering the complex features
+(restanțe/averages, grading computation, tuition, facility allocation) and the timetable
+solver — the 11 Timefold constraints are verified live with **ConstraintVerifier**.
+
+```bash
+cd backend
+mvn test                                   # ~168 tests
+
+# Timetable solver benchmark (5s vs 30s budgets), skipped in the normal run:
+mvn test -Dorar.benchmark=true -Dtest=TimetableBenchmarkTest -DfailIfNoTests=false \
+  -Dorar.specs=5 -Dorar.years=3 -Dorar.courses=6 -Dorar.groups=3
+```
 
 ---
 
@@ -305,6 +349,7 @@ src/                              # React frontend
 
 backend/                          # Spring Boot REST API
 ├── pom.xml, run.sh
+├── Dockerfile, .dockerignore     # container build (Render / Cloud Run)
 ├── SCHEMA.md                     # reverse-engineered DB schema
 └── src/main/
     ├── resources/fonts/          # bundled Liberation Serif (PDF diacritics)
@@ -322,6 +367,8 @@ backend/                          # Spring Boot REST API
 
 samples/                          # example import file (admisi_exemplu.csv)
 supabase/                         # SQL migrations/seeds + create-user Edge Function
+render.yaml                       # Render Blueprint (backend web service)
+DEPLOY.md                         # hosted deployment guide (Render + Vercel)
 FEATURES_PROMPT.md                # implementation brief for the larger features
 ```
 
