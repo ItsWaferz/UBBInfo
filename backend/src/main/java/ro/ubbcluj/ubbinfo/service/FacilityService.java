@@ -333,28 +333,39 @@ public class FacilityService {
                 .thenComparing(Alloc::code));
 
         int cap = capacityFor(facility, xInput);
-        int reservedCount = reservedFor(facility, cap);
+        int reservedFloor = reservedFor(facility, cap);
 
-        // cands is already in final (media) order, so admission is two marking
-        // passes over it — no sets, no re-sort.
-        // Phase 1: reserved slots for flagged students (best media first).
+        // cands is already in final (media) order.
+        // Phase 1: pure-merit admission of the top `cap` by media.
         int admittedCount = 0;
-        if (reservedCount > 0) {
-            for (Alloc c : cands) {
-                if (admittedCount >= reservedCount) break;
-                if (c.flagged) {
-                    c.accepted = true;
-                    c.reserved = true;
-                    admittedCount++;
-                }
-            }
-        }
-        // Phase 2: general fill by media up to the capacity.
         for (Alloc c : cands) {
             if (admittedCount >= cap) break;
-            if (!c.accepted) {
-                c.accepted = true;
-                admittedCount++;
+            c.accepted = true;
+            admittedCount++;
+        }
+        // Phase 2: reserved floor. The quota guarantees at least `reservedFloor`
+        // flagged (social/special) students are admitted. Flagged applicants who
+        // already made the merit cut count toward the floor — they don't waste a
+        // reserved slot. Only the remaining deficit is filled, by promoting the
+        // best-media excluded flagged and displacing the weakest-media admitted
+        // non-flagged student (the quota overrides merit for that last seat).
+        long flaggedAdmitted = cands.stream().filter(c -> c.accepted && c.flagged).count();
+        int deficit = (int) Math.max(0, reservedFloor - flaggedAdmitted);
+        if (deficit > 0) {
+            for (Alloc promote : cands) {
+                if (deficit <= 0) break;
+                if (promote.accepted || !promote.flagged) continue;
+                // Displace the weakest-media admitted non-flagged applicant.
+                Alloc victim = null;
+                for (int i = cands.size() - 1; i >= 0; i--) {
+                    Alloc c = cands.get(i);
+                    if (c.accepted && !c.flagged) { victim = c; break; }
+                }
+                if (victim == null) break; // nobody left to displace
+                victim.accepted = false;
+                promote.accepted = true;
+                promote.reserved = true;
+                deficit--;
             }
         }
 
