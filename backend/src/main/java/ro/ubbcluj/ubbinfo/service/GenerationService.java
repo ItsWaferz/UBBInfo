@@ -63,7 +63,7 @@ public class GenerationService {
     private final OrarRepository orarRepository;
     private final CurrentUserService currentUser;
 
-    @Value("${app.orar.solve-seconds:5}")
+    @Value("${app.orar.solve-seconds:8}")
     private int solveSeconds;
 
     public GenerationService(SchedulingRequirementRepository requirementRepository,

@@ -1,7 +1,12 @@
 package ro.ubbcluj.ubbinfo.solver;
 
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -53,8 +58,12 @@ class TimetableBenchmarkTest {
         long space = (long) ds.timeslots.size() * ds.rooms.size() * ds.professors.size();
         System.out.printf("Assignment options per lesson (slot x room x prof): ~%,d%n", space);
 
-        runFor(ds, 5);
-        runFor(ds, 30);
+        if (Boolean.getBoolean("orar.sweep")) {
+            for (int s : new int[] {2, 4, 6, 8, 12, 20, 30}) runFor(ds, s);
+        } else {
+            runFor(ds, 5);
+            runFor(ds, 30);
+        }
     }
 
     private void runFor(Dataset ds, int seconds) {
@@ -64,6 +73,15 @@ class TimetableBenchmarkTest {
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withSpentLimit(Duration.ofSeconds(seconds)));
+        if (Boolean.getBoolean("orar.explicit")) {
+            // Explicit phases: a quick First-Fit construction, then time-independent
+            // Late Acceptance local search that runs out the remaining budget.
+            config.withPhaseList(List.of(
+                    new ConstructionHeuristicPhaseConfig()
+                            .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT),
+                    new LocalSearchPhaseConfig()
+                            .withLocalSearchType(LocalSearchType.LATE_ACCEPTANCE)));
+        }
         config.setRandomSeed(1L);
 
         // Fresh, unassigned lessons each run (no warm start carried over).
@@ -71,15 +89,33 @@ class TimetableBenchmarkTest {
                 ds.timeslots, ds.rooms, ds.professors, freshLessons(ds));
 
         Solver<TimetableSolution> solver = SolverFactory.<TimetableSolution>create(config).buildSolver();
+
+        // Diagnostic: record every best-solution improvement + when 0-hard is first hit.
+        List<String> milestones = new ArrayList<>();
+        long[] firstFeasibleMs = {-1};
+        int[] bestUpdates = {0};
+        solver.addEventListener(event -> {
+            bestUpdates[0]++;
+            HardSoftScore sc = (HardSoftScore) event.getNewBestScore();
+            if (sc.hardScore() == 0 && firstFeasibleMs[0] < 0) {
+                firstFeasibleMs[0] = event.getTimeMillisSpent();
+            }
+            if (Boolean.getBoolean("orar.trace")) {
+                milestones.add(String.format("  @%5dms -> %s", event.getTimeMillisSpent(), sc));
+            }
+        });
+
         long t0 = System.currentTimeMillis();
         TimetableSolution solved = solver.solve(problem);
         long ms = System.currentTimeMillis() - t0;
 
         int hard = (int) solved.getScore().hardScore();
         int soft = (int) solved.getScore().softScore();
-        System.out.printf("--- %2ds limit: score=%s  (hard=%d, soft=%d)  wall=%dms  %s%n",
-                seconds, solved.getScore(), hard, soft, ms,
+        System.out.printf("--- %2ds limit: score=%s  init=%d  (hard=%d, soft=%d)  wall=%dms  bestUpdates=%d  firstFeasible=%s  %s%n",
+                seconds, solved.getScore(), solved.getScore().initScore(), hard, soft, ms, bestUpdates[0],
+                firstFeasibleMs[0] < 0 ? "NEVER" : (firstFeasibleMs[0] + "ms"),
                 hard == 0 ? "FEASIBLE (0 conflicte)" : (hard + " conflicte hard rămase"));
+        milestones.forEach(System.out::println);
     }
 
     // ---------------------------------------------------------------------
