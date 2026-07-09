@@ -226,7 +226,12 @@ public class FacilityService {
             List<FacilityApplication> apps = byFacility.getOrDefault(f, List.of());
             int accepted = (int) apps.stream().filter(a -> "accepted".equals(a.getStatus())).count();
             boolean published = apps.stream().anyMatch(a -> a.getDecidedAt() != null);
-            Integer capacity = CAMIN.equals(f) ? totalDormCapacity() : (s == null ? null : s.getCapacity());
+            // Keep the type Integer on both branches — a mixed int/Integer ternary
+            // unboxes the whole expression and NPEs when the setting (or its
+            // capacity) is null.
+            Integer capacity = CAMIN.equals(f)
+                    ? Integer.valueOf(totalDormCapacity())
+                    : (s == null ? null : s.getCapacity());
             out.add(new FacilityOverviewDto(f, s == null ? f : s.getLabel(), capacity,
                     s == null ? BigDecimal.ZERO : s.getReservedPercent(), apps.size(), accepted, published));
         }

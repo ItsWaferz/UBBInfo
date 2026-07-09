@@ -637,6 +637,26 @@ class FacilityServiceTest {
                     .filter(o -> o.key().equals(FacilityService.CAMIN)).findFirst().orElseThrow();
             assertEquals(50, camin.capacity());
         }
+
+        @Test
+        @DisplayName("regression: overview does not NPE when a facility setting is missing")
+        void overviewToleratesMissingSetting() {
+            when(appRepository.findAll()).thenReturn(List.of());
+            // No settings at all -> s==null for every facility. The mixed
+            // int/Integer ternary used to unbox and NPE here.
+            when(settingRepository.findAll()).thenReturn(List.of());
+            when(dormRepository.findByActiveTrueOrderBySortOrderAsc())
+                    .thenReturn(List.of(dorm("A", 40, 0)));
+
+            List<FacilityOverviewDto> ov = service.overview();
+
+            FacilityOverviewDto camin = ov.stream()
+                    .filter(o -> o.key().equals(FacilityService.CAMIN)).findFirst().orElseThrow();
+            assertEquals(40, camin.capacity());           // dorm total, still works
+            FacilityOverviewDto tabara = ov.stream()
+                    .filter(o -> o.key().equals(FacilityService.TABARA)).findFirst().orElseThrow();
+            assertNull(tabara.capacity());                // no setting -> null, no NPE
+        }
     }
 
     // =====================================================================
