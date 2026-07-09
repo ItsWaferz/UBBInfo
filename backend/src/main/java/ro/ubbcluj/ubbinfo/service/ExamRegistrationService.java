@@ -9,6 +9,7 @@ import ro.ubbcluj.ubbinfo.repository.EnrollmentRepository;
 import ro.ubbcluj.ubbinfo.repository.ExamRegistrationRepository;
 import ro.ubbcluj.ubbinfo.repository.ExamRepository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +58,13 @@ public class ExamRegistrationService {
         }
         ExamRegistration reg = registrationRepository
                 .findByStudentIdAndCourseId(me, courseId)
-                .orElseGet(ExamRegistration::new);
+                .orElseGet(() -> {
+                    // New row: stamp created_at (no DB default / @PrePersist). Moving an
+                    // existing slot keeps its original timestamp.
+                    ExamRegistration r = new ExamRegistration();
+                    r.setCreatedAt(OffsetDateTime.now());
+                    return r;
+                });
         reg.setStudentId(me);
         reg.setCourseId(courseId);
         reg.setExamId(examId);

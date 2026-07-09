@@ -16,13 +16,20 @@ export async function apiFetch(path, { method = 'GET', body, headers, signal } =
     data: { session },
   } = await supabase.auth.getSession();
   const token = session?.access_token;
+  // Every /api endpoint requires auth. Fail fast (and clearly) instead of firing
+  // an anonymous request that the backend would just 401.
+  if (!token) {
+    const err = new Error('Not authenticated');
+    err.status = 401;
+    throw err;
+  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     signal,
     headers: {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
