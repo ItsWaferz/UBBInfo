@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 import Icon from './Icon';
 
@@ -8,6 +8,10 @@ const FIELDS = [
   'study_year', 'group_name', 'financing', 'transport_id',
   'academic_rank', 'honorifics', 'phone', 'personal_email', 'address',
 ];
+
+const STUDY_YEARS = ['1', '2', '3', '4'];
+const FINANCING = ['buget', 'taxă'];
+const ACADEMIC_RANKS = ['Doctorand', 'Asistent', 'Lector', 'Conferențiar', 'Profesor'];
 
 function deriveNames(fullName = '') {
   const t = fullName.trim().split(/\s+/).filter(Boolean);
@@ -19,10 +23,30 @@ function deriveNames(fullName = '') {
   };
 }
 
+/** Split "Program (Limba X)" -> { program, language }. */
+function parseSpec(s) {
+  const str = s || '';
+  const m = str.match(/^(.*?)\s*\(\s*limba\s+([^)]+?)\s*\)\s*$/i);
+  if (m) return { program: m[1].trim(), language: m[2].trim() };
+  return { program: str.trim(), language: '' };
+}
+const composeSpec = (program, language) =>
+  program ? (language ? `${program} (Limba ${language})` : program) : '';
+
+const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
+/** Diacritic-insensitive key, so imported ș/ş/ț/ţ variants still match the reference table. */
+const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
 export default function EditUserModal({ open, user, roles = [], onClose, onSaved }) {
   const [form, setForm] = useState({});
   const [roleIds, setRoleIds] = useState(new Set());
   const [primaryRoleId, setPrimaryRoleId] = useState(null);
+  const [specs, setSpecs] = useState([]);   // [{code,name,language,faculty}]
+  const [groups, setGroups] = useState([]); // [{code,spec_code,year,semigroups[]}]
+  const [program, setProgram] = useState('');
+  const [language, setLanguage] = useState('');
+  const [groupCode, setGroupCode] = useState('');
+  const [semigroup, setSemigroup] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,8 +57,80 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
       setForm(next);
       setRoleIds(new Set(user.roleIds || []));
       setPrimaryRoleId(user.primaryRoleId || null);
+      const p = parseSpec(user.specialization);
+      setProgram(p.program);
+      setLanguage(p.language);
+      const [g, s] = String(user.group_name || '').split('/');
+      setGroupCode((g || '').trim());
+      setSemigroup((s || '').trim());
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!open) return;
+    api.get('/api/specializations').then((d) => setSpecs(d || [])).catch(() => {});
+    api.get('/api/groups').then((d) => setGroups(d || [])).catch(() => {});
+  }, [open]);
+
+  // Canonicalize the imported specialization/language/faculty to the reference
+  // table values (diacritic-insensitive) once specs load, so the dropdowns match
+  // exactly downstream and none end up empty.
+  useEffect(() => {
+    if (!specs.length || !program) return;
+    const match = specs.find((s) =>
+      norm(s.name) === norm(program) && (!language || norm(s.language) === norm(language)));
+    if (!match) return;
+    if (program !== match.name) setProgram(match.name);
+    if (language && language !== match.language) setLanguage(match.language);
+    if (form.faculty !== match.faculty) setForm((f) => ({ ...f, faculty: match.faculty }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [specs, program, language, form.faculty]);
+
+  const roleNameById = useMemo(
+    () => Object.fromEntries(roles.map((r) => [r.id, r.name])),
+    [roles]
+  );
+  const hasRole = (name) => [...roleIds].some((id) => roleNameById[id] === name);
+  const isStudent = hasRole('student');
+  const isProfesor = hasRole('profesor');
+
+  // Reference faculties; fall back to the student's own value if the
+  // specializations endpoint returned nothing (so the field is never empty).
+  const faculties = useMemo(() => {
+    const fromSpecs = uniq(specs.map((s) => s.faculty));
+    return (fromSpecs.length ? fromSpecs : uniq([form.faculty])).sort();
+  }, [specs, form.faculty]);
+  const programs = useMemo(
+    () => uniq([...specs.filter((s) => s.faculty === form.faculty).map((s) => s.name), program]).sort(),
+    [specs, form.faculty, program]
+  );
+  const languages = useMemo(
+    () => uniq([
+      ...specs.filter((s) => s.faculty === form.faculty && s.name === program).map((s) => s.language),
+      language,
+    ]).sort(),
+    [specs, form.faculty, program, language]
+  );
+  const selectedSpec = useMemo(
+    () => specs.find((s) => s.faculty === form.faculty && s.name === program && s.language === language) || null,
+    [specs, form.faculty, program, language]
+  );
+
+  const groupOptions = useMemo(() => {
+    const codes = groups
+      .filter((g) => (!selectedSpec || g.spec_code === selectedSpec.code)
+        && (!form.study_year || String(g.year) === String(form.study_year)))
+      .map((g) => g.code);
+    if (groupCode) codes.push(groupCode);
+    return uniq(codes).sort((a, b) => a.localeCompare(b));
+  }, [groups, selectedSpec, form.study_year, groupCode]);
+
+  const semigroupOptions = useMemo(() => {
+    const g = groups.find((x) => x.code === groupCode);
+    const opts = g ? [...(g.semigroups || [])] : [];
+    if (semigroup) opts.push(semigroup);
+    return uniq(opts).sort();
+  }, [groups, groupCode, semigroup]);
 
   if (!open || !user) return null;
 
@@ -73,7 +169,13 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
       const v = typeof form[f] === 'string' ? form[f].trim() : form[f];
       payload[f] = v === '' ? null : v;
     }
-    // keep derived display fields in sync with full_name
+    if (isStudent) {
+      payload.specialization = composeSpec(program, language) || null;
+      payload.faculty = form.faculty?.trim() || null;
+      payload.group_name = groupCode
+        ? (semigroup ? `${groupCode}/${semigroup}` : groupCode)
+        : null;
+    }
     const { short_name, initials } = deriveNames(form.full_name);
     payload.short_name = short_name;
     payload.initials = initials;
@@ -96,29 +198,50 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
     onClose();
   };
 
-  const field = (key, label, opts = {}) => (
+  // ---- field renderers ----
+  const input = (key, label, opts = {}) => (
     <label className="field">
       <span className="field-label">{label}</span>
       <div className="input-wrap">
-        {opts.select ? (
-          <select className="select-bare" value={form[key] || ''} onChange={set(key)}>
-            {opts.select.map((o) => (
-              <option key={o} value={o}>
-                {o || '—'}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type={opts.type || 'text'}
-            className={opts.mono ? 'mono' : ''}
-            value={form[key] || ''}
-            onChange={set(key)}
-          />
-        )}
+        <input
+          type={opts.type || 'text'}
+          className={opts.mono ? 'mono' : ''}
+          value={form[key] || ''}
+          onChange={set(key)}
+        />
       </div>
     </label>
   );
+
+  const selectField = (label, value, onChange, options, placeholder = '— alege —') => (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      <div className="input-wrap">
+        <select className="select-bare" value={value || ''} onChange={onChange}>
+          <option value="">{placeholder}</option>
+          {options.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+
+  const readonly = (label, value, opts = {}) => (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      <div className="input-wrap input-readonly">
+        <span className={opts.mono ? 'mono ro-value' : 'ro-value'}>{value || '—'}</span>
+      </div>
+    </label>
+  );
+
+  // Cascade change handlers (each reset narrows the ones below it).
+  const onFaculty = (e) => { setForm((f) => ({ ...f, faculty: e.target.value, study_year: '' })); setProgram(''); setLanguage(''); setGroupCode(''); setSemigroup(''); };
+  const onProgram = (e) => { setProgram(e.target.value); setLanguage(''); setGroupCode(''); setSemigroup(''); };
+  const onLanguage = (e) => { setLanguage(e.target.value); setGroupCode(''); setSemigroup(''); };
+  const onYear = (e) => { setForm((f) => ({ ...f, study_year: e.target.value })); setGroupCode(''); setSemigroup(''); };
+  const onGroup = (e) => { setGroupCode(e.target.value); setSemigroup(''); };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -132,55 +255,58 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
 
         <form onSubmit={submit} className="modal-body">
           <div className="form-grid-2">
-            {field('full_name', 'Nume complet')}
-            <label className="field">
-              <span className="field-label">Email instituțional</span>
-              <div className="input-wrap input-readonly">
-                <span className="mono">{form.email || '—'}</span>
+            {input('full_name', 'Nume complet')}
+            {readonly('Email instituțional', form.email, { mono: true })}
+          </div>
+
+          {isStudent && (
+            <>
+              <div className="form-grid-2">
+                {readonly('Nr. matricol', form.student_id, { mono: true })}
+                {selectField('Facultate', form.faculty, onFaculty, faculties)}
               </div>
-            </label>
-          </div>
+              <div className="form-grid-2">
+                {selectField('Specializare', program, onProgram, programs)}
+                {selectField('Limba de studiu', language, onLanguage, languages)}
+              </div>
+              <div className="form-grid-2">
+                {selectField('Anul', form.study_year, onYear, STUDY_YEARS)}
+                {selectField('Grupă', groupCode, onGroup, groupOptions)}
+              </div>
+              <div className="form-grid-2">
+                {selectField('Semigrupă', semigroup, (e) => setSemigroup(e.target.value),
+                  semigroupOptions, semigroupOptions.length ? '— alege —' : 'fără')}
+                {selectField('Finanțare', form.financing, set('financing'), FINANCING)}
+              </div>
+            </>
+          )}
+
+          {isProfesor && (
+            <div className="form-grid-2">
+              {selectField('Grad didactic', form.academic_rank, set('academic_rank'), ACADEMIC_RANKS)}
+              {input('honorifics', 'Titluri onorifice')}
+            </div>
+          )}
+
           <div className="form-grid-2">
-            {field('student_id', 'Nr. matricol', { mono: true })}
-            {field('study_year', 'An studiu')}
+            {input('phone', 'Telefon', { type: 'tel' })}
+            {input('personal_email', 'Email personal', { type: 'email' })}
           </div>
-          <div className="form-grid-2">
-            {field('faculty', 'Facultate')}
-            {field('specialization', 'Specializare')}
-          </div>
-          <div className="form-grid-2">
-            {field('group_name', 'Grupa')}
-            {field('financing', 'Finanțare', { select: ['', 'buget', 'taxă'] })}
-          </div>
-          <div className="form-grid-2">
-            {field('academic_rank', 'Grad didactic', {
-              select: ['', 'Doctorand', 'Asistent', 'Lector', 'Conferențiar', 'Profesor'],
-            })}
-            {field('honorifics', 'Titluri onorifice')}
-          </div>
-          <div className="form-grid-2">
-            {field('phone', 'Telefon', { type: 'tel' })}
-            {field('personal_email', 'Email personal', { type: 'email' })}
-          </div>
-          {field('address', 'Adresă')}
+          {input('address', 'Adresă')}
 
           <div className="field">
             <span className="field-label">Roluri</span>
-            <div className="course-multiselect">
+            <div className="roles-grid">
               {roles.map((r) => {
                 const checked = roleIds.has(r.id);
                 return (
-                  <div key={r.id} className="role-assign-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div key={r.id} className={`role-cell${checked ? ' checked' : ''}`}>
                     <label className="course-check">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleRole(r.id)}
-                      />
+                      <input type="checkbox" checked={checked} onChange={() => toggleRole(r.id)} />
                       <span>{r.label || r.name}</span>
                     </label>
                     {checked && (
-                      <label className="course-check" style={{ fontSize: 12, opacity: 0.85 }}>
+                      <label className="course-check role-primary">
                         <input
                           type="radio"
                           name="primaryRole"

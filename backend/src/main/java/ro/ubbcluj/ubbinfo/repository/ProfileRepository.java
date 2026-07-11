@@ -45,5 +45,10 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     @Query("select distinct p.specialization from Profile p "
             + "where p.specialization is not null and p.specialization <> '' order by p.specialization")
     List<String> findDistinctSpecializations();
+
+    /** Distinct, non-blank student group codes (e.g. "1322/1") — source for the group cascade. */
+    @Query("select distinct p.groupName from Profile p "
+            + "where p.groupName is not null and p.groupName <> '' order by p.groupName")
+    List<String> findDistinctGroupNames();
 }
 
