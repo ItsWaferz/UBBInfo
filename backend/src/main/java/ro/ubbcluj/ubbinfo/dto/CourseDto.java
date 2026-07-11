@@ -9,15 +9,15 @@ public record CourseDto(
         UUID id,
         String name,
         Integer credits,
-        String level,
         String profile,
-        Boolean isOptional
+        String category,
+        String teachingLanguage
 ) {
     public static CourseDto from(Course c) {
         if (c == null) {
             return null;
         }
         return new CourseDto(c.getId(), c.getName(), c.getCredits(),
-                c.getLevel(), c.getProfile(), c.getIsOptional());
+                c.getProfile(), c.getCategory(), c.getTeachingLanguage());
     }
 }

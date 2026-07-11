@@ -247,6 +247,13 @@ a {
   resize: vertical;
 }
 
+/* Read-only field shown as information (e.g. institutional email in the edit modal). */
+.input-wrap.input-readonly {
+  background: var(--surface-container);
+  color: var(--on-surface-variant);
+  cursor: default;
+}
+
 .input-wrap-textarea {
   align-items: flex-start;
 }
@@ -1224,6 +1231,70 @@ td .badge-optional {
   background: #ffdad6;
   color: var(--error);
 }
+/* Empty grade: same centered box as a badge (so the "—" lines up with the
+   numbers) but without the pill background. */
+.grade-badge.grade-empty {
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-weight: 400;
+}
+
+/* ============================================================
+   Student dashboard "Situație academică" table
+   Larger & phone-friendly: numeric columns centered so grades
+   (incl. restanțe) line up, discipline column wraps instead of
+   forcing horizontal scroll.
+   ============================================================ */
+.academic-table {
+  font-size: 15px;
+}
+.academic-table thead th {
+  font-size: 14px;
+}
+.academic-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+/* Credite + Nota: shrink to content and center, so the grade badge
+   and the "—" sit in the same spot in every row. */
+.academic-table .col-credits,
+.academic-table .col-grade {
+  text-align: center;
+  white-space: nowrap;
+  width: 1%;
+}
+.academic-table .grade-badge {
+  min-width: 30px;
+  height: 30px;
+  font-size: 15px;
+}
+
+@media (max-width: 480px) {
+  .academic-table.data-table {
+    font-size: 14px;
+  }
+  /* Override the generic 11px mobile table rule for this table only
+     (higher specificity + !important beats .data-table th/td). */
+  .academic-table.data-table thead th,
+  .academic-table.data-table tbody td {
+    font-size: 14px !important;
+    padding: 12px 10px !important;
+  }
+  .academic-table.data-table thead th {
+    font-size: 12.5px !important;
+  }
+  /* Let long course names wrap so the table fits the screen width. */
+  .academic-table.data-table th:first-child,
+  .academic-table.data-table td:first-child {
+    white-space: normal;
+    word-break: break-word;
+  }
+  .academic-table.data-table .col-credits,
+  .academic-table.data-table .col-grade {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+}
 
 /* ============================================================
    Identity form
@@ -1358,14 +1429,21 @@ td .badge-optional {
   border-bottom-color: var(--primary-container);
 }
 
-.semester-header {
-  flex-wrap: wrap;
+/* Always stack: title on its own row, meta below — same whether the text fits
+   or not (so every semester card looks identical). */
+.card-header.semester-header {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 .semester-meta {
   display: flex;
-  gap: 20px;
+  justify-content: space-between; /* Media left, Total credite pushed far right */
+  align-items: baseline;
+  gap: 16px;
   font-size: 14px;
   color: var(--on-surface-variant);
+  width: 100%;
 }
 
 /* ============================================================
@@ -1726,6 +1804,8 @@ td .badge-optional {
 .users-accordion-label {
   font-weight: 600;
   font-size: 15px;
+  text-align: left; /* the trigger is a <button> (centers text) — keep wrapped
+                       specialization names left-aligned like the short ones */
 }
 .users-accordion-trigger.sub .users-accordion-label {
   font-weight: 500;
@@ -1962,6 +2042,66 @@ td .badge-optional {
 .icon-btn-danger:hover {
   background: #ffdad6;
   color: var(--error);
+}
+
+/* ============================================================
+   Admin Users — staff/students tables (smaller edit button,
+   centered Grupa/Finanțare, per-table font sizing).
+   ============================================================ */
+.staff-table .icon-btn {
+  padding: 4px;
+}
+.staff-table .icon-btn .icon {
+  font-size: 16px;
+}
+.staff-table {
+  font-size: 15px;
+}
+/* Center the Grupă (2nd) and Finanțare (3rd) columns of the student table. */
+.students-table th:nth-child(2),
+.students-table th:nth-child(3),
+.students-table td:nth-child(2),
+.students-table td:nth-child(3) {
+  text-align: center;
+}
+.students-table th.filter-th .filter-header-btn {
+  justify-content: center;
+  margin: 0 auto;
+}
+/* Professors/admins now show only Name + edit (email lives in the edit modal).
+   Bigger, single-line name; the edit button hugs the right edge. */
+.staff-table:not(.students-table) td:first-child {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding-right: 32px;
+}
+.staff-table:not(.students-table) th:last-child,
+.staff-table:not(.students-table) td:last-child {
+  width: 1%;
+  white-space: nowrap;
+  padding-left: 4px;
+}
+
+@media (max-width: 480px) {
+  /* students: readable base, with Grupă + Finanțare a touch larger */
+  .students-table.data-table thead th,
+  .students-table.data-table tbody td {
+    font-size: 14px !important;
+    padding: 12px 8px !important;
+  }
+  .students-table.data-table td:nth-child(2),
+  .students-table.data-table td:nth-child(3) {
+    font-size: 15px !important;
+  }
+  /* professors/admins: bigger single-line name */
+  .staff-table:not(.students-table).data-table td:first-child {
+    font-size: 15px !important;
+  }
+  .staff-table:not(.students-table).data-table thead th,
+  .staff-table:not(.students-table).data-table tbody td {
+    padding: 12px 8px !important;
+  }
 }
 
 /* Active/inactive toggle pill */
@@ -3021,12 +3161,18 @@ td .badge-optional {
 
 /* Small numeric input used inline in table rows (grade simulator). Matches
    the design-system input look at a compact size. */
-.grade-sim-input {
-  width: 64px;
-  height: 32px;
-  padding: 2px 8px;
+/* input.grade-sim-input (not just .grade-sim-input) so it beats the mobile
+   anti-zoom rule `input[type="number"] { font-size:16px !important }`. */
+input.grade-sim-input {
+  box-sizing: border-box;
+  width: 38px;
+  height: 26px;
+  padding: 0 3px;
   text-align: center;
-  font: inherit;
+  font-family: inherit;
+  font-size: 12px !important;
+  font-weight: 600;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   background: var(--surface-container-low);
   border: 1px solid var(--outline-variant);
@@ -3034,11 +3180,40 @@ td .badge-optional {
   color: var(--on-surface);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+  -moz-appearance: textfield; /* hide number spinners (Firefox) */
+}
+/* hide number spinners (WebKit/Blink) so it matches the plain design inputs */
+.grade-sim-input::-webkit-outer-spin-button,
+.grade-sim-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .grade-sim-input:focus {
-  border-color: var(--primary-container);
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.15);
-  background: var(--surface-container-lowest);
+  background: var(--surface);
+}
+
+/* ============================================================
+   Generated-documents history table (icon-only download button)
+   ============================================================ */
+.btn.btn-icon {
+  padding: 8px;
+  min-width: 0;
+  gap: 0;
+}
+.docs-table .col-download {
+  text-align: center;
+  white-space: nowrap;
+  width: 1%;
+}
+/* Bigger text on phones only (beats the generic 11px mobile table rule). */
+@media (max-width: 480px) {
+  .docs-table.data-table thead th,
+  .docs-table.data-table tbody td {
+    font-size: 13px !important;
+    padding: 11px 10px !important;
+  }
 }
 
 /* Admin facility tabs */

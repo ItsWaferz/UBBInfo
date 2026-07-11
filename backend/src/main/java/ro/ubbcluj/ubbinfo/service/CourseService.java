@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.ubbcluj.ubbinfo.entity.Course;
 import ro.ubbcluj.ubbinfo.repository.CourseRepository;
+import ro.ubbcluj.ubbinfo.repository.ProfileRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,18 +18,28 @@ import java.util.UUID;
 public class CourseService {
 
     private final CourseRepository courseRepository;
+    private final ProfileRepository profileRepository;
     private final CurrentUserService currentUser;
 
-    public CourseService(CourseRepository courseRepository, CurrentUserService currentUser) {
+    public CourseService(CourseRepository courseRepository,
+                         ProfileRepository profileRepository,
+                         CurrentUserService currentUser) {
         this.courseRepository = courseRepository;
+        this.profileRepository = profileRepository;
         this.currentUser = currentUser;
     }
 
     @Transactional(readOnly = true)
-    public List<Course> list(boolean optionalOnly) {
-        return optionalOnly
-                ? courseRepository.findByIsOptionalTrueOrderByNameAsc()
+    public List<Course> list(boolean facultativeOnly) {
+        return facultativeOnly
+                ? courseRepository.findByCategoryOrderByNameAsc("facultativ")
                 : courseRepository.findAllByOrderByNameAsc();
+    }
+
+    /** Distinct student specializations — the source for the course "profil" dropdown. */
+    @Transactional(readOnly = true)
+    public List<String> specializations() {
+        return profileRepository.findDistinctSpecializations();
     }
 
     @Transactional
@@ -45,10 +56,10 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFoundException("Course not found: " + id));
         existing.setName(changes.getName());
         existing.setCredits(changes.getCredits());
-        existing.setLevel(changes.getLevel());
         existing.setProfile(changes.getProfile());
-        if (changes.getIsOptional() != null) {
-            existing.setIsOptional(changes.getIsOptional());
+        existing.setTeachingLanguage(changes.getTeachingLanguage());
+        if (changes.getCategory() != null) {
+            existing.setCategory(changes.getCategory());
         }
         return courseRepository.save(existing);
     }

@@ -36,7 +36,7 @@ public class AcademicAverageService {
         double sumC = 0;
         for (Enrollment e : enrollments) {
             Course c = e.getCourse();
-            if (c != null && Boolean.TRUE.equals(c.getIsOptional())) {
+            if (excludedFromMedia(c)) {
                 continue;
             }
             Double g = EnrollmentRules.effectiveGrade(e);
@@ -50,5 +50,14 @@ public class AcademicAverageService {
             return null;
         }
         return Math.round((sumGC / sumC) * 100.0) / 100.0;
+    }
+
+    /**
+     * Only <b>facultativ</b> courses are excluded from the media (graded but not
+     * counted). Kept in sync with the frontend rule in
+     * {@code src/utils/format.js} (countsTowardMedia).
+     */
+    private static boolean excludedFromMedia(Course c) {
+        return c != null && c.isFacultativ();
     }
 }

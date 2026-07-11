@@ -213,7 +213,7 @@ export default function Users() {
                           return (
                             <div className="users-accordion-body">
                               <div className="table-wrap no-overflow">
-                                <table className="data-table">
+                                <table className="data-table staff-table students-table">
                                   <thead>
                                     <tr>
                                       <th>Nume</th>
@@ -303,11 +303,10 @@ export default function Users() {
                 {/* ── PROFESSORS ── */}
                 {cat.key === 'profesor' && (
                   <div className="table-wrap">
-                    <table className="data-table">
+                    <table className="data-table staff-table">
                       <thead>
                         <tr>
                           <th>Nume</th>
-                          <th>Email</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -315,7 +314,6 @@ export default function Users() {
                         {professors.map((u) => (
                           <tr key={u.id}>
                             <td>{u.full_name}</td>
-                            <td className="mono">{u.email}</td>
                             <td>
                               <div className="row-actions">
                                 <button type="button" className="icon-btn" onClick={() => setEditUser(u)} aria-label="Editează">
@@ -326,7 +324,7 @@ export default function Users() {
                           </tr>
                         ))}
                         {professors.length === 0 && (
-                          <tr><td colSpan={3} className="muted center">Niciun profesor înregistrat.</td></tr>
+                          <tr><td colSpan={2} className="muted center">Niciun profesor înregistrat.</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -336,11 +334,10 @@ export default function Users() {
                 {/* ── ADMINISTRATORS ── */}
                 {cat.key === 'administrator' && (
                   <div className="table-wrap">
-                    <table className="data-table">
+                    <table className="data-table staff-table">
                       <thead>
                         <tr>
                           <th>Nume</th>
-                          <th>Email</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -348,7 +345,6 @@ export default function Users() {
                         {admins.map((u) => (
                           <tr key={u.id}>
                             <td>{u.full_name}</td>
-                            <td className="mono">{u.email}</td>
                             <td>
                               <div className="row-actions">
                                 <button type="button" className="icon-btn" onClick={() => setEditUser(u)} aria-label="Editează">
@@ -359,7 +355,7 @@ export default function Users() {
                           </tr>
                         ))}
                         {admins.length === 0 && (
-                          <tr><td colSpan={3} className="muted center">Niciun administrator înregistrat.</td></tr>
+                          <tr><td colSpan={2} className="muted center">Niciun administrator înregistrat.</td></tr>
                         )}
                       </tbody>
                     </table>

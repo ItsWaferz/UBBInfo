@@ -107,7 +107,7 @@ class FacilityServiceTest {
             Course c = new Course();
             c.setId(UUID.randomUUID());
             c.setCredits(6);
-            c.setIsOptional(false);
+            c.setCategory("obligatoriu");
             Enrollment e = new Enrollment();
             e.setStudentId(sid);
             e.setCourse(c);

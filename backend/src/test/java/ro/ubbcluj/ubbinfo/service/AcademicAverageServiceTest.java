@@ -19,10 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 class AcademicAverageServiceTest {
 
+    /** optional=true means "excluded from media" -> category facultativ. */
     private static Course course(Integer credits, boolean optional) {
         Course c = new Course();
         c.setCredits(credits);
-        c.setIsOptional(optional);
+        c.setCategory(optional ? "facultativ" : "obligatoriu");
         return c;
     }
 
@@ -59,6 +60,17 @@ class AcademicAverageServiceTest {
         Double m = AcademicAverageService.media(List.of(
                 graded(course(5, true), 10, null),
                 graded(course(5, false), 8, null)));
+        assertEquals(8.0, m);
+    }
+
+    @Test @DisplayName("facultative courses (e.g. English) are excluded from the average")
+    void facultativeExcluded() {
+        // A perfect 10 in a facultativ course must not pull the average up.
+        Course english = course(2, true); // facultativ
+        english.setName("Limba Engleză (2)");
+        Double m = AcademicAverageService.media(List.of(
+                graded(english, 10, null),
+                graded(course(6, false), 8, null)));
         assertEquals(8.0, m);
     }
 

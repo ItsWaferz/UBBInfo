@@ -219,29 +219,33 @@ export default function Documente() {
           <div className="card-body muted center">Niciun document generat încă.</div>
         ) : (
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="data-table docs-table">
               <thead>
                 <tr>
                   <th>Document</th>
                   <th>An / Sem.</th>
                   <th>Data</th>
-                  <th style={{ width: 120 }}></th>
+                  <th style={{ width: 56 }}></th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((d) => (
                   <tr key={d.id}>
-                    <td>
-                      <Icon name={typeIcon(d.type)} /> {d.title}
-                    </td>
+                    <td>{d.title}</td>
                     <td>
                       {d.academic_year || '—'}
                       {d.semester ? ` / ${d.semester === 1 ? 'I' : 'II'}` : ''}
                     </td>
                     <td>{d.created_at ? new Date(d.created_at).toLocaleDateString('ro-RO') : '—'}</td>
-                    <td>
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => reDownload(d.id)}>
-                        <Icon name="download" /> Descarcă
+                    <td className="col-download">
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-icon"
+                        onClick={() => reDownload(d.id)}
+                        aria-label="Descarcă"
+                        title="Descarcă"
+                      >
+                        <Icon name="download" />
                       </button>
                     </td>
                   </tr>

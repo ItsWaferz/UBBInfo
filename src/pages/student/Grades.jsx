@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
-import { weightedAverage, sumCredits } from '../../utils/format';
+import { weightedAverage, sumCredits, countsTowardMedia, categoryLabel } from '../../utils/format';
 import { getCurrentPeriod, FALLBACK_PERIOD } from '../../utils/academicPeriod';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -11,7 +11,7 @@ function fmtAvg(value) {
 
 function GradeBadge({ grade }) {
   if (grade === null || grade === undefined)
-    return <span className="muted" style={{ display: 'inline-flex', height: '28px', alignItems: 'center' }}>—</span>;
+    return <span className="grade-badge grade-empty">—</span>;
   const cls = grade >= 5 ? 'grade-pass' : 'grade-fail';
   return <span className={`grade-badge ${cls}`}>{grade}</span>;
 }
@@ -179,6 +179,12 @@ export default function Grades() {
                   (isLastCard && !semNums.includes(e.semester))
               )
             : [];
+        // Credits from carried restanțe shown on this card — added to the total,
+        // in red, so the workload (this year + restanțe) is clear.
+        const restanteCredits = carried.reduce(
+          (acc, e) => acc + (e.courses?.credits ?? 0),
+          0
+        );
         return (
           <section className="card" key={semester}>
             <div className="card-header semester-header">
@@ -189,6 +195,9 @@ export default function Grades() {
                 </span>
                 <span>
                   {t('grades.totalCredits')}: <strong>{credits}</strong>
+                  {restanteCredits > 0 && (
+                    <strong className="text-danger"> + {restanteCredits}</strong>
+                  )}
                 </span>
               </div>
             </div>
@@ -206,7 +215,7 @@ export default function Grades() {
                     <tr key={e.id}>
                       <td>
                         {e.courses?.name}
-                        {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                        {categoryLabel(e.courses) && <span className="badge badge-optional">{categoryLabel(e.courses)}</span>}
                         {e.is_restanta && (
                           <span className="restanta-tag"> {t('status.restanta')}</span>
                         )}
@@ -236,14 +245,14 @@ export default function Grades() {
                     <tr key={`carry-${e.id}`}>
                       <td className="text-danger">
                         {e.courses?.name}
-                        {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                        {categoryLabel(e.courses) && <span className="badge badge-optional">{categoryLabel(e.courses)}</span>}
                         <span className="restanta-tag">
                           {' '}
                           {t('grades.restantaFrom', { year: e.academic_year, sem: e.semester })}
                         </span>
                       </td>
                       <td>{e.courses?.credits}</td>
-                      <td className="muted">—</td>
+                      <td><GradeBadge grade={null} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -273,8 +282,8 @@ export default function Grades() {
         // Find courses for the current semester in the active year
         const currentSem = semesters.find(([sem]) => sem === currentSemester) || semesters[semesters.length - 1];
         if (!currentSem) return null;
-        // Exclude optional courses from the calculator
-        const calcCourses = currentSem[1].filter(e => !e.courses?.is_optional);
+        // Only media-counting courses (excludes optionals + language courses like English).
+        const calcCourses = currentSem[1].filter(countsTowardMedia);
         return <GradeCalculator courses={calcCourses} semester={currentSem[0]} t={t} />;
       })()}
     </div>
@@ -284,13 +293,18 @@ export default function Grades() {
 function GradeCalculator({ courses, semester, t }) {
   const [simulatedGrades, setSimulatedGrades] = useState({});
 
+  // Pre-fill each row with the student's existing grade (editable, so they can
+  // simulate a "mărire"). Re-seed only when the course set or grades actually
+  // change — not on every re-render — so the user's edits aren't wiped.
+  const initKey = courses.map((e) => `${e.id}:${e.grade ?? ''}`).join('|');
   useEffect(() => {
     const initial = {};
     courses.forEach(e => {
       initial[e.id] = e.grade !== null && e.grade !== undefined ? e.grade.toString() : '';
     });
     setSimulatedGrades(initial);
-  }, [courses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initKey]);
 
   const handleGradeChange = (id, val) => {
     setSimulatedGrades(prev => ({ ...prev, [id]: val }));
@@ -299,14 +313,14 @@ function GradeCalculator({ courses, semester, t }) {
   let sumGC = 0;
   let sumC = 0;
   let totalSimCredits = 0;
-  
+
+  // English/optionals are already filtered out upstream, so every row counts.
   courses.forEach(e => {
     const val = simulatedGrades[e.id];
     const credits = e.courses?.credits ?? 0;
     totalSimCredits += credits;
-    
-    const isEnglish = e.courses?.name?.toLowerCase().includes('engleza');
-    if (!isEnglish && val && val.trim() !== '') {
+
+    if (val && val.trim() !== '') {
       const gradeNum = parseFloat(val);
       if (!isNaN(gradeNum)) {
         sumGC += gradeNum * credits;
@@ -344,7 +358,7 @@ function GradeCalculator({ courses, semester, t }) {
               <tr key={e.id}>
                 <td>
                   {e.courses?.name}
-                  {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                  {categoryLabel(e.courses) && <span className="badge badge-optional">{categoryLabel(e.courses)}</span>}
                 </td>
                 <td>{e.courses?.credits}</td>
                 <td>

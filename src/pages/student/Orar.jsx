@@ -50,7 +50,7 @@ export default function Orar() {
           api.get('/api/semester-config'),
           api.get('/api/vacations'),
           api.get('/api/orar/groups'),
-          api.get('/api/courses?optional=true'),
+          api.get('/api/courses?facultativ=true'),
         ]);
         if (!active) return;
 
@@ -257,7 +257,7 @@ export default function Orar() {
                         <div className="orar-slot-meta">
                           <span className={`badge ${typeClass(e.type)}`}>{e.type}</span>
                           {optionalCourses.includes(e.course_name) && (
-                            <span className="badge badge-optional">Opțional</span>
+                            <span className="badge badge-optional">Facultativ</span>
                           )}
                           {e.week_parity !== 'saptamanal' && (
                             <span className="orar-parity">

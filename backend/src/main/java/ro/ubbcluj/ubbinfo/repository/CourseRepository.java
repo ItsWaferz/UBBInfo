@@ -10,5 +10,5 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     List<Course> findAllByOrderByNameAsc();
 
-    List<Course> findByIsOptionalTrueOrderByNameAsc();
+    List<Course> findByCategoryOrderByNameAsc(String category);
 }

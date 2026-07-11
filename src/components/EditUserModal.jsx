@@ -133,7 +133,12 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
         <form onSubmit={submit} className="modal-body">
           <div className="form-grid-2">
             {field('full_name', 'Nume complet')}
-            {field('email', 'Email instituțional', { type: 'email' })}
+            <label className="field">
+              <span className="field-label">Email instituțional</span>
+              <div className="input-wrap input-readonly">
+                <span className="mono">{form.email || '—'}</span>
+              </div>
+            </label>
           </div>
           <div className="form-grid-2">
             {field('student_id', 'Nr. matricol', { mono: true })}
@@ -191,11 +196,6 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
               {roles.length === 0 && <span className="muted">Se încarcă rolurile…</span>}
             </div>
           </div>
-
-          <p className="muted" style={{ fontSize: 12 }}>
-            Notă: schimbarea emailului aici actualizează doar profilul, nu și emailul de
-            autentificare.
-          </p>
 
           {error && <p className="modal-error">{error}</p>}
 

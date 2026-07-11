@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatRomanianDate, firstNameOf } from '../../utils/format';
+import { formatRomanianDate, firstNameOf, categoryLabel } from '../../utils/format';
 import PasswordModal from '../../components/PasswordModal';
 import Toast from '../../components/Toast';
 import Icon from '../../components/Icon';
@@ -72,8 +72,8 @@ export default function StudentDashboard() {
   };
 
   const totalCredits =
-    currentCourses.reduce((acc, e) => e.courses?.is_optional ? acc : acc + (e.courses?.credits ?? 0), 0) +
-    restante.reduce((acc, e) => e.courses?.is_optional ? acc : acc + (e.courses?.credits ?? 0), 0);
+    currentCourses.reduce((acc, e) => e.courses?.category === 'facultativ' ? acc : acc + (e.courses?.credits ?? 0), 0) +
+    restante.reduce((acc, e) => e.courses?.category === 'facultativ' ? acc : acc + (e.courses?.credits ?? 0), 0);
 
   return (
     <div className="page">
@@ -210,14 +210,13 @@ export default function StudentDashboard() {
             {t('dashboard.downloadCert')}
           </button>
         </div>
-        <div className="table-wrap">
-          <table className="data-table">
+        <div className="table-wrap no-overflow">
+          <table className="data-table academic-table">
             <thead>
               <tr>
                 <th>{t('table.discipline')}</th>
-                <th>{t('table.credits')}</th>
-                <th>{t('table.grade')}</th>
-                <th>{t('table.profile')}</th>
+                <th className="col-credits">{t('table.credits')}</th>
+                <th className="col-grade">{t('table.grade')}</th>
               </tr>
             </thead>
             <tbody>
@@ -225,30 +224,28 @@ export default function StudentDashboard() {
                 <tr key={e.id}>
                   <td>
                     {e.courses?.name}
-                    {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                    {categoryLabel(e.courses) && <span className="badge badge-optional">{categoryLabel(e.courses)}</span>}
                   </td>
-                  <td>{e.courses?.credits}</td>
-                  <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>
-                  <td>{e.courses?.profile || '—'}</td>
+                  <td className="col-credits">{e.courses?.credits}</td>
+                  <td className="col-grade">{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="grade-badge grade-empty">—</span>}</td>
                 </tr>
               ))}
 
               {restante.map((e) => (
                 <tr key={e.id}>
                   <td className="text-danger">
-                    {e.courses?.name} 
-                    {e.courses?.is_optional && <span className="badge badge-optional">Opțional</span>}
+                    {e.courses?.name}
+                    {categoryLabel(e.courses) && <span className="badge badge-optional">{categoryLabel(e.courses)}</span>}
                     <span className="restanta-tag">{t('status.restanta')}</span>
                   </td>
-                  <td>{e.courses?.credits}</td>
-                  <td>{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="muted">—</span>}</td>
-                  <td>{e.courses?.profile || '—'}</td>
+                  <td className="col-credits">{e.courses?.credits}</td>
+                  <td className="col-grade">{e.grade != null ? <span className={`grade-badge ${e.grade >= 5 ? 'grade-pass' : 'grade-fail'}`}>{e.grade}</span> : <span className="grade-badge grade-empty">—</span>}</td>
                 </tr>
               ))}
 
               {currentCourses.length === 0 && restante.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="muted center">
+                  <td colSpan={3} className="muted center">
                     {t('dashboard.noEnrollments')}
                   </td>
                 </tr>

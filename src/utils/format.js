@@ -17,19 +17,30 @@ export function firstNameOf(fullName = '') {
   return parts.length ? parts[parts.length - 1] : '';
 }
 
-// Weighted average: Σ(grade × credits) / Σ(credits), only graded courses (excluding optionals)
+/**
+ * Whether an enrollment counts toward the academic average. Only FACULTATIV
+ * courses (e.g. Limba Engleză) are excluded — they're graded and shown, but
+ * never affect the media or its credit base. Obligatorii + opționale count.
+ */
+export function countsTowardMedia(e) {
+  return e.courses?.category !== 'facultativ';
+}
+
+/** Badge text for a course category ('Facultativ' / 'Opțional'), or null for obligatoriu. */
+export function categoryLabel(course) {
+  const cat = course?.category;
+  if (cat === 'facultativ') return 'Facultativ';
+  if (cat === 'optional') return 'Opțional';
+  return null;
+}
+
+// Weighted average: Σ(grade × credits) / Σ(credits) over graded, media-counting courses.
 export function weightedAverage(enrollments) {
-  const graded = enrollments.filter(
-    (e) => e.grade !== null && e.grade !== undefined && !e.courses?.is_optional
-  );
-  if (graded.length === 0) return null;
   let sumGC = 0;
   let sumC = 0;
-  for (const e of graded) {
-    // Exclude English from average calculation
-    const isEnglish = e.courses?.name?.toLowerCase().includes('engleza');
-    if (isEnglish) continue;
-
+  for (const e of enrollments) {
+    if (e.grade === null || e.grade === undefined) continue;
+    if (!countsTowardMedia(e)) continue;
     const credits = e.courses?.credits ?? 0;
     sumGC += e.grade * credits;
     sumC += credits;
@@ -38,12 +49,12 @@ export function weightedAverage(enrollments) {
   return sumGC / sumC;
 }
 
-// Sum credits (excluding optionals)
+// Sum credits that count toward the media (excludes optionals + language courses).
 export function sumCredits(enrollments) {
-  return enrollments.reduce((acc, e) => {
-    if (e.courses?.is_optional) return acc;
-    return acc + (e.courses?.credits ?? 0);
-  }, 0);
+  return enrollments.reduce(
+    (acc, e) => (countsTowardMedia(e) ? acc + (e.courses?.credits ?? 0) : acc),
+    0
+  );
 }
 
 /** Money formatter for tuition/fees pages: 1250 -> "1.250 lei". */

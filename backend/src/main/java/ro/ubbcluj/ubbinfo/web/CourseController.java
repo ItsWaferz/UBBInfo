@@ -28,10 +28,16 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    /** GET /api/courses  (optionally ?optional=true for facultative courses only). */
+    /** GET /api/courses  (optionally ?facultativ=true for facultative courses only). */
     @GetMapping
-    public List<Course> list(@RequestParam(name = "optional", defaultValue = "false") boolean optionalOnly) {
-        return courseService.list(optionalOnly);
+    public List<Course> list(@RequestParam(name = "facultativ", defaultValue = "false") boolean facultativeOnly) {
+        return courseService.list(facultativeOnly);
+    }
+
+    /** GET /api/courses/specializations — distinct student specializations (profil dropdown). */
+    @GetMapping("/specializations")
+    public List<String> specializations() {
+        return courseService.specializations();
     }
 
     @PostMapping

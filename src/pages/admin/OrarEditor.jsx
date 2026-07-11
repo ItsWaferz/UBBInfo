@@ -64,7 +64,7 @@ export default function OrarEditor() {
       const [data, allCourses, optCourses] = await Promise.all([
         api.get('/api/orar'),
         api.get('/api/courses'),
-        api.get('/api/courses?optional=true'),
+        api.get('/api/courses?facultativ=true'),
       ]);
 
       const entries = data || [];
@@ -312,7 +312,7 @@ export default function OrarEditor() {
                                       <div className="orar-slot-meta">
                                         <span className={`badge ${typeClass(entry.type)}`}>{entry.type}</span>
                                         {optionalCourses.includes(entry.course_name) && (
-                                          <span className="badge badge-optional">Opțional</span>
+                                          <span className="badge badge-optional">Facultativ</span>
                                         )}
                                         {entry.week_parity !== 'saptamanal' && (
                                           <span className={`badge ${entry.week_parity === 'par' ? 'badge-week-par' : 'badge-week-impar'}`}>

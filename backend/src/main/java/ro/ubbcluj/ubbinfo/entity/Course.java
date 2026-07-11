@@ -9,7 +9,12 @@ import jakarta.persistence.Table;
 
 import java.util.UUID;
 
-/** public.courses — a discipline (name, ECTS credits, level, profile, optional flag). */
+/**
+ * public.courses — a discipline. {@code category} is one of
+ * obligatoriu | optional | facultativ; only <b>facultativ</b> courses are
+ * excluded from the academic average. {@code profile} is the specialization
+ * (e.g. "Ingineria Informației (Limba Engleză)").
+ */
 @Entity
 @Table(name = "courses")
 public class Course {
@@ -25,14 +30,14 @@ public class Course {
     @Column(name = "credits")
     private Integer credits;
 
-    @Column(name = "level")
-    private String level;
-
     @Column(name = "profile")
     private String profile;
 
-    @Column(name = "is_optional")
-    private Boolean isOptional;
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "teaching_language")
+    private String teachingLanguage;
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -43,12 +48,17 @@ public class Course {
     public Integer getCredits() { return credits; }
     public void setCredits(Integer credits) { this.credits = credits; }
 
-    public String getLevel() { return level; }
-    public void setLevel(String level) { this.level = level; }
-
     public String getProfile() { return profile; }
     public void setProfile(String profile) { this.profile = profile; }
 
-    public Boolean getIsOptional() { return isOptional; }
-    public void setIsOptional(Boolean isOptional) { this.isOptional = isOptional; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getTeachingLanguage() { return teachingLanguage; }
+    public void setTeachingLanguage(String teachingLanguage) { this.teachingLanguage = teachingLanguage; }
+
+    /** Facultative courses are graded but never count toward the media. */
+    public boolean isFacultativ() {
+        return "facultativ".equalsIgnoreCase(category);
+    }
 }
