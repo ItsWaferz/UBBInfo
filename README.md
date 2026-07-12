@@ -49,14 +49,15 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 ### 🛠️ As an administrator
 
 - **Panou** — live stats (students, professors, courses, enrollments, grading progress).
-- **Utilizatori** — search & filter by role/specialization, edit any profile field, **assign roles** (multi-role + primary), and **create new accounts**.
-- **Discipline** — full CRUD on courses.
+- **Utilizatori** — search & filter by role/specialization, edit any profile field, **assign roles** (multi-role + primary), and **create new accounts**. The student editor auto-computes the group/semigroup from a **Facultate → Specializare → Limbă → An → Grupă → Semigrupă** cascade (driven by the `specializations` + `groups` reference tables).
+- **Discipline** — full CRUD on courses, organized as a drill-down menu **Specializare → Limbă → An → Semestru → Categorie** (obligatoriu / opțional / facultativ); only facultative courses are excluded from the media.
 - **Orar** — edit the timetable **per semigroup** (building → room pickers).
-- **Săli & clădiri** — full CRUD on **buildings and rooms** (capacity, type, and travel **zone** used by the timetable generator's travel-time constraint).
+- **Săli & clădiri** — CRUD on **buildings** (name + zone) and their **rooms** (location, capacity), plus a standalone **zone catalog** (add/remove proximity zones used by the timetable generator's travel-time constraint).
 - **Generare orar** 🤖 — **automatic timetable generation** with a constraint solver (see below): define the demand (which course/type/group needs how many sessions, duration, parity), generate multiple drafts, preview and publish the best one.
 - **Calendar** — academic-year start date + **holidays** (drive the odd/even-week logic).
 - **Evaluări** — read the **anonymous** professor evaluations.
 - **Linkuri utile** — manage the dashboard quick links.
+- **Taxe** — tuition & fees statistic: students grouped by **Specializare → Limbă → An**, showing paid / remaining per student with a **details modal** (installments, restanțe, financing).
 - **Conturi admiși** — **bulk account creation** for admitted candidates from a **CSV/XLSX** upload: institutional email generation with collision handling, default password rule, account + profile + student role. See [Admitted-students import](#-admitted-students-import).
 - **Facilități** — manage **burse / tabere / cămin**: dorm capacities, per-facility capacity & reserved %, social/special-case flags; **generate ranked lists** (top X by media) with reserved quotas, export a **PDF**, and **publish results** to all applicants. See [Student facilities](#-student-facilities).
 
@@ -320,6 +321,12 @@ Run the SQL files in `supabase/` **in this order** (Supabase dashboard → SQL E
 13. `grading_schemes.sql` — **grading schemes** (components, manual grades) + `enrollments.final_grade`/`grade_breakdown`
 14. `documents.sql` — **student documents**: durable profile fields (birth data, study line, …) + `issued_documents`
 15. `facilities.sql` — **student facilities**: social/special flags, `dorms`, `facility_settings`, `facility_applications`, `facility_publications`
+16. `financing_normalize.sql` — normalizes the `financing` values (buget / taxă)
+17. `courses_category.sql` — replaces `is_optional`/`level` with **`category`** (obligatoriu/opțional/facultativ) + `teaching_language`
+18. `specializations.sql` then `specializations_seed.sql` — the **specializations** reference table (code + name + language + faculty + `duration_years`), authoritative seed
+19. `groups_seed.sql` — the authoritative **groups** catalog (code → spec/year/semigroups) behind the edit-modal cascade
+20. `courses_year_semester_seed.sql` — adds `study_year` + `semester` to courses and assigns the seeded disciplines (supersedes the standalone `courses_study_year.sql`); `courses_assign_ingineria.sql` stamps the existing courses onto Ingineria Informației (Engleză)
+21. `zones.sql` — the standalone **zones** catalog (name) behind the buildings' zone dropdown
 
 Then deploy `supabase/functions/create-user/` as an **Edge Function** named `create-user`
 (account creation needs the service-role key, which lives only inside that function).

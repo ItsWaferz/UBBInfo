@@ -35,6 +35,10 @@ public class Specialization {
     @Column(name = "faculty")
     private String faculty;
 
+    /** Program length in years: 4 for Ingineria Informației / Mate-Info (4 ani), 3 otherwise. */
+    @Column(name = "duration_years")
+    private Integer durationYears;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -49,4 +53,7 @@ public class Specialization {
 
     public String getFaculty() { return faculty; }
     public void setFaculty(String faculty) { this.faculty = faculty; }
+
+    public Integer getDurationYears() { return durationYears; }
+    public void setDurationYears(Integer durationYears) { this.durationYears = durationYears; }
 }

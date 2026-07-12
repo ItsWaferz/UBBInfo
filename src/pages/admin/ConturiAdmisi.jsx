@@ -99,8 +99,17 @@ export default function ConturiAdmisi() {
           parola se generează automat.
         </p>
 
-        <div className="form-actions" style={{ justifyContent: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-          <input type="file" accept=".csv,.xlsx,.xls" onChange={onPick} />
+        <label className="file-drop">
+          <input type="file" accept=".csv,.xlsx,.xls" onChange={onPick} hidden />
+          <span className="file-drop-icon"><Icon name="upload_file" /></span>
+          <span className="file-drop-text">
+            <span className="file-drop-title">{file ? file.name : 'Alege un fișier'}</span>
+            <span className="file-drop-hint">CSV sau Excel · .csv, .xlsx, .xls</span>
+          </span>
+          <span className="btn btn-outline btn-sm file-drop-btn">Răsfoiește</span>
+        </label>
+
+        <div className="form-actions" style={{ justifyContent: 'flex-start', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
           <button type="button" className="btn btn-outline" onClick={doPreview} disabled={!file || busy}>
             {busy && !report ? <span className="spinner" /> : <><Icon name="preview" /> Previzualizează</>}
           </button>

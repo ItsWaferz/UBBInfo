@@ -156,7 +156,7 @@ export default function Calendar() {
   }
 
   return (
-    <div className="admin-section-grid">
+    <div className="admin-section-grid calendar-page">
       {/* Semesters */}
       <section className="card">
         <div className="card-header">
@@ -250,20 +250,20 @@ export default function Calendar() {
               <thead>
                 <tr>
                   <th>An</th>
-                  <th>Sem</th>
+                  <th className="col-sem">Sem</th>
                   <th>Start</th>
                   <th>Final</th>
-                  <th style={{ width: '80px' }}></th>
+                  <th className="col-edit"></th>
                 </tr>
               </thead>
               <tbody>
                 {semesters.map((s) => (
                   <tr key={s.id}>
                     <td>{s.academic_year}</td>
-                    <td>{s.semester}</td>
+                    <td className="col-sem">{s.semester}</td>
                     <td style={{ textTransform: 'uppercase' }}>{fmtDate(s.start_date)}</td>
                     <td style={{ textTransform: 'uppercase' }}>{fmtDate(s.end_date)}</td>
-                    <td>
+                    <td className="col-edit">
                       <button type="button" className="icon-btn icon-btn-sm" onClick={() => editSem(s)}>
                         <Icon name="edit" />
                       </button>
@@ -356,7 +356,7 @@ export default function Calendar() {
                   <th>Denumire</th>
                   <th>De la</th>
                   <th>Până la</th>
-                  <th style={{ width: '80px' }}></th>
+                  <th className="col-edit"></th>
                 </tr>
               </thead>
               <tbody>
@@ -365,7 +365,7 @@ export default function Calendar() {
                     <td>{v.name}</td>
                     <td style={{ textTransform: 'uppercase' }}>{fmtDate(v.start_date)}</td>
                     <td style={{ textTransform: 'uppercase' }}>{fmtDate(v.end_date)}</td>
-                    <td>
+                    <td className="col-edit">
                       <button type="button" className="icon-btn icon-btn-sm" onClick={() => editVac(v)}>
                         <Icon name="edit" />
                       </button>

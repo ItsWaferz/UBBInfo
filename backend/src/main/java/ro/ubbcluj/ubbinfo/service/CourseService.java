@@ -58,6 +58,8 @@ public class CourseService {
         existing.setCredits(changes.getCredits());
         existing.setProfile(changes.getProfile());
         existing.setTeachingLanguage(changes.getTeachingLanguage());
+        existing.setStudyYear(changes.getStudyYear());
+        existing.setSemester(changes.getSemester());
         if (changes.getCategory() != null) {
             existing.setCategory(changes.getCategory());
         }

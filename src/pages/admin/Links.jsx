@@ -124,7 +124,7 @@ export default function Links() {
   };
 
   return (
-    <div className="admin-section-grid">
+    <div className="admin-section-grid links-page">
       {/* Form */}
       <section className="card">
         <div className="card-header">
@@ -283,7 +283,7 @@ export default function Links() {
               <tr>
                 <th>{t('admin.links.title')}</th>
                 <th>{t('admin.links.activeLabel')}</th>
-                <th style={{ width: '80px' }}></th>
+                <th className="col-edit"></th>
               </tr>
             </thead>
             <tbody>
@@ -311,7 +311,7 @@ export default function Links() {
                         {l.is_active ? t('admin.links.activeLabel') : t('admin.links.inactiveLabel')}
                       </button>
                     </td>
-                    <td>
+                    <td className="col-edit">
                       <button
                         type="button"
                         className="icon-btn icon-btn-sm"

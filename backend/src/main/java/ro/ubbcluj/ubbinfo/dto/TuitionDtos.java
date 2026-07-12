@@ -39,6 +39,8 @@ public final class TuitionDtos {
             UUID studentId,
             String code,
             String name,
+            String specialization,
+            String studyYear,
             String financing,
             boolean feePaying,
             int installmentsPaid,

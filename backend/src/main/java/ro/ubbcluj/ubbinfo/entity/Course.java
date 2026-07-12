@@ -39,6 +39,14 @@ public class Course {
     @Column(name = "teaching_language")
     private String teachingLanguage;
 
+    /** Academic year the discipline is taught in (1..4), within its specialization. */
+    @Column(name = "study_year")
+    private Integer studyYear;
+
+    /** Semester within the year: 1 or 2. */
+    @Column(name = "semester")
+    private Integer semester;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -56,6 +64,12 @@ public class Course {
 
     public String getTeachingLanguage() { return teachingLanguage; }
     public void setTeachingLanguage(String teachingLanguage) { this.teachingLanguage = teachingLanguage; }
+
+    public Integer getStudyYear() { return studyYear; }
+    public void setStudyYear(Integer studyYear) { this.studyYear = studyYear; }
+
+    public Integer getSemester() { return semester; }
+    public void setSemester(Integer semester) { this.semester = semester; }
 
     /** Facultative courses are graded but never count toward the media. */
     public boolean isFacultativ() {

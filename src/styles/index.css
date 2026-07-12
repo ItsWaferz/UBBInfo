@@ -1822,6 +1822,131 @@ td .badge-optional {
   padding: 12px 20px 12px 36px;
   font-size: 14px;
 }
+/* Deeper accordion levels step further right by nesting depth:
+   L2 Limbă = 36px (base), L3 An = 52px, L4 Semestru = 68px, L5 Categorie = 84px. */
+.users-accordion-body .users-accordion-body .users-accordion-trigger.sub {
+  padding-left: 52px;
+}
+.users-accordion-body .users-accordion-body .users-accordion-body .users-accordion-trigger.sub {
+  padding-left: 68px;
+}
+.users-accordion-body .users-accordion-body .users-accordion-body .users-accordion-body .users-accordion-trigger.sub {
+  padding-left: 84px;
+}
+
+/* Zone catalog + building zone badge */
+.zone-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  background: var(--surface-container-low);
+}
+.zone-manager-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.zone-manager-title .icon {
+  font-size: 20px;
+  color: var(--primary-container);
+}
+.zone-manager-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-high);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+.zone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.zone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+.zone-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  padding: 2px;
+  border-radius: 999px;
+}
+.zone-chip button:hover {
+  color: var(--error);
+  background: var(--surface-container-lowest);
+}
+.zone-chip .icon {
+  font-size: 16px;
+}
+.zone-add {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.zone-add input {
+  flex: 1;
+  min-width: 160px;
+}
+.zone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-high);
+}
+.zone-badge .icon {
+  font-size: 15px;
+  opacity: 0.7;
+}
+
+/* Bare inputs/selects on this page inherit the app's field look (they aren't
+   wrapped in .input-wrap because they sit in tight table cells / inline forms). */
+.buildings-page .data-table input,
+.buildings-page .data-table select,
+.zone-add input {
+  height: 40px;
+  padding: 0 12px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  font: inherit;
+  color: var(--on-surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.buildings-page .data-table input:focus,
+.buildings-page .data-table select:focus,
+.zone-add input:focus {
+  outline: none;
+  border-color: var(--primary-container);
+  box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.15);
+  background: var(--surface-container-lowest);
+}
 .users-accordion-trigger.sub:hover {
   background: var(--surface-container);
 }
@@ -2086,6 +2211,37 @@ td .badge-optional {
   color: var(--error);
 }
 
+/* Calendar page: compact edit column pushed to the right, and a slightly larger
+   table font on mobile now that the freed-up space allows it. */
+.calendar-page .data-table th.col-edit,
+.calendar-page .data-table td.col-edit {
+  width: 40px;
+  text-align: right;
+  padding-left: 4px;
+  padding-right: 12px;
+}
+.calendar-page .col-edit .icon-btn-sm {
+  padding: 1px;
+}
+/* Lucide icons are SVGs sized by width/height attributes, not font-size. */
+.calendar-page .col-edit .icon-btn-sm .icon {
+  width: 17px;
+  height: 17px;
+}
+/* Semester number centered in its column. */
+.calendar-page .data-table th.col-sem,
+.calendar-page .data-table td.col-sem {
+  text-align: center;
+}
+@media (max-width: 640px) {
+  .calendar-page .data-table thead th {
+    font-size: 14px;
+  }
+  .calendar-page .data-table tbody td {
+    font-size: 15px;
+  }
+}
+
 /* ============================================================
    Admin Users — staff/students tables (smaller edit button,
    centered Grupa/Finanțare, per-table font sizing).
@@ -2171,6 +2327,146 @@ td .badge-optional {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Links list: bigger title, edit button in a narrow centered column on the right. */
+.links-page .link-title-cell {
+  font-size: 15px;
+  font-weight: 500;
+}
+.links-page .data-table tbody td {
+  /* !important to beat the global mobile rule (.data-table td padding 6px 8px !important). */
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+}
+.links-page .data-table th.col-edit,
+.links-page .data-table td.col-edit {
+  width: 56px;
+  text-align: center;
+}
+
+/* Styled file picker (admitted-students import). */
+.file-drop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1.5px dashed var(--outline-variant);
+  border-radius: var(--radius);
+  background: var(--surface-container-low);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.file-drop:hover {
+  border-color: var(--primary-container);
+  background: var(--surface-container);
+}
+.file-drop-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-container-high);
+  color: var(--primary-container);
+}
+.file-drop-icon .icon {
+  width: 22px;
+  height: 22px;
+}
+.file-drop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.file-drop-title {
+  font-weight: 600;
+  color: var(--on-surface);
+  overflow-wrap: anywhere;
+}
+.file-drop-hint {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+.file-drop-btn {
+  flex-shrink: 0;
+  pointer-events: none; /* the whole label is the click target */
+}
+
+/* Taxe: details column + student detail modal. */
+.taxe-page .data-table th.col-info,
+.taxe-page .data-table td.col-info {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+.tax-detail-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.tax-detail-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+}
+.tax-detail-stat.danger {
+  background: #fff0ef;
+  border-color: #ffdad6;
+}
+.tax-detail-stat.ok {
+  background: #eaf6ec;
+  border-color: #c7e8cd;
+}
+.tax-detail-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--on-surface-variant);
+}
+.tax-detail-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+.tax-detail-stat.danger .tax-detail-stat-value {
+  color: var(--error);
+}
+.tax-detail-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.tax-detail-list > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+.tax-detail-list > div:last-child {
+  border-bottom: none;
+}
+.tax-detail-list dt {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+.tax-detail-list dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 .link-title-cell .icon {
   font-size: 18px;

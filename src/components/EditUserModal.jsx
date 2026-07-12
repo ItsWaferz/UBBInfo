@@ -9,7 +9,6 @@ const FIELDS = [
   'academic_rank', 'honorifics', 'phone', 'personal_email', 'address',
 ];
 
-const STUDY_YEARS = ['1', '2', '3', '4'];
 const FINANCING = ['buget', 'taxă'];
 const ACADEMIC_RANKS = ['Doctorand', 'Asistent', 'Lector', 'Conferențiar', 'Profesor'];
 
@@ -115,6 +114,16 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
     () => specs.find((s) => s.faculty === form.faculty && s.name === program && s.language === language) || null,
     [specs, form.faculty, program, language]
   );
+
+  // Years available for the chosen program: 1..duration (4 for Ing. Inf. / Mate-Info 4 ani,
+  // 3 otherwise). Keep the current value even if it falls outside, so nothing is lost.
+  const yearOptions = useMemo(() => {
+    const max = selectedSpec?.duration_years || 4;
+    const arr = [];
+    for (let i = 1; i <= max; i += 1) arr.push(String(i));
+    if (form.study_year) arr.push(String(form.study_year));
+    return uniq(arr).sort();
+  }, [selectedSpec, form.study_year]);
 
   const groupOptions = useMemo(() => {
     const codes = groups
@@ -270,7 +279,7 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
                 {selectField('Limba de studiu', language, onLanguage, languages)}
               </div>
               <div className="form-grid-2">
-                {selectField('Anul', form.study_year, onYear, STUDY_YEARS)}
+                {selectField('Anul', form.study_year, onYear, yearOptions)}
                 {selectField('Grupă', groupCode, onGroup, groupOptions)}
               </div>
               <div className="form-grid-2">

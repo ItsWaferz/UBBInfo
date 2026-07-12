@@ -225,6 +225,7 @@ public class TuitionService {
             grandPaid = grandPaid.add(paidAmt);
             grandOutstanding = grandOutstanding.add(outstanding);
             rows.add(new AdminRow(p.getId(), nz(p.getStudentId()), nz(p.getFullName()),
+                    nz(p.getSpecialization()), nz(p.getStudyYear()),
                     nz(p.getFinancing()), feePaying, installmentsPaid, feePaying ? INSTALLMENT_COUNT : 0,
                     restantePaid, restanteTotal, paidAmt, outstanding));
         }
