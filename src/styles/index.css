@@ -1925,10 +1925,14 @@ td .badge-optional {
   opacity: 0.7;
 }
 
-/* Bare inputs/selects on this page inherit the app's field look (they aren't
+/* Bare inputs/selects on these pages inherit the app's field look (they aren't
    wrapped in .input-wrap because they sit in tight table cells / inline forms). */
 .buildings-page .data-table input,
 .buildings-page .data-table select,
+.facilitati-page .data-table input:not([type="checkbox"]),
+.facilitati-page .facility-controls input,
+.facilitati-page .facility-settings input,
+.facilitati-page .dorm-row input,
 .zone-add input {
   height: 40px;
   padding: 0 12px;
@@ -1941,11 +1945,148 @@ td .badge-optional {
 }
 .buildings-page .data-table input:focus,
 .buildings-page .data-table select:focus,
+.facilitati-page .data-table input:not([type="checkbox"]):focus,
+.facilitati-page .facility-controls input:focus,
+.facilitati-page .facility-settings input:focus,
+.facilitati-page .dorm-row input:focus,
 .zone-add input:focus {
   outline: none;
   border-color: var(--primary-container);
   box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.15);
   background: var(--surface-container-lowest);
+}
+/* Full-width table inputs so they fill their cell neatly. */
+.facilitati-page .data-table input:not([type="checkbox"]) {
+  width: 100%;
+}
+/* Inline action + dorm inputs match the btn-sm button height. */
+.facilitati-page .facility-controls .field input,
+.facilitati-page .dorm-row input {
+  height: 34px;
+}
+/* Settings row: the inputs, the readonly capacity box and the save button all
+   share one explicit height so they line up exactly. */
+.facilitati-page .facility-settings .field input,
+.facilitati-page .facility-settings .input-wrap,
+.facilitati-page .facility-settings .btn {
+  height: 38px;
+  min-height: 38px;
+}
+/* Per-facility settings row + the bottom action row (with a divider above it). */
+.facility-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+/* All settings inputs share one small, equal width. */
+.facility-settings .field {
+  flex: 0 0 110px;
+  max-width: 110px;
+}
+.facilitati-page .facility-settings .field input,
+.facilitati-page .facility-settings .input-wrap {
+  width: 100%;
+}
+.facility-actions {
+  border-top: 1px solid var(--outline-variant);
+  padding-top: 16px;
+}
+/* Standalone dorms menu: a contained bordered box (no stray list separator) with
+   a compact, smaller title. */
+.facilitati-page .users-accordion {
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.facilitati-page .users-accordion-trigger {
+  padding: 10px 14px;
+}
+.facilitati-page .users-accordion-label {
+  font-size: 13px;
+}
+.facilitati-page .users-accordion-left .icon {
+  width: 17px;
+  height: 17px;
+}
+/* Facility dropdown: same box height as the settings inputs; capped on desktop. */
+.facilitati-page .facility-select {
+  max-width: 340px;
+}
+.facilitati-page .facility-select .input-wrap {
+  min-height: 38px;
+  height: 38px;
+}
+/* Stack the settings inputs vertically (full width) on small screens; the
+   dropdown matches them (full width). */
+@media (max-width: 640px) {
+  .facilitati-page .facility-settings {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .facilitati-page .facility-settings .field,
+  .facilitati-page .facility-settings .btn {
+    flex: 1 1 auto;
+    max-width: none;
+    width: 100%;
+  }
+  .facilitati-page .facility-select {
+    max-width: none;
+  }
+}
+/* Generează / PDF / Publică stack vertically on small screens. */
+@media (max-width: 640px) {
+  .facilitati-page .facility-actions .row-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+  .facilitati-page .facility-actions .row-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Responsive dorms editor: name scales with the screen, capacity stays compact,
+   rows wrap on narrow viewports. */
+.dorm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dorm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dorm-row .dorm-name {
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+.dorm-row .dorm-cap {
+  flex: 0 0 90px;
+  width: 90px;
+}
+.dorm-row .row-actions {
+  margin-left: auto;
+}
+
+/* Student social/special case checkboxes (edit-user modal). */
+.case-checks {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+/* Center the "Activ" checkbox in its column. */
+.facilitati-page .data-table td:has(> input[type="checkbox"]) {
+  text-align: center;
+}
+.facilitati-page .data-table input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-container);
+  cursor: pointer;
 }
 .users-accordion-trigger.sub:hover {
   background: var(--surface-container);
@@ -3233,7 +3374,7 @@ td .badge-optional {
   }
   
   .card-title { font-size: 15px !important; }
-  .page-title { font-size: 22px !important; }
+  .page-title { font-size: 18px !important; }
   .page-subtitle { font-size: 12px !important; }
   .sidebar-nav a { font-size: 12px !important; }
   .stat-value { font-size: 20px !important; }

@@ -46,6 +46,8 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
   const [language, setLanguage] = useState('');
   const [groupCode, setGroupCode] = useState('');
   const [semigroup, setSemigroup] = useState('');
+  const [socialCase, setSocialCase] = useState(false);
+  const [specialCase, setSpecialCase] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,6 +64,8 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
       const [g, s] = String(user.group_name || '').split('/');
       setGroupCode((g || '').trim());
       setSemigroup((s || '').trim());
+      setSocialCase(!!user.is_social_case);
+      setSpecialCase(!!user.is_special_case);
     }
   }, [user]);
 
@@ -184,6 +188,8 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
       payload.group_name = groupCode
         ? (semigroup ? `${groupCode}/${semigroup}` : groupCode)
         : null;
+      payload.is_social_case = String(socialCase);
+      payload.is_special_case = String(specialCase);
     }
     const { short_name, initials } = deriveNames(form.full_name);
     payload.short_name = short_name;
@@ -286,6 +292,19 @@ export default function EditUserModal({ open, user, roles = [], onClose, onSaved
                 {selectField('Semigrupă', semigroup, (e) => setSemigroup(e.target.value),
                   semigroupOptions, semigroupOptions.length ? '— alege —' : 'fără')}
                 {selectField('Finanțare', form.financing, set('financing'), FINANCING)}
+              </div>
+              <div className="field">
+                <span className="field-label">Cazuri speciale</span>
+                <div className="case-checks">
+                  <label className="course-check">
+                    <input type="checkbox" checked={socialCase} onChange={(e) => setSocialCase(e.target.checked)} />
+                    <span>Caz social</span>
+                  </label>
+                  <label className="course-check">
+                    <input type="checkbox" checked={specialCase} onChange={(e) => setSpecialCase(e.target.checked)} />
+                    <span>Caz special</span>
+                  </label>
+                </div>
               </div>
             </>
           )}

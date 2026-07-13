@@ -13,9 +13,8 @@ export default function Facilitati() {
   const [selected, setSelected] = useState('bursa_sociala');
   const [x, setX] = useState(0);
   const [result, setResult] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [userSearch, setUserSearch] = useState('');
   const [busy, setBusy] = useState(false);
+  const [dormsOpen, setDormsOpen] = useState(false);
   const { toast, flash } = useToast(3500);
 
   const loadOverview = async () => {
@@ -26,21 +25,6 @@ export default function Facilitati() {
     try { setDorms(await api.get('/api/facilities/admin/dorms') || []); }
     catch (e) { console.error(e); }
   };
-  // Server-filtered: flagged-only by default, ?q= while searching (debounced) —
-  // never ships the whole user table just for this tab.
-  useEffect(() => {
-    const term = userSearch.trim();
-    const t = setTimeout(async () => {
-      try {
-        const url = term
-          ? `/api/users?q=${encodeURIComponent(term)}`
-          : '/api/users?flagged=true';
-        setUsers(await api.get(url) || []);
-      } catch (e) { console.error(e); }
-    }, term ? 300 : 0);
-    return () => clearTimeout(t);
-  }, [userSearch]);
-
   useEffect(() => { loadOverview(); loadDorms(); }, []);
 
   const current = useMemo(() => overview.find((o) => o.key === selected), [overview, selected]);
@@ -72,17 +56,20 @@ export default function Facilitati() {
     finally { setBusy(false); }
   };
 
-  const saveDorm = async (d) => {
+  // Order is implicit: a dorm's position in the list becomes its sort_order, and
+  // dorms are always active (the active toggle was removed).
+  const saveDorm = async (d, index) => {
+    if (!String(d.name || '').trim()) { flash('error', 'Numele căminului este obligatoriu.'); return; }
     try {
       await api.post('/api/facilities/admin/dorms', {
-        id: d.id, name: d.name, capacity: Number(d.capacity) || 0,
-        sort_order: Number(d.sort_order) || 0, active: d.active,
+        id: d.id, name: d.name.trim(), capacity: Number(d.capacity) || 0,
+        sort_order: index, active: true,
       });
       flash('success', 'Cămin salvat.'); loadDorms(); loadOverview();
     } catch (e) { console.error(e); flash('error', 'Eroare la salvare cămin.'); }
   };
   const addDorm = () =>
-    setDorms((ds) => [...ds, { id: null, name: 'Cămin nou', capacity: 0, sort_order: ds.length + 1, active: true }]);
+    setDorms((ds) => [...ds, { id: null, name: '', capacity: 0 }]);
   const deleteDorm = async (d) => {
     if (!d.id) { setDorms((ds) => ds.filter((x) => x !== d)); return; }
     if (!window.confirm('Ștergi căminul?')) return;
@@ -98,23 +85,10 @@ export default function Facilitati() {
     } catch (e) { console.error(e); flash('error', 'Eroare la setare.'); }
   };
 
-  const toggleFlag = async (u, field) => {
-    const next = !u.profile?.[field];
-    try {
-      await api.put(`/api/users/${u.profile.id}`, { [field]: String(next) });
-      setUsers((us) => us.map((it) => it.profile.id === u.profile.id
-        ? { ...it, profile: { ...it.profile, [field]: next } } : it));
-    } catch (e) { console.error(e); flash('error', 'Eroare la marcare.'); }
-  };
-
-  // Filtering happens server-side (?flagged / ?q); this is just the result.
-  const filteredUsers = users;
-
-  const label = (k) => overview.find((o) => o.key === k)?.label || k;
   const showReserved = selected === 'camin' || selected === 'tabara';
 
   return (
-    <div className="page">
+    <div className="page facilitati-page">
       <section className="header-card">
         <h1 className="page-title">Facilități studențești</h1>
         <p className="page-subtitle">
@@ -123,44 +97,78 @@ export default function Facilitati() {
         </p>
       </section>
 
-      {/* Generate & publish */}
+      {/* Generate & publish — all settings scoped to the selected facility */}
       <section className="card">
         <div className="card-header"><h2 className="card-title"><Icon name="checklist" /> Generare & publicare liste</h2></div>
         <div className="card-body" style={{ display: 'grid', gap: 16 }}>
-          <div className="facility-tabs">
-            {overview.map((o) => (
-              <button key={o.key} type="button"
-                className={`facility-tab ${selected === o.key ? 'active' : ''}`}
-                onClick={() => setSelected(o.key)}>
-                {o.label}
-                <span className="facility-tab-count">{o.applicants}</span>
-              </button>
-            ))}
-          </div>
+          <label className="field facility-select">
+            <span className="field-label">Facilitate</span>
+            <div className="input-wrap">
+              <select className="select-bare" value={selected} onChange={(e) => setSelected(e.target.value)}>
+                {overview.map((o) => (
+                  <option key={o.key} value={o.key}>{o.label} · {o.applicants} înscriși</option>
+                ))}
+              </select>
+            </div>
+          </label>
 
           {current && (
-            <div className="facility-controls">
-              <div className="muted">
-                {current.applicants} înscriși · capacitate {current.capacity ?? '—'}
-                {Number(current.reserved_percent) > 0 ? ` · rezervat ${current.reserved_percent}%` : ''}
-                {current.published ? ' · publicat' : ''}
+            <>
+              {/* Per-facility capacity, reservation & how-many-admitted */}
+              <FacilitySettings key={selected} o={current} showReserved={showReserved} x={x} setX={setX} onSave={saveSetting} />
+
+              {/* Dorms — only for cămin, collapsed by default */}
+              {selected === 'camin' && (
+                <div className={`users-accordion ${dormsOpen ? 'open' : ''}`}>
+                  <button type="button" className={`users-accordion-trigger${dormsOpen ? ' open' : ''}`}
+                    onClick={() => setDormsOpen((v) => !v)}>
+                    <div className="users-accordion-left">
+                      <Icon name="apartment" />
+                      <span className="users-accordion-label">Cămine</span>
+                      <span className="users-accordion-count">{dorms.length}</span>
+                    </div>
+                    <Icon name="expand_more" className={`users-accordion-chevron${dormsOpen ? ' rotated' : ''}`} />
+                  </button>
+                  {dormsOpen && (
+                    <div className="users-accordion-body" style={{ padding: 12 }}>
+                      <div className="dorm-list">
+                        {dorms.map((d, i) => (
+                          <div className="dorm-row" key={d.id || `new-${i}`}>
+                            <input className="dorm-name" value={d.name} placeholder="Nume cămin"
+                              onChange={(e) => setDormField(i, 'name', e.target.value)} />
+                            <input className="dorm-cap" type="number" min="0" value={d.capacity} placeholder="Locuri"
+                              onChange={(e) => setDormField(i, 'capacity', e.target.value)} />
+                            <div className="row-actions">
+                              <button type="button" className="btn btn-primary btn-sm" onClick={() => saveDorm(d, i)} aria-label="Salvează"><Icon name="save" /></button>
+                              <button type="button" className="icon-btn" onClick={() => deleteDorm(d)} aria-label="Șterge"><Icon name="delete" /></button>
+                            </div>
+                          </div>
+                        ))}
+                        {dorms.length === 0 && <p className="muted" style={{ margin: 0 }}>Niciun cămin încă.</p>}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={addDorm}><Icon name="add" /> Adaugă cămin</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bottom: generation actions */}
+              <div className="facility-controls facility-actions">
+                <div className="row-actions">
+                  <button type="button" className="btn btn-outline btn-sm" onClick={generate} disabled={busy}>
+                    <Icon name="preview" /> Generează
+                  </button>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={downloadPdf} disabled={busy}>
+                    <Icon name="picture_as_pdf" /> PDF
+                  </button>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={publish} disabled={busy}>
+                    <Icon name="task_alt" /> Publică rezultatele
+                  </button>
+                </div>
               </div>
-              <label className="field" style={{ maxWidth: 160 }}>
-                <span className="field-label">Câți admiți (X)</span>
-                <input type="number" min="0" value={x} onChange={(e) => setX(e.target.value)} />
-              </label>
-              <div className="row-actions">
-                <button type="button" className="btn btn-outline btn-sm" onClick={generate} disabled={busy}>
-                  <Icon name="preview" /> Generează
-                </button>
-                <button type="button" className="btn btn-outline btn-sm" onClick={downloadPdf} disabled={busy}>
-                  <Icon name="picture_as_pdf" /> PDF
-                </button>
-                <button type="button" className="btn btn-primary btn-sm" onClick={publish} disabled={busy}>
-                  <Icon name="task_alt" /> Publică rezultatele
-                </button>
-              </div>
-            </div>
+            </>
           )}
 
           {result && (
@@ -201,102 +209,38 @@ export default function Facilitati() {
         </div>
       </section>
 
-      {/* Dorms config */}
-      <section className="card">
-        <div className="card-header">
-          <h2 className="card-title"><Icon name="apartment" /> Cămine</h2>
-          <button type="button" className="btn btn-outline btn-sm" onClick={addDorm}><Icon name="add" /> Adaugă cămin</button>
-        </div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Nume</th><th style={{ width: 110 }}>Capacitate</th><th style={{ width: 90 }}>Ordine</th><th style={{ width: 80 }}>Activ</th><th style={{ width: 140 }}></th></tr></thead>
-            <tbody>
-              {dorms.map((d, i) => (
-                <tr key={d.id || `new-${i}`}>
-                  <td><input value={d.name} onChange={(e) => setDormField(i, 'name', e.target.value)} /></td>
-                  <td><input type="number" min="0" value={d.capacity} onChange={(e) => setDormField(i, 'capacity', e.target.value)} /></td>
-                  <td><input type="number" min="0" value={d.sort_order} onChange={(e) => setDormField(i, 'sort_order', e.target.value)} /></td>
-                  <td><input type="checkbox" checked={!!d.active} onChange={(e) => setDormField(i, 'active', e.target.checked)} /></td>
-                  <td className="row-actions">
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => saveDorm(d)}><Icon name="save" /></button>
-                    <button type="button" className="icon-btn" onClick={() => deleteDorm(d)} aria-label="Șterge"><Icon name="delete" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Facility capacities */}
-      <section className="card">
-        <div className="card-header"><h2 className="card-title"><Icon name="tune" /> Capacități & rezervări</h2></div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Facilitate</th><th style={{ width: 140 }}>Capacitate</th><th style={{ width: 150 }}>Rezervat (%)</th><th style={{ width: 120 }}></th></tr></thead>
-            <tbody>
-              {overview.map((o) => (
-                <SettingRow key={o.key} o={o} onSave={saveSetting} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="muted" style={{ fontSize: 12, padding: '0 16px 12px' }}>
-          La cămin capacitatea = suma locurilor din cămine (se editează mai sus). Rezervarea: cămin = cazuri sociale, tabără = cazuri speciale.
-        </p>
-      </section>
-
-      {/* Social / special case manager */}
-      <section className="card">
-        <div className="card-header"><h2 className="card-title"><Icon name="how_to_reg" /> Cazuri sociale / speciale</h2></div>
-        <div className="card-body">
-          <label className="field" style={{ maxWidth: 360 }}>
-            <span className="field-label">Caută student (nume sau matricol)</span>
-            <div className="input-wrap">
-              <Icon name="search" className="input-icon" />
-              <input value={userSearch} onChange={(e) => setUserSearch(e.target.value)} placeholder="Lasă gol = doar cei deja marcați" />
-            </div>
-          </label>
-        </div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Nume</th><th>Matricol</th><th style={{ width: 130 }}>Caz social</th><th style={{ width: 130 }}>Caz special</th></tr></thead>
-            <tbody>
-              {filteredUsers.map((u) => (
-                <tr key={u.profile.id}>
-                  <td>{u.profile.full_name || '—'}</td>
-                  <td className="mono">{u.profile.student_id || '—'}</td>
-                  <td><label className="course-check"><input type="checkbox" checked={!!u.profile.is_social_case} onChange={() => toggleFlag(u, 'is_social_case')} /><span>social</span></label></td>
-                  <td><label className="course-check"><input type="checkbox" checked={!!u.profile.is_special_case} onChange={() => toggleFlag(u, 'is_special_case')} /><span>special</span></label></td>
-                </tr>
-              ))}
-              {filteredUsers.length === 0 && <tr><td colSpan={4} className="muted center">Niciun student.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <Toast visible={!!toast} variant={toast?.variant || 'success'} message={toast?.message || ''} />
     </div>
   );
 }
 
-function SettingRow({ o, onSave }) {
+/** Inline capacity + reservation editor (+ the X generation param) for the selected facility. */
+function FacilitySettings({ o, showReserved, x, setX, onSave }) {
+  const isCamin = o.key === 'camin';
   const [cap, setCap] = useState(o.capacity ?? '');
   const [res, setRes] = useState(o.reserved_percent ?? 0);
-  const isCamin = o.key === 'camin';
   return (
-    <tr>
-      <td>{o.label}</td>
-      <td>{isCamin ? <span className="muted">{o.capacity ?? '—'} (din cămine)</span>
-        : <input type="number" min="0" value={cap} onChange={(e) => setCap(e.target.value)} />}</td>
-      <td><input type="number" min="0" max="100" step="1" value={res} onChange={(e) => setRes(e.target.value)} /></td>
-      <td>
-        <button type="button" className="btn btn-primary btn-sm"
-          onClick={() => onSave(o.key, isCamin ? null : (Number(cap) || 0), Number(res) || 0)}>
-          <Icon name="save" /> Salvează
-        </button>
-      </td>
-    </tr>
+    <div className="facility-settings">
+      <label className="field">
+        <span className="field-label">Capacitate</span>
+        {isCamin
+          ? <div className="input-wrap input-readonly" title="Suma locurilor din cămine"><span className="ro-value">{o.capacity ?? '—'}</span></div>
+          : <input type="number" min="0" value={cap} onChange={(e) => setCap(e.target.value)} />}
+      </label>
+      {showReserved && (
+        <label className="field">
+          <span className="field-label">Rezervat (%)</span>
+          <input type="number" min="0" max="100" step="1" value={res} onChange={(e) => setRes(e.target.value)} />
+        </label>
+      )}
+      <label className="field">
+        <span className="field-label">Câți admiți (X)</span>
+        <input type="number" min="0" value={x} onChange={(e) => setX(e.target.value)} />
+      </label>
+      <button type="button" className="btn btn-outline btn-sm"
+        onClick={() => onSave(o.key, isCamin ? null : (Number(cap) || 0), Number(res) || 0)}>
+        <Icon name="save" /> Salvează setările
+      </button>
+    </div>
   );
 }

@@ -59,7 +59,7 @@ that talks to the same Supabase PostgreSQL database. See **[Architecture](#-arch
 - **Linkuri utile** — manage the dashboard quick links.
 - **Taxe** — tuition & fees statistic: students grouped by **Specializare → Limbă → An**, showing paid / remaining per student with a **details modal** (installments, restanțe, financing).
 - **Conturi admiși** — **bulk account creation** for admitted candidates from a **CSV/XLSX** upload: institutional email generation with collision handling, default password rule, account + profile + student role. See [Admitted-students import](#-admitted-students-import).
-- **Facilități** — manage **burse / tabere / cămin**: dorm capacities, per-facility capacity & reserved %, social/special-case flags; **generate ranked lists** (top X by media) with reserved quotas, export a **PDF**, and **publish results** to all applicants. See [Student facilities](#-student-facilities).
+- **Facilități** — pick a facility from a dropdown; its **capacity + reserved % + how-many-to-admit** are edited inline, **cămine** appear as a collapsed menu (only for cămin), then **generate ranked lists** (top X by media) with reserved quotas, export a **PDF**, and **publish results** to all applicants. See [Student facilities](#-student-facilities).
 
 ---
 
@@ -171,7 +171,8 @@ Three facilities students apply to from their dashboard — **burse** (socială 
 - **PDF + publish**: the admin previews the list, exports a **PDF** (code + result, ranked), and
   **publishes** — which writes every applicant's status so it shows up on their dashboard.
 - Everything tunable lives in the DB: dorm names/capacities, per-facility capacity & reserved
-  percentage, and the admin-set social/special-case flags.
+  percentage, and the **social/special-case flags** (set per student in the **Utilizatori** edit
+  modal, alongside the rest of their profile).
 
 ---
 
