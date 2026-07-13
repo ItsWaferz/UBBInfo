@@ -1,0 +1,1790 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UBB Info — Pitch de adopție</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #002444;
+        --navy2: #001a33;
+        --pc: #1b3a5c;
+        --onpc: #87a4cc;
+        --gold: #ffca48;
+        --goldd: #f3bf3d;
+        --bg: #f5f6fa;
+        --surf: #f8f9fd;
+        --white: #fff;
+        --low: #f2f3f7;
+        --cont: #edeef2;
+        --ink: #191c1f;
+        --ink2: #43474e;
+        --ol: #c3c6cf;
+        --success: #1a7d3c;
+        --pass: #d6f3df;
+        --error: #ba1a1a;
+        --fail: #ffdad6;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: #08111f;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      /* Fixed 16:9 stage, scaled whole */
+      .stage {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: top left;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        padding: 112px 132px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: opacity 0.35s ease;
+      }
+      .slide.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .slide.navy {
+        background: var(--navy);
+        color: var(--white);
+        background-image:
+          radial-gradient(
+            1200px 700px at 82% -12%,
+            rgba(255, 202, 72, 0.12),
+            transparent 55%
+          ),
+          linear-gradient(160deg, var(--navy), var(--navy2));
+      }
+      .slide.navy .ink2 {
+        color: var(--onpc);
+      }
+
+      /* Reveal */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(26px);
+      }
+      .slide.active [data-reveal] {
+        animation: rise 0.7s cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+        animation-delay: var(--d, 0s);
+      }
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* Type */
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--goldd);
+        margin-bottom: 30px;
+      }
+      .navy .eyebrow {
+        color: var(--gold);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 34px;
+        height: 4px;
+        background: var(--gold);
+        border-radius: 2px;
+      }
+      h1 {
+        font-size: 112px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        line-height: 0.98;
+      }
+      h2 {
+        font-size: 66px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.04;
+      }
+      .lead {
+        font-size: 31px;
+        font-weight: 500;
+        color: var(--ink2);
+        line-height: 1.4;
+        max-width: 26ch;
+        margin-top: 28px;
+      }
+      .navy .lead {
+        color: var(--onpc);
+      }
+      .rule {
+        width: 80px;
+        height: 6px;
+        background: var(--gold);
+        border-radius: 3px;
+        margin: 26px 0;
+      }
+      .ink2 {
+        color: var(--ink2);
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+      .gold {
+        color: var(--goldd);
+      }
+      .navy .gold {
+        color: var(--gold);
+      }
+
+      /* Hero */
+      .hero-lockup {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 44px;
+      }
+      .mark {
+        width: 78px;
+        height: 78px;
+        border-radius: 14px;
+        background: var(--pc);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+      }
+      .mark svg {
+        width: 46px;
+        height: 46px;
+      }
+      .hero-name {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+      .hero-sub {
+        font-size: 17px;
+        color: var(--onpc);
+        font-weight: 500;
+        margin-top: 2px;
+      }
+      .hero-tag {
+        font-size: 34px;
+        font-weight: 500;
+        color: var(--onpc);
+        margin-top: 34px;
+        max-width: 30ch;
+        line-height: 1.35;
+      }
+      .hero-tag b {
+        color: #fff;
+        font-weight: 700;
+      }
+
+      /* Cards */
+      .grid {
+        display: grid;
+        gap: 26px;
+        margin-top: 16px;
+      }
+      .g3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .g2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .card {
+        background: var(--white);
+        border: 1px solid var(--ol);
+        border-radius: 14px;
+        padding: 34px 32px;
+        box-shadow: 0 2px 4px rgba(27, 58, 92, 0.05);
+      }
+      .navy .card {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow: none;
+      }
+      .card .ct {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 27px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .card .ci {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        background: var(--low);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pc);
+        flex-shrink: 0;
+      }
+      .navy .card .ci {
+        background: rgba(255, 255, 255, 0.09);
+        color: var(--gold);
+      }
+      .card .ci svg {
+        width: 26px;
+        height: 26px;
+      }
+      .card ul {
+        list-style: none;
+        margin-top: 4px;
+      }
+      .card li {
+        font-size: 23px;
+        color: var(--ink2);
+        padding: 9px 0 9px 26px;
+        position: relative;
+        line-height: 1.3;
+      }
+      .navy .card li {
+        color: var(--onpc);
+      }
+      .card li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 17px;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: var(--goldd);
+      }
+      .card p {
+        font-size: 23px;
+        color: var(--ink2);
+        line-height: 1.4;
+      }
+      .navy .card p {
+        color: var(--onpc);
+      }
+
+      /* Pillars */
+      .pillars {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        margin-top: 20px;
+      }
+      .pillar {
+        border-left: 5px solid var(--gold);
+        padding: 8px 0 8px 28px;
+      }
+      .pillar .n {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--gold);
+        font-family: var(--mono);
+        margin-bottom: 12px;
+      }
+      .pillar .t {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.08;
+      }
+      .pillar .d {
+        font-size: 22px;
+        color: var(--onpc);
+        margin-top: 12px;
+        line-height: 1.35;
+      }
+
+      /* Module tiles */
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 48px;
+      }
+      .tile {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--white);
+        border: 1px solid var(--ol);
+        border-radius: 12px;
+        padding: 22px 24px;
+      }
+      .tile .ti {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: var(--navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+        flex-shrink: 0;
+      }
+      .tile .ti svg {
+        width: 26px;
+        height: 26px;
+      }
+      .tile .tn {
+        font-size: 25px;
+        font-weight: 700;
+      }
+      .tile .tr {
+        font-size: 18px;
+        color: var(--ink2);
+        font-family: var(--mono);
+      }
+
+      /* Flow (wow slide) */
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 20px;
+        margin-top: 26px;
+      }
+      .step {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 14px;
+        padding: 28px 26px;
+      }
+      .step .sn {
+        font-family: var(--mono);
+        font-size: 20px;
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .step .st {
+        font-size: 27px;
+        font-weight: 700;
+        margin-top: 12px;
+        line-height: 1.15;
+      }
+      .step .sd {
+        font-size: 19px;
+        color: var(--onpc);
+        margin-top: 10px;
+        line-height: 1.35;
+      }
+      .arrow {
+        align-self: center;
+        color: var(--gold);
+        font-size: 40px;
+        font-weight: 800;
+      }
+
+      /* Stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: 24px;
+      }
+      .stat .num {
+        font-family: var(--mono);
+        font-size: 88px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        color: #fff;
+      }
+      .stat .num .u {
+        font-size: 40px;
+        color: var(--gold);
+      }
+      .stat .lab {
+        font-size: 24px;
+        color: var(--onpc);
+        margin-top: 14px;
+        line-height: 1.3;
+        max-width: 16ch;
+      }
+
+      /* Compare (why-us) */
+      .cmp {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+        margin-top: 14px;
+      }
+      .cmp .col {
+        border-radius: 14px;
+        padding: 32px 30px;
+        border: 1px solid var(--ol);
+      }
+      .cmp .old {
+        background: var(--white);
+      }
+      .cmp .new {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #fff;
+      }
+      .cmp .ch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 18px;
+      }
+      .cmp .old .ch {
+        color: var(--ink);
+      }
+      .cmp .tag {
+        font-size: 16px;
+        font-family: var(--mono);
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 999px;
+      }
+      .cmp .old .tag {
+        background: var(--fail);
+        color: var(--error);
+      }
+      .cmp .new .tag {
+        background: var(--gold);
+        color: #5a4200;
+      }
+      .cmp li {
+        list-style: none;
+        font-size: 23px;
+        padding: 9px 0 9px 34px;
+        position: relative;
+        line-height: 1.3;
+      }
+      .cmp .old li {
+        color: var(--ink2);
+      }
+      .cmp .new li {
+        color: var(--onpc);
+      }
+      .cmp li::before {
+        position: absolute;
+        left: 0;
+        top: 8px;
+        font-family: var(--mono);
+        font-weight: 700;
+      }
+      .cmp .old li::before {
+        content: "—";
+        color: var(--error);
+      }
+      .cmp .new li::before {
+        content: "✓";
+        color: var(--gold);
+      }
+
+      /* Arch chips */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 22px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--white);
+        border: 1px solid var(--ol);
+        border-radius: 999px;
+        padding: 16px 26px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .chip .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+      }
+      .arch-note {
+        margin-top: 30px;
+        font-size: 23px;
+        color: var(--ink2);
+        max-width: 60ch;
+        line-height: 1.4;
+      }
+
+      /* CTA */
+      .cta-links {
+        display: flex;
+        gap: 18px;
+        margin-top: 44px;
+        flex-wrap: wrap;
+      }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 18px 28px;
+      }
+      .cta.primary {
+        background: var(--gold);
+        color: #4a3600;
+      }
+      .cta.ghost {
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+      }
+
+      /* ── Journey / vision (animated) ── */
+      .journey {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        margin-top: 40px;
+      }
+      .jlabel {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--onpc);
+        margin-bottom: 20px;
+      }
+      .jlabel.gold {
+        color: var(--gold);
+      }
+      .jz {
+        flex: 1;
+      }
+      .jsteps {
+        list-style: none;
+        position: relative;
+        padding-left: 4px;
+      }
+      .jsteps::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        bottom: 18px;
+        width: 3px;
+        background: rgba(255, 255, 255, 0.16);
+      }
+      .jsteps li {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 15px 0;
+        font-size: 22px;
+        color: var(--onpc);
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      .slide.active .jsteps li {
+        animation: rise 0.5s forwards;
+        animation-delay: calc(0.35s + var(--i, 0) * 0.22s);
+      }
+      .jsteps li b {
+        color: #fff;
+        font-weight: 700;
+      }
+      .jdot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--pc);
+        border: 3px solid var(--onpc);
+        flex-shrink: 0;
+        z-index: 1;
+      }
+      .jconn {
+        color: var(--gold);
+        font-size: 48px;
+        font-weight: 800;
+        opacity: 0;
+        flex: 0 0 auto;
+      }
+      .slide.active .jconn {
+        animation: rise 0.5s forwards;
+        animation-delay: var(--d, 0s);
+      }
+      .jnow {
+        flex: 1.15;
+        background: linear-gradient(
+          160deg,
+          rgba(255, 202, 72, 0.16),
+          rgba(255, 202, 72, 0.03)
+        );
+        border: 2px solid var(--gold);
+        border-radius: 20px;
+        padding: 34px 30px;
+        position: relative;
+      }
+      .slide.active .jnow {
+        animation: popCard 0.6s 0.55s both;
+      }
+      @keyframes popCard {
+        from {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .jnow::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: 20px;
+        border: 2px solid var(--gold);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .slide.active .jnow::after {
+        animation: ring 2.6s 1.3s ease-out infinite;
+      }
+      @keyframes ring {
+        0% {
+          transform: scale(1);
+          opacity: 0.55;
+        }
+        75% {
+          transform: scale(1.07);
+          opacity: 0;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      .jbadge {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 600;
+        color: #5a4200;
+        background: var(--gold);
+        padding: 4px 13px;
+        border-radius: 999px;
+        margin-bottom: 14px;
+      }
+      .jnow-t {
+        font-size: 31px;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.1;
+      }
+      .jnow-d {
+        font-size: 19px;
+        color: var(--onpc);
+        margin-top: 12px;
+        line-height: 1.35;
+      }
+      .jphone {
+        flex: 0 0 320px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .phone {
+        width: 296px;
+        height: 462px;
+        border-radius: 38px;
+        background: #0a1626;
+        border: 8px solid #16233a;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        position: relative;
+        overflow: hidden;
+        padding: 20px 15px;
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      .slide.active .phone {
+        animation: rise 0.6s 1s both;
+      }
+      .notch {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 104px;
+        height: 22px;
+        background: #16233a;
+        border-radius: 0 0 15px 15px;
+      }
+      .screen {
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ntf {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 15px;
+        padding: 14px;
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      .slide.active .ntf {
+        animation: ntfIn 0.5s forwards;
+        animation-delay: var(--nd);
+      }
+      @keyframes ntfIn {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .ntf .ni {
+        font-size: 26px;
+        line-height: 1;
+      }
+      .ntf b {
+        display: block;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .ntf span {
+        display: block;
+        color: var(--onpc);
+        font-size: 15px;
+        margin-top: 2px;
+      }
+      .jphone-cap {
+        margin-top: 22px;
+        text-align: center;
+        font-size: 19px;
+        font-weight: 600;
+        color: var(--gold);
+        max-width: 280px;
+        line-height: 1.3;
+      }
+
+      /* Chrome */
+      .chrome {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 132px;
+        font-family: var(--mono);
+        font-size: 19px;
+        z-index: 5;
+        color: var(--ink2);
+      }
+      .slide.active.navy ~ .chrome {
+      }
+      .chrome .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+      .chrome .brand .cm {
+        width: 22px;
+        height: 22px;
+        color: var(--pc);
+      }
+      .progress {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 5px;
+        background: var(--gold);
+        width: 0;
+        transition: width 0.4s ease;
+        z-index: 6;
+      }
+      .hint {
+        position: absolute;
+        right: 132px;
+        bottom: 82px;
+        font-family: var(--mono);
+        font-size: 17px;
+        color: var(--ink2);
+        opacity: 0.7;
+        z-index: 5;
+      }
+
+      /* ── Animated components (catchy + on-message) ── */
+      /* Hero/CTA: a gold underline sweeps under the accent word */
+      .undersweep {
+        position: relative;
+        display: inline-block;
+      }
+      .undersweep::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        bottom: -0.07em;
+        height: 0.1em;
+        background: var(--gold);
+        border-radius: 6px;
+        width: 0;
+      }
+      .slide.active .undersweep::after {
+        animation: sweep 0.75s 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @keyframes sweep {
+        to {
+          width: calc(100% + 3px);
+        }
+      }
+
+      /* Admin panel: the module tiles cascade in (abundance) */
+      .tiles .tile {
+        opacity: 0;
+        transform: translateY(22px) scale(0.96);
+      }
+      .slide.active .tiles .tile {
+        animation: tilePop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      @keyframes tilePop {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .slide.active .tiles .tile:nth-child(1) {
+        animation-delay: 0.18s;
+      }
+      .slide.active .tiles .tile:nth-child(2) {
+        animation-delay: 0.25s;
+      }
+      .slide.active .tiles .tile:nth-child(3) {
+        animation-delay: 0.32s;
+      }
+      .slide.active .tiles .tile:nth-child(4) {
+        animation-delay: 0.39s;
+      }
+      .slide.active .tiles .tile:nth-child(5) {
+        animation-delay: 0.46s;
+      }
+      .slide.active .tiles .tile:nth-child(6) {
+        animation-delay: 0.53s;
+      }
+      .slide.active .tiles .tile:nth-child(7) {
+        animation-delay: 0.6s;
+      }
+      .slide.active .tiles .tile:nth-child(8) {
+        animation-delay: 0.67s;
+      }
+      .slide.active .tiles .tile:nth-child(9) {
+        animation-delay: 0.74s;
+      }
+
+      /* Orar pipeline: steps light up in sequence; step 2 "processes" (shimmer) */
+      .flow .step {
+        position: relative;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .slide.active .flow .step {
+        animation: rise 0.55s both;
+        animation-delay: var(--d, 0s);
+      }
+      .flow .arrow {
+        opacity: 0;
+      }
+      .slide.active .flow .arrow {
+        animation: arrowIn 0.45s both;
+        animation-delay: var(--d, 0s);
+      }
+      @keyframes arrowIn {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .flow .step.proc {
+        overflow: hidden;
+      }
+      .slide.active .flow .step.proc::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          115deg,
+          transparent 30%,
+          rgba(255, 202, 72, 0.22),
+          transparent 70%
+        );
+        transform: translateX(-120%);
+        animation: shimmer 1.9s 1.3s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        to {
+          transform: translateX(120%);
+        }
+      }
+
+      /* Impact: numbers pop in with a springy overshoot */
+      .stats .stat {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      .slide.active .stats .stat {
+        animation: numPop 0.6s cubic-bezier(0.2, 1.25, 0.4, 1) both;
+      }
+      @keyframes numPop {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .slide.active .stats .stat:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .slide.active .stats .stat:nth-child(2) {
+        animation-delay: 0.36s;
+      }
+      .slide.active .stats .stat:nth-child(3) {
+        animation-delay: 0.52s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <!-- 1 · HERO -->
+      <section class="slide navy active">
+        <div class="hero-lockup" data-reveal>
+          <div class="mark">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+          <div>
+            <div class="hero-name">UBB&nbsp;Info</div>
+            <div class="hero-sub">Portal Academic · FMI UBB Cluj</div>
+          </div>
+        </div>
+        <h1 data-reveal style="--d: 0.08s">
+          Portalul academic<br />modern al
+          <span class="gold undersweep">FMI</span>.
+        </h1>
+        <p class="hero-tag" data-reveal style="--d: 0.18s">
+          Studenți, profesori și administrație — <b>o singură platformă</b>, un
+          login, orice dispozitiv.
+        </p>
+      </section>
+
+      <!-- 2 · PROBLEMA -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Problema</div>
+        <h2 data-reveal style="--d: 0.05s">
+          Azi, prea mult se face <span class="gold">manual</span>.
+        </h2>
+        <div class="grid g3" data-reveal style="--d: 0.15s">
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c3 3 9 3 12 0v-5" /></svg></span
+              >Studenți
+            </div>
+            <ul>
+              <li>
+                Aleargă după orar, note, taxe, cereri — pe canale diferite
+              </li>
+              <li>Fără un loc unic, fără mobil</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path
+                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                  /></svg></span
+              >Profesori
+            </div>
+            <ul>
+              <li>Notare și evaluări greoaie</li>
+              <li>Fără scheme de notare clare</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  />
+                  <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg></span
+              >Secretariat
+            </div>
+            <ul>
+              <li>Orar făcut de mână, ore întregi</li>
+              <li>Conturi create unul câte unul</li>
+              <li>Burse pe hârtie / Excel</li>
+            </ul>
+          </div>
+        </div>
+        <p class="lead" data-reveal style="--d: 0.25s; max-width: none">
+          Rezultatul:
+          <span class="gold" style="font-weight: 700"
+            >timp pierdut, erori și frustrare</span
+          >.
+        </p>
+      </section>
+
+      <!-- 3 · SOLUȚIA -->
+      <section class="slide navy">
+        <div class="eyebrow" data-reveal>Soluția</div>
+        <h2 data-reveal style="--d: 0.05s">
+          UBB Info: totul<br />într-un singur loc.
+        </h2>
+        <div class="pillars" data-reveal style="--d: 0.16s">
+          <div class="pillar">
+            <div class="n">01</div>
+            <div class="t">Self-service<br />pentru studenți</div>
+            <div class="d">
+              Notele, orarul, taxele, documentele și cererile — la un click, de
+              pe telefon.
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="n">02</div>
+            <div class="t">Automatizare<br />pentru administrație</div>
+            <div class="d">
+              Orar generat automat, conturi în masă, liste de burse alocate
+              corect.
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="n">03</div>
+            <div class="t">O platformă,<br />un singur login</div>
+            <div class="d">
+              Auth instituțional, roluri, responsive — desktop și mobil.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · OVERVIEW -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Pentru toată facultatea</div>
+        <h2 data-reveal style="--d: 0.05s">Construit pentru fiecare rol</h2>
+        <div class="grid g3" data-reveal style="--d: 0.15s">
+          <div class="card">
+            <div class="ct">Student</div>
+            <ul>
+              <li>Dashboard + simulator de medie</li>
+              <li>Orar & calendar</li>
+              <li>Documente PDF (adeverințe, cereri)</li>
+              <li>Taxe & facilități</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">Profesor</div>
+            <ul>
+              <li>Notare pe scheme configurabile</li>
+              <li>Evaluări anonime</li>
+              <li>Orarul propriu</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">Administrație</div>
+            <ul>
+              <li>Utilizatori, roluri, conturi</li>
+              <li>Discipline, orar, calendar, săli</li>
+              <li>Facilități, taxe, admiși</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 · ADMIN PANEL -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Diferențiatorul</div>
+        <h2 data-reveal style="--d: 0.05s">
+          Un panou de admin pe care<br />sistemul vechi
+          <span class="gold">nu îl are</span>.
+        </h2>
+        <div class="tiles">
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" /></svg
+            ></span>
+            <div>
+              <div class="tn">Utilizatori</div>
+              <div class="tr">roluri · cascadă grupe</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                <path d="M6 12H4M6 8H4M6 16H4" /></svg
+            ></span>
+            <div>
+              <div class="tn">Discipline</div>
+              <div class="tr">drill-down spec→an</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m3 11 18-5v12L3 14v-3z" />
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg
+            ></span>
+            <div>
+              <div class="tn">Generare orar</div>
+              <div class="tr">solver automat</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8 2v4M16 2v4M3 10h18" />
+                <rect x="3" y="4" width="18" height="18" rx="2" /></svg
+            ></span>
+            <div>
+              <div class="tn">Calendar</div>
+              <div class="tr">ani · vacanțe</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                <path d="M6 12H4M6 8H4" /></svg
+            ></span>
+            <div>
+              <div class="tn">Clădiri & zone</div>
+              <div class="tr">săli · proximitate</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"
+                />
+                <path d="M15 3h6v6M10 14 21 3" /></svg
+            ></span>
+            <div>
+              <div class="tn">Facilități</div>
+              <div class="tr">burse · tabere · cămin</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M2 10h20" /></svg
+            ></span>
+            <div>
+              <div class="tn">Taxe</div>
+              <div class="tr">rate · restanțe · stat.</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <path d="M14 2v6h6" /></svg
+            ></span>
+            <div>
+              <div class="tn">Conturi admiși</div>
+              <div class="tr">import CSV/XLSX</div>
+            </div>
+          </div>
+          <div class="tile">
+            <span class="ti"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg
+            ></span>
+            <div>
+              <div class="tn">Evaluări</div>
+              <div class="tr">anonime</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 · WOW: ORAR -->
+      <section class="slide navy">
+        <div class="eyebrow" data-reveal>Automatizare · vedeta</div>
+        <h2 data-reveal style="--d: 0.05s">
+          Orarul se generează <span class="gold">singur</span>.
+        </h2>
+        <div class="flow">
+          <div class="step" style="--d: 0.2s">
+            <div class="sn">01</div>
+            <div class="st">Definești cererea</div>
+            <div class="sd">
+              Ce curs / tip / grupă, câte sesiuni, durată, paritate.
+            </div>
+          </div>
+          <div class="arrow" style="--d: 0.4s">→</div>
+          <div class="step proc" style="--d: 0.55s">
+            <div class="sn">02</div>
+            <div class="st">Solverul rulează</div>
+            <div class="sd">
+              Constraint solver (Timefold) respectă săli, zone, disponibilitate.
+            </div>
+          </div>
+          <div class="arrow" style="--d: 0.75s">→</div>
+          <div class="step" style="--d: 0.9s">
+            <div class="sn">03</div>
+            <div class="st">Alegi din drafturi</div>
+            <div class="sd">Mai multe variante generate, previzualizate.</div>
+          </div>
+          <div class="arrow" style="--d: 1.1s">→</div>
+          <div class="step" style="--d: 1.25s">
+            <div class="sn">04</div>
+            <div class="st">Publici</div>
+            <div class="sd">Orarul apare instant la studenți și profesori.</div>
+          </div>
+        </div>
+        <p
+          class="lead"
+          data-reveal
+          style="--d: 1.5s; max-width: none; color: #fff; font-weight: 600"
+        >
+          De la ore de muncă manuală la <span class="gold">câteva secunde</span>.
+        </p>
+      </section>
+
+      <!-- 7 · FACILITĂȚI -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Automatizare</div>
+        <h2 data-reveal style="--d: 0.05s">
+          Burse, tabere, cămin —<br />alocate corect, automat.
+        </h2>
+        <div class="grid g2" data-reveal style="--d: 0.15s">
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                  /></svg></span
+              >Alocare pe medie
+            </div>
+            <ul>
+              <li>Clasare automată după media reală</li>
+              <li>Cote rezervate: social 10% · special 20%</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  />
+                  <path d="M14 2v6h6" /></svg></span
+              >Rezultat & publicare
+            </div>
+            <ul>
+              <li>Export PDF cu lista finală, clasat</li>
+              <li>Publicare → status pe dashboard-ul fiecăruia</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 · TAXE + CONTURI -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Operațional</div>
+        <h2 data-reveal style="--d: 0.05s">Mai puțină muncă de rutină</h2>
+        <div class="grid g2" data-reveal style="--d: 0.15s">
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <path d="M2 10h20" /></svg></span
+              >Taxe
+            </div>
+            <ul>
+              <li>Rate de școlarizare + restanțe</li>
+              <li>Statistici per student</li>
+              <li>Grupate pe specializare / limbă / an</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ct">
+              <span class="ci"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M19 8v6M22 11h-6" /></svg></span
+              >Conturi admiși
+            </div>
+            <ul>
+              <li>Încarci un CSV / Excel</li>
+              <li>Emailuri + parole + conturi generate în masă</li>
+              <li>Fără creare manuală, unul câte unul</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 · WHY US (secondary contrast) -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>De ce acum</div>
+        <h2 data-reveal style="--d: 0.05s">Sistemul actual nu ține pasul</h2>
+        <div class="cmp" data-reveal style="--d: 0.15s">
+          <div class="col old">
+            <div class="ch">
+              Academic Info <span class="tag">învechit</span>
+            </div>
+            <ul>
+              <li>Interfață veche, fără mobil</li>
+              <li>Fără self-service real</li>
+              <li>Zero automatizări</li>
+              <li>Fără panou de administrare</li>
+            </ul>
+          </div>
+          <div class="col new">
+            <div class="ch">UBB Info <span class="tag">modern</span></div>
+            <ul>
+              <li>Responsive, curat, rapid</li>
+              <li>Self-service complet</li>
+              <li>Orar & conturi automatizate</li>
+              <li>Suită de admin completă</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 · IMPACT -->
+      <section class="slide navy">
+        <div class="eyebrow" data-reveal>Impact</div>
+        <h2 data-reveal style="--d: 0.05s">Ce câștigă facultatea</h2>
+        <div class="stats">
+          <div class="stat">
+            <div class="num">~0<span class="u">min</span></div>
+            <div class="lab">de muncă manuală la generarea orarului</div>
+          </div>
+          <div class="stat">
+            <div class="num">1<span class="u">fișier</span></div>
+            <div class="lab">creează sute de conturi de admiși</div>
+          </div>
+          <div class="stat">
+            <div class="num">24/7</div>
+            <div class="lab">
+              self-service pentru studenți, de pe orice dispozitiv
+            </div>
+          </div>
+        </div>
+        <p
+          class="lead"
+          data-reveal
+          style="--d: 0.26s; max-width: none; color: #fff; font-weight: 600"
+        >
+          Mai puține erori, mai puțină hârtie, mai mult timp pentru oameni.
+        </p>
+      </section>
+
+      <!-- 11 · ARCHITECTURE -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Sub capotă</div>
+        <h2 data-reveal style="--d: 0.05s">Modern și sustenabil</h2>
+        <div class="chips" data-reveal style="--d: 0.15s">
+          <span class="chip"
+            ><span class="dot" style="background: #61dafb"></span>React +
+            Vite</span
+          >
+          <span class="chip"
+            ><span class="dot" style="background: #6db33f"></span>Spring
+            Boot</span
+          >
+          <span class="chip"
+            ><span class="dot" style="background: #3ecf8e"></span>Supabase</span
+          >
+          <span class="chip"
+            ><span class="dot" style="background: var(--goldd)"></span>Deploy
+            gratuit · Render + Vercel</span
+          >
+        </div>
+        <p class="arch-note" data-reveal style="--d: 0.22s">
+          Securitate reală (row-level security reimplementată în backend),
+          autentificare instituțională, suite de teste automate.
+          <span class="gold" style="font-weight: 600"
+            >Cost de găzduire: 0 lei</span
+          >
+          pe infrastructura actuală.
+        </p>
+      </section>
+
+      <!-- 12 · JOURNEY / VISION (animated) -->
+      <section class="slide navy">
+        <div class="eyebrow" data-reveal>Parcurs &amp; viziune</div>
+        <h2 data-reveal style="--d: 0.05s">
+          De unde am plecat, <span class="gold">unde mergem</span>.
+        </h2>
+        <div class="journey">
+          <div class="jz">
+            <div class="jlabel" data-reveal style="--d: 0.1s">
+              Am plecat de la
+            </div>
+            <ul class="jsteps">
+              <li style="--i: 0">
+                <span class="jdot"></span
+                ><span><b>Idee</b> — un portal unic pentru FMI</span>
+              </li>
+              <li style="--i: 1">
+                <span class="jdot"></span
+                ><span><b>Prototip</b> — dashboard + note</span>
+              </li>
+              <li style="--i: 2">
+                <span class="jdot"></span
+                ><span><b>Backend &amp; auth</b> — date reale, roluri</span>
+              </li>
+            </ul>
+          </div>
+          <div class="jconn" style="--d: 0.9s">&rarr;</div>
+          <div class="jnow">
+            <div class="jbadge">ACUM</div>
+            <div class="jnow-t">Platformă completă, live</div>
+            <div class="jnow-d">
+              Studenți · profesori · admin — orar automat, taxe, facilități,
+              documente. În producție.
+            </div>
+          </div>
+          <div class="jconn" style="--d: 1.05s">&rArr;</div>
+          <div class="jphone">
+            <div class="jlabel gold" data-reveal style="--d: 1s">
+              Unde mergem
+            </div>
+            <div class="phone">
+              <div class="notch"></div>
+              <div class="screen">
+                <div class="ntf" style="--nd: 1.25s">
+                  <span class="ni">🔔</span>
+                  <div><b>Notă nouă</b><span>9 la Structuri de date</span></div>
+                </div>
+                <div class="ntf" style="--nd: 1.55s">
+                  <span class="ni">🎓</span>
+                  <div>
+                    <b>Bursă aprobată</b><span>Bursă de merit · sem. 2</span>
+                  </div>
+                </div>
+                <div class="ntf" style="--nd: 1.85s">
+                  <span class="ni">⏰</span>
+                  <div><b>Taxă scadentă</b><span>Rata 2 · în 3 zile</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="jphone-cap" data-reveal style="--d: 1.15s">
+              App pe telefonul tău, notificări în timp real
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13 · NEXT STEPS -->
+      <section class="slide">
+        <div class="eyebrow" data-reveal>Următorii pași</div>
+        <h2 data-reveal style="--d: 0.05s">De la demo la adopție</h2>
+        <div class="pillars" data-reveal style="--d: 0.15s">
+          <div class="pillar" style="border-color: var(--gold)">
+            <div class="n" style="color: var(--goldd)">01</div>
+            <div class="t" style="color: var(--ink)">Pilot</div>
+            <div class="d" style="color: var(--ink2)">
+              O specializare, un semestru — date reale, risc zero.
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="n" style="color: var(--goldd)">02</div>
+            <div class="t" style="color: var(--ink)">Feedback</div>
+            <div class="d" style="color: var(--ink2)">
+              Ajustări cu studenții, profesorii și secretariatul.
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="n" style="color: var(--goldd)">03</div>
+            <div class="t" style="color: var(--ink)">Extindere</div>
+            <div class="d" style="color: var(--ink2)">
+              Rollout la nivel de facultate + integrări viitoare.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13 · CTA -->
+      <section class="slide navy">
+        <div class="hero-lockup" data-reveal>
+          <div class="mark">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+          <div>
+            <div class="hero-name">UBB Info</div>
+            <div class="hero-sub">Portal Academic · FMI UBB Cluj</div>
+          </div>
+        </div>
+        <h1 data-reveal style="--d: 0.08s; font-size: 96px">
+          Hai să-l aducem<br />la <span class="gold undersweep">FMI</span>.
+        </h1>
+        <p class="hero-tag" data-reveal style="--d: 0.18s; max-width: 34ch">
+          Un pilot, o specializare, un semestru. Restul vine de la sine.
+        </p>
+        <div class="cta-links" data-reveal style="--d: 0.26s">
+          <span class="cta primary mono">ubb-info.vercel.app</span>
+          <span class="cta ghost mono">github.com/ItsWaferz/UBBInfo</span>
+        </div>
+      </section>
+
+      <div class="chrome">
+        <div class="brand">
+          <svg
+            class="cm"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" /></svg
+          ><span>UBB Info</span>
+        </div>
+        <div class="counter" id="counter">01 / 14</div>
+      </div>
+      <div class="progress" id="progress"></div>
+      <div class="hint" id="hint">← → sau click pentru a naviga</div>
+    </div>
+
+    <script>
+      const stage = document.getElementById("stage");
+      function fit() {
+        const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        const tx = (window.innerWidth - 1920 * s) / 2;
+        const ty = (window.innerHeight - 1080 * s) / 2;
+        stage.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+      }
+      window.addEventListener("resize", fit);
+      fit();
+
+      const slides = [...document.querySelectorAll(".slide")];
+      const counter = document.getElementById("counter");
+      const progress = document.getElementById("progress");
+      const chromeBar = document.querySelector(".chrome");
+      const hint = document.getElementById("hint");
+      let i = 0;
+      const pad = (n) => String(n).padStart(2, "0");
+
+      function show(n) {
+        slides[i].classList.remove("active");
+        i = (n + slides.length) % slides.length;
+        slides[i].classList.add("active");
+        counter.textContent = `${pad(i + 1)} / ${pad(slides.length)}`;
+        progress.style.width = ((i + 1) / slides.length) * 100 + "%";
+        // chrome text color adapts on navy slides
+        const dark = slides[i].classList.contains("navy");
+        chromeBar.style.color = dark ? "#87a4cc" : "#43474e";
+        chromeBar.querySelector(".cm").style.color = dark
+          ? "#ffca48"
+          : "#1b3a5c";
+        if (i > 0 && hint) hint.style.display = "none";
+      }
+      show(0);
+
+      document.addEventListener("keydown", (e) => {
+        if (["ArrowRight", " ", "PageDown"].includes(e.key)) {
+          e.preventDefault();
+          show(i + 1);
+        }
+        if (["ArrowLeft", "PageUp"].includes(e.key)) {
+          e.preventDefault();
+          show(i - 1);
+        }
+        if (e.key === "Home") show(0);
+        if (e.key === "End") show(slides.length - 1);
+      });
+      stage.addEventListener("click", (e) => {
+        if (!e.target.closest("a")) show(i + 1);
+      });
+    </script>
+  </body>
+</html>

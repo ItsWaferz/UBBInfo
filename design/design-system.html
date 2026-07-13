@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UBB Info — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#002444; --primary-container:#1b3a5c; --on-primary:#fff; --on-primary-container:#87a4cc;
+    --secondary:#785a00; --secondary-container:#ffca48; --on-secondary-container:#725500; --gold:#f3bf3d;
+    --tertiary:#0b253a; --tertiary-container:#243b51;
+    --surface:#f8f9fd; --lowest:#fff; --low:#f2f3f7; --container:#edeef2; --background:#f5f6fa;
+    --on-surface:#191c1f; --on-surface-variant:#43474e; --outline:#73777f; --outline-variant:#c3c6cf;
+    --error:#ba1a1a; --success:#1a7d3c;
+    --radius:4px; --radius-lg:8px;
+    --shadow-soft:0 2px 4px rgba(27,58,92,.05); --shadow-elevated:0 8px 24px rgba(27,58,92,.1);
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--background);color:var(--on-surface);
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  section{padding:56px 0;border-bottom:1px solid var(--outline-variant)}
+  section:last-child{border-bottom:none}
+  h2{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary-container);margin-bottom:6px}
+  .sec-desc{color:var(--on-surface-variant);margin-bottom:28px;max-width:60ch}
+  .mono{font-family:var(--mono)}
+
+  /* Header */
+  header{background:var(--primary);color:var(--on-primary);padding:64px 0 56px}
+  .lockup{display:flex;align-items:center;gap:16px}
+  .mark{width:56px;height:56px;border-radius:var(--radius-lg);background:var(--primary-container);
+    display:flex;align-items:center;justify-content:center;color:var(--gold)}
+  .mark svg{width:34px;height:34px}
+  .brand-name{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .brand-sub{color:var(--on-primary-container);font-size:14px;font-weight:500;margin-top:4px}
+  .header-meta{margin-top:28px;display:flex;gap:28px;flex-wrap:wrap;color:var(--on-primary-container);font-size:13px}
+  .header-meta b{color:#fff;font-weight:600}
+  .tagline{margin-top:24px;font-size:20px;font-weight:600;max-width:52ch;line-height:1.35}
+
+  /* Colors */
+  .swatch-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .swatch{border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--outline-variant);background:var(--lowest);box-shadow:var(--shadow-soft)}
+  .swatch .fill{height:120px;display:flex;align-items:flex-end;padding:12px;color:#fff;font-weight:600;font-size:13px}
+  .swatch .meta{padding:12px 14px}
+  .swatch .meta .nm{font-weight:600}
+  .swatch .meta .hex{font-family:var(--mono);font-size:12px;color:var(--on-surface-variant);margin-top:2px}
+  .swatch .meta .use{font-size:12px;color:var(--on-surface-variant);margin-top:6px}
+  .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .chip{border:1px solid var(--outline-variant);border-radius:var(--radius);overflow:hidden;background:var(--lowest)}
+  .chip .bar{height:52px}
+  .chip .lbl{padding:8px 10px;font-size:12px}
+  .chip .lbl .nm{font-weight:600}
+  .chip .lbl .hex{font-family:var(--mono);color:var(--on-surface-variant)}
+  .subhead{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--on-surface-variant);margin:26px 0 12px}
+
+  /* Typography */
+  .type-sample{border:1px solid var(--outline-variant);border-radius:var(--radius-lg);background:var(--lowest);padding:24px;box-shadow:var(--shadow-soft)}
+  .type-sample+.type-sample{margin-top:16px}
+  .type-label{font-size:12px;color:var(--on-surface-variant);font-family:var(--mono);margin-bottom:10px}
+  .disp{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .body-lg{font-size:18px;font-weight:400}
+  .weights{display:flex;gap:22px;flex-wrap:wrap;margin-top:8px}
+  .weights span{font-size:22px}
+  .w4{font-weight:400}.w5{font-weight:500}.w6{font-weight:600}.w7{font-weight:700}.w8{font-weight:800}
+
+  /* Principles */
+  .principles{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .principle{border:1px solid var(--outline-variant);border-left:3px solid var(--secondary-container);
+    border-radius:var(--radius);background:var(--lowest);padding:18px 20px}
+  .principle h3{font-size:15px;font-weight:700;margin-bottom:6px}
+  .principle p{font-size:13px;color:var(--on-surface-variant)}
+
+  /* Components */
+  .demo{border:1px solid var(--outline-variant);border-radius:var(--radius-lg);background:var(--surface);padding:24px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .row+.subhead{margin-top:26px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:var(--radius);
+    padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+  .btn .i{width:16px;height:16px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-outline{background:var(--lowest);border-color:var(--outline-variant);color:var(--on-surface)}
+  .btn-ghost{background:transparent;color:var(--on-surface-variant)}
+  .btn-sm{padding:6px 12px;font-size:13px}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .b-pass{background:#d6f3df;color:#1a7d3c}
+  .b-fail{background:#ffdad6;color:#ba1a1a}
+  .b-opt{background:#e8eaed;color:#3c4043}
+  .b-sem{background:#fff0c4;color:#725500}
+  .card-demo{background:var(--lowest);border:1px solid var(--outline-variant);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);max-width:320px;overflow:hidden}
+  .card-demo .ch{display:flex;align-items:center;gap:8px;padding:16px 18px;border-bottom:1px solid var(--outline-variant);font-weight:600}
+  .card-demo .ch svg{width:20px;height:20px;color:var(--primary-container)}
+  .card-demo .cb{padding:18px}
+  .field-lbl{font-size:13px;font-weight:500;color:var(--on-surface-variant);display:block;margin-bottom:6px}
+  .input{display:flex;align-items:center;min-height:44px;background:var(--lowest);border:1px solid var(--outline-variant);
+    border-radius:var(--radius);padding:0 12px;color:var(--on-surface-variant)}
+  .input.foc{border-color:var(--primary-container);box-shadow:0 0 0 3px rgba(27,58,92,.15);background:var(--lowest)}
+  .acc{border:1px solid var(--outline-variant);border-radius:var(--radius-lg);overflow:hidden;background:var(--lowest);max-width:420px}
+  .acc-trig{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--low)}
+  .acc-left{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+  .acc-left svg{width:18px;height:18px;color:var(--primary-container)}
+  .acc-count{font-size:12px;font-weight:600;color:var(--on-surface-variant);background:var(--container);border-radius:999px;padding:1px 9px}
+  .acc-sub{padding:11px 16px 11px 36px;font-size:13px;border-top:1px solid var(--outline-variant);color:var(--on-surface-variant)}
+
+  /* Icons */
+  .icons{display:flex;gap:18px;flex-wrap:wrap}
+  .icon-tile{width:88px;text-align:center}
+  .icon-tile .box{width:88px;height:64px;border:1px solid var(--outline-variant);border-radius:var(--radius-lg);
+    background:var(--lowest);display:flex;align-items:center;justify-content:center;color:var(--primary-container)}
+  .icon-tile svg{width:26px;height:26px}
+  .icon-tile .nm{font-size:11px;color:var(--on-surface-variant);margin-top:6px;font-family:var(--mono)}
+
+  /* Wordmarks */
+  .locks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .lock{border:1px solid var(--outline-variant);border-radius:var(--radius-lg);background:var(--lowest);
+    padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:150px;justify-content:center}
+  .lock.dark{background:var(--primary);color:#fff}
+  .lock .cap{font-size:11px;color:var(--on-surface-variant);font-family:var(--mono);margin-top:auto}
+  .lock.dark .cap{color:var(--on-primary-container)}
+  .l-mark{display:flex;align-items:center;gap:10px}
+  .l-mark .m{width:32px;height:32px;border-radius:6px;background:var(--primary-container);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+  .l-mark .m svg{width:20px;height:20px}
+  .l-mark .t{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .l-split{font-size:24px;letter-spacing:-.02em}.l-split b{font-weight:800}.l-split i{font-style:normal;font-weight:400;color:var(--on-surface-variant)}
+  .lock.dark .l-split i{color:var(--on-primary-container)}
+  .l-accent{font-size:24px;font-weight:800;letter-spacing:-.02em}.l-accent .g{color:var(--gold)}
+
+  footer{padding:40px 0;color:var(--on-surface-variant);font-size:13px}
+  footer .mono{color:var(--on-surface)}
+  @media(max-width:720px){.swatch-row,.principles,.locks{grid-template-columns:1fr}.disp{font-size:30px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="lockup">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+          <path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">UBB&nbsp;Info</div>
+        <div class="brand-sub">Portal Academic · FMI UBB Cluj</div>
+      </div>
+    </div>
+    <p class="tagline">Portalul academic modern al Facultății de Matematică și Informatică — studenți, profesori și administrație, într-o singură platformă.</p>
+    <div class="header-meta">
+      <div>Versiune <b>1.0</b></div>
+      <div>Temă <b>Light</b></div>
+      <div>Bază <b>Inter · JetBrains Mono</b></div>
+      <div>Sursă <b>src/styles/index.css</b></div>
+    </div>
+  </div>
+</header>
+
+<section class="wrap">
+  <h2>Ierarhie de culoare</h2>
+  <p class="sec-desc">Un albastru bleumarin profund ancorează brandul; auriul universitar este accentul care marchează zona de administrare și elementele evidențiate.</p>
+  <div class="swatch-row">
+    <div class="swatch">
+      <div class="fill" style="background:#002444">Primary</div>
+      <div class="meta"><div class="nm">Navy</div><div class="hex">#002444</div><div class="use">Butoane principale, sidebar profund, titluri.</div></div>
+    </div>
+    <div class="swatch">
+      <div class="fill" style="background:#ffca48;color:#725500">Secondary</div>
+      <div class="meta"><div class="nm">Gold</div><div class="hex">#ffca48 · #f3bf3d</div><div class="use">Accent admin, avatar, evidențieri.</div></div>
+    </div>
+    <div class="swatch">
+      <div class="fill" style="background:#1b3a5c">Container</div>
+      <div class="meta"><div class="nm">Navy Container</div><div class="hex">#1b3a5c</div><div class="use">Sidebar, antet de tabel, iconuri.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Paletă extinsă</h2>
+  <p class="sec-desc">Suprafețe neutre reci pentru interfață și un set de culori de stare pentru badge-uri și feedback.</p>
+
+  <div class="subhead">Suprafețe</div>
+  <div class="palette">
+    <div class="chip"><div class="bar" style="background:#f5f6fa"></div><div class="lbl"><div class="nm">Background</div><div class="hex">#f5f6fa</div></div></div>
+    <div class="chip"><div class="bar" style="background:#f8f9fd"></div><div class="lbl"><div class="nm">Surface</div><div class="hex">#f8f9fd</div></div></div>
+    <div class="chip"><div class="bar" style="background:#ffffff"></div><div class="lbl"><div class="nm">Lowest</div><div class="hex">#ffffff</div></div></div>
+    <div class="chip"><div class="bar" style="background:#f2f3f7"></div><div class="lbl"><div class="nm">Container Low</div><div class="hex">#f2f3f7</div></div></div>
+    <div class="chip"><div class="bar" style="background:#edeef2"></div><div class="lbl"><div class="nm">Container</div><div class="hex">#edeef2</div></div></div>
+    <div class="chip"><div class="bar" style="background:#c3c6cf"></div><div class="lbl"><div class="nm">Outline Var.</div><div class="hex">#c3c6cf</div></div></div>
+    <div class="chip"><div class="bar" style="background:#73777f"></div><div class="lbl"><div class="nm">Outline</div><div class="hex">#73777f</div></div></div>
+    <div class="chip"><div class="bar" style="background:#43474e"></div><div class="lbl"><div class="nm">On-Surface Var.</div><div class="hex">#43474e</div></div></div>
+    <div class="chip"><div class="bar" style="background:#191c1f"></div><div class="lbl"><div class="nm">On-Surface</div><div class="hex">#191c1f</div></div></div>
+  </div>
+
+  <div class="subhead">Stare &amp; badge-uri</div>
+  <div class="palette">
+    <div class="chip"><div class="bar" style="background:#1a7d3c"></div><div class="lbl"><div class="nm">Success</div><div class="hex">#1a7d3c</div></div></div>
+    <div class="chip"><div class="bar" style="background:#d6f3df"></div><div class="lbl"><div class="nm">Pass bg</div><div class="hex">#d6f3df</div></div></div>
+    <div class="chip"><div class="bar" style="background:#ba1a1a"></div><div class="lbl"><div class="nm">Error</div><div class="hex">#ba1a1a</div></div></div>
+    <div class="chip"><div class="bar" style="background:#ffdad6"></div><div class="lbl"><div class="nm">Fail bg</div><div class="hex">#ffdad6</div></div></div>
+    <div class="chip"><div class="bar" style="background:#fff0c4"></div><div class="lbl"><div class="nm">Seminar bg</div><div class="hex">#fff0c4</div></div></div>
+    <div class="chip"><div class="bar" style="background:#e8eaed"></div><div class="lbl"><div class="nm">Optional bg</div><div class="hex">#e8eaed</div></div></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Tipografie</h2>
+  <p class="sec-desc">Inter poartă întreaga interfață — de la titluri la corp de text; JetBrains Mono pentru coduri, matricole și valori tabulare.</p>
+  <div class="type-sample">
+    <div class="type-label">Inter · Display · 800</div>
+    <div class="disp">Portal Academic</div>
+    <div class="weights">
+      <span class="w4">Regular</span><span class="w5">Medium</span><span class="w6">SemiBold</span><span class="w7">Bold</span><span class="w8">ExtraBold</span>
+    </div>
+  </div>
+  <div class="type-sample">
+    <div class="type-label">Inter · Body · 400 / 1.5</div>
+    <div class="body-lg">Generarea automată a orarului, notarea pe scheme, taxe și facilități — toate într-o interfață compactă, la 14px, cu suprafețe reci și accente bleumarin.</div>
+  </div>
+  <div class="type-sample">
+    <div class="type-label">JetBrains Mono · 500</div>
+    <div class="mono" style="font-size:18px">1322/1 · corneliu.marinescu@stud.ubbcluj.ro · 5.000 lei</div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Caracteristici de design</h2>
+  <p class="sec-desc">Regulile observabile care dau consecvența sistemului (extrase din implementare, nu inventate).</p>
+  <div class="principles">
+    <div class="principle"><h3>Light-first, suprafețe reci</h3><p>O singură temă luminoasă cu straturi de gri-albăstrui (#f5f6fa → #fff) pentru ierarhie, fără dark mode.</p></div>
+    <div class="principle"><h3>Colțuri mici, umbre discrete</h3><p>Rază de 4px (8px pentru carduri) și umbre soft (2px) — sobru, nu jucăuș.</p></div>
+    <div class="principle"><h3>Navy + Gold</h3><p>Bleumarin pentru structură și acțiuni; auriul universitar rezervat accentului și zonei de admin.</p></div>
+    <div class="principle"><h3>Meniuri drill-down</h3><p>Acordeoane imbricate (Specializare → Limbă → An → Semestru → Categorie) cu badge de contor pe fiecare nivel.</p></div>
+    <div class="principle"><h3>Densitate compactă</h3><p>Bază de 14px, câmpuri de 38–44px, tabele aerisite — multă informație, citibilă.</p></div>
+    <div class="principle"><h3>Responsive real</h3><p>Layout-urile reflowează pe mobil (rânduri care se sparg vertical), nu doar scroll orizontal.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Componente</h2>
+  <p class="sec-desc">Limbajul vizual aplicat pe butoane, badge-uri, carduri, câmpuri și meniul-acordeon.</p>
+  <div class="demo">
+    <div class="subhead">Butoane</div>
+    <div class="row">
+      <button class="btn btn-primary">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Salvează
+      </button>
+      <button class="btn btn-outline">Anulează</button>
+      <button class="btn btn-ghost">Renunță</button>
+      <button class="btn btn-primary btn-sm">Publică rezultatele</button>
+    </div>
+
+    <div class="subhead">Badge-uri</div>
+    <div class="row">
+      <span class="badge b-pass">achitat</span>
+      <span class="badge b-fail">restanță</span>
+      <span class="badge b-opt">Opțional</span>
+      <span class="badge b-sem">Facultativ</span>
+    </div>
+
+    <div class="subhead">Card &amp; câmpuri</div>
+    <div class="row" style="align-items:flex-start">
+      <div class="card-demo">
+        <div class="ch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M16 12h2"/><path d="M16 8h2"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M6 12h2"/><path d="M6 8h2"/></svg>
+          Discipline
+        </div>
+        <div class="cb">
+          <label class="field-lbl">Nume disciplină</label>
+          <div class="input foc mono">Structuri de date si algoritmi</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <label class="field-lbl">Câmp standard</label>
+        <div class="input">— alege —</div>
+        <div style="height:12px"></div>
+        <label class="field-lbl">Focus</label>
+        <div class="input foc">Ingineria Informației</div>
+      </div>
+    </div>
+
+    <div class="subhead">Meniu acordeon</div>
+    <div class="acc">
+      <div class="acc-trig">
+        <div class="acc-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Ingineria Informației
+        </div>
+        <span class="acc-count">30</span>
+      </div>
+      <div class="acc-sub">Engleză · Anul 2 · Semestrul 2 · Obligatoriu</div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Iconuri</h2>
+  <p class="sec-desc">Set de linii Lucide, grosime 2px, colț rotunjit — colorate în navy container pe suprafețe deschise.</p>
+  <div class="icons">
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div><div class="nm">school</div></div>
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/></svg></div><div class="nm">calendar</div></div>
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="nm">users</div></div>
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4M6 8H4M6 16H4"/></svg></div><div class="nm">apartment</div></div>
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div><div class="nm">taxe</div></div>
+    <div class="icon-tile"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><div class="nm">sparkles</div></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Wordmarks · Lockups</h2>
+  <p class="sec-desc">Marca (tichie de absolvent) plus wordmark-ul „UBB Info”, în trei tratamente.</p>
+  <div class="locks">
+    <div class="lock">
+      <div class="l-mark">
+        <span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+        <span class="t">UBB Info</span>
+      </div>
+      <span class="cap">mark + wordmark</span>
+    </div>
+    <div class="lock dark">
+      <div class="l-split"><b>UBB</b><i>Info</i></div>
+      <span class="cap">split-weight</span>
+    </div>
+    <div class="lock">
+      <div class="l-accent">UBB<span class="g">Info</span></div>
+      <span class="cap">accent lockup</span>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div>UBB Info — Design System · v1.0 · generat din <span class="mono">src/styles/index.css</span></div>
+  <div style="margin-top:4px">React + Vite · Spring Boot · Supabase — <span class="mono">github.com/ItsWaferz/UBBInfo</span></div>
+</footer>
+
+</body>
+</html>

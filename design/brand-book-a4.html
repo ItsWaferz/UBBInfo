@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page{ size:A4; margin:0; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --primary:#002444;--pc:#1b3a5c;--gold:#ffca48;--goldd:#f3bf3d;--onpc:#87a4cc;
+    --lowest:#fff;--low:#f2f3f7;--container:#edeef2;--surface:#f8f9fd;
+    --ink:#191c1f;--ink2:#43474e;--ol:#c3c6cf;--radius:4px;--radius-lg:8px;
+    --mono:'JetBrains Mono',monospace;
+  }
+  body{ font-family:'Inter',sans-serif; color:var(--ink); }
+  .page{ width:210mm; height:297mm; padding:16mm 15mm 12mm; display:flex; flex-direction:column; gap:7mm; background:var(--surface); }
+
+  .head{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .lockup{ display:flex; align-items:center; gap:12px; }
+  .mark{ width:46px;height:46px;border-radius:var(--radius-lg);background:var(--primary);display:flex;align-items:center;justify-content:center;color:var(--gold); }
+  .mark svg{ width:28px;height:28px; }
+  .bn{ font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1; }
+  .bs{ font-size:11.5px;color:var(--ink2);font-weight:500;margin-top:3px; }
+  .head-r{ text-align:right;font-size:10.5px;color:var(--ink2);line-height:1.5; }
+  .head-r b{ color:var(--ink); }
+  .tag{ max-width:60mm; margin-top:5px; font-size:11px; font-weight:600; line-height:1.35; color:var(--ink); }
+
+  h4{ font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pc);margin-bottom:5px; }
+
+  .swatches{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; }
+  .sw{ border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--ol); }
+  .sw .fill{ height:26mm; display:flex; align-items:flex-end; padding:9px; color:#fff; font-weight:700; font-size:11px; }
+  .sw .m{ padding:8px 10px; background:var(--lowest); }
+  .sw .m .n{ font-weight:600; font-size:12px; }
+  .sw .m .h{ font-family:var(--mono); font-size:10px; color:var(--ink2); }
+  .sw .m .u{ font-size:9.5px; color:var(--ink2); margin-top:3px; }
+
+  .mid{ display:grid; grid-template-columns:1.1fr 1fr; gap:5mm; }
+  .card{ border:1px solid var(--ol); border-radius:var(--radius-lg); background:var(--lowest); padding:12px 14px; }
+  .disp{ font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1; }
+  .wl{ display:flex; gap:12px; flex-wrap:wrap; margin-top:9px; }
+  .wl span{ font-size:14px; }
+  .w4{font-weight:400}.w5{font-weight:500}.w6{font-weight:600}.w7{font-weight:700}.w8{font-weight:800}
+  .mono-s{ font-family:var(--mono); font-size:11px; color:var(--ink2); margin-top:10px; }
+  .plist{ list-style:none; }
+  .plist li{ font-size:11px; padding:5px 0 5px 12px; border-left:2px solid var(--gold); margin-bottom:5px; }
+  .plist li b{ font-weight:700; }
+
+  .modules{ display:grid; grid-template-columns:repeat(6,1fr); gap:4mm; }
+  .mod{ border:1px solid var(--ol); border-radius:var(--radius); background:var(--lowest); padding:9px 8px; text-align:center; }
+  .mod .dot{ width:12px;height:12px;border-radius:3px;margin:0 auto 6px; }
+  .mod .n{ font-size:9.5px; font-weight:700; }
+  .mod .r{ font-size:8px; color:var(--ink2); margin-top:2px; }
+
+  .locks{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; }
+  .lock{ border:1px solid var(--ol); border-radius:var(--radius-lg); background:var(--lowest); height:24mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; }
+  .lock.dark{ background:var(--primary); }
+  .lm{ display:flex; align-items:center; gap:8px; }
+  .lm .m{ width:26px;height:26px;border-radius:5px;background:var(--pc);display:flex;align-items:center;justify-content:center;color:var(--gold); }
+  .lm .m svg{ width:16px;height:16px; }
+  .lm .t{ font-size:16px;font-weight:800;letter-spacing:-.02em;color:var(--ink); }
+  .lsplit{ font-size:18px;letter-spacing:-.02em;color:#fff; } .lsplit b{font-weight:800} .lsplit i{font-style:normal;font-weight:400;color:var(--onpc)}
+  .lacc{ font-size:18px;font-weight:800;letter-spacing:-.02em;color:var(--ink); } .lacc .g{ color:var(--goldd); }
+  .cap{ font-size:8.5px;font-family:var(--mono);color:var(--ink2); } .lock.dark .cap{ color:var(--onpc); }
+
+  .foot{ margin-top:auto; display:flex; justify-content:space-between; font-size:9px; color:var(--ink2); border-top:1px solid var(--ol); padding-top:7px; }
+  .foot .mono{ font-family:var(--mono); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <div class="lockup">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+      <div><div class="bn">UBB&nbsp;Info</div><div class="bs">Portal Academic · FMI UBB Cluj</div></div>
+    </div>
+    <div class="head-r">
+      <div>Brand Book · <b>v1.0</b></div>
+      <div>Temă <b>Light</b> · <b>Inter / JetBrains Mono</b></div>
+      <div class="tag">Portalul academic modern al FMI — într-o singură platformă.</div>
+    </div>
+  </div>
+
+  <div>
+    <h4>Ierarhie de culoare</h4>
+    <div class="swatches">
+      <div class="sw"><div class="fill" style="background:#002444">Primary</div><div class="m"><div class="n">Navy</div><div class="h">#002444</div><div class="u">Acțiuni, sidebar, titluri.</div></div></div>
+      <div class="sw"><div class="fill" style="background:#ffca48;color:#725500">Secondary</div><div class="m"><div class="n">Gold</div><div class="h">#ffca48</div><div class="u">Accent admin, avatar.</div></div></div>
+      <div class="sw"><div class="fill" style="background:#1b3a5c">Container</div><div class="m"><div class="n">Navy Container</div><div class="h">#1b3a5c</div><div class="u">Antete, iconuri.</div></div></div>
+    </div>
+  </div>
+
+  <div class="mid">
+    <div class="card">
+      <h4>Tipografie</h4>
+      <div class="disp">Portal Academic</div>
+      <div class="wl"><span class="w4">Regular</span><span class="w5">Medium</span><span class="w6">SemiBold</span><span class="w7">Bold</span><span class="w8">Extra</span></div>
+      <div class="mono-s">JetBrains Mono · 1322/1 · 5.000 lei</div>
+    </div>
+    <div class="card">
+      <h4>Caracteristici</h4>
+      <ul class="plist">
+        <li><b>Light-first</b> · suprafețe reci gri-albăstrui</li>
+        <li><b>Navy + Gold</b> · structură + accent admin</li>
+        <li><b>4px radius</b> · umbre soft, sobru</li>
+        <li><b>Meniuri drill-down</b> cu contor pe nivel</li>
+      </ul>
+    </div>
+  </div>
+
+  <div>
+    <h4>Module</h4>
+    <div class="modules">
+      <div class="mod"><div class="dot" style="background:#1b3a5c"></div><div class="n">Utilizatori</div><div class="r">roluri</div></div>
+      <div class="mod"><div class="dot" style="background:#002444"></div><div class="n">Discipline</div><div class="r">catalog</div></div>
+      <div class="mod"><div class="dot" style="background:#f3bf3d"></div><div class="n">Orar</div><div class="r">solver</div></div>
+      <div class="mod"><div class="dot" style="background:#1a7d3c"></div><div class="n">Facilități</div><div class="r">alocare</div></div>
+      <div class="mod"><div class="dot" style="background:#785a00"></div><div class="n">Taxe</div><div class="r">plăți</div></div>
+      <div class="mod"><div class="dot" style="background:#243b51"></div><div class="n">Conturi</div><div class="r">import</div></div>
+    </div>
+  </div>
+
+  <div>
+    <h4>Wordmarks · Lockups</h4>
+    <div class="locks">
+      <div class="lock">
+        <div class="lm"><span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span><span class="t">UBB Info</span></div>
+        <span class="cap">mark + wordmark</span>
+      </div>
+      <div class="lock dark"><div class="lsplit"><b>UBB</b><i>Info</i></div><span class="cap">split-weight</span></div>
+      <div class="lock"><div class="lacc">UBB<span class="g">Info</span></div><span class="cap">accent lockup</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div>UBB Info — Design System · v1.0</div>
+    <div class="mono">src/styles/index.css · github.com/ItsWaferz/UBBInfo</div>
+  </div>
+
+</div>
+</body>
+</html>
